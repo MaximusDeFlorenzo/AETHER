@@ -1,0 +1,14 @@
+{
+  "name": "@aether/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared TypeScript types generated from apps/api's OpenAPI spec (openapi-typescript). Replaces ORION's hand-maintained matching-types-per-repo pattern.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "generate": "openapi-typescript http://localhost:4000/docs-json -o ./src/generated.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.4.0"
+  }
+}

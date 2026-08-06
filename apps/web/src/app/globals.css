@@ -1,0 +1,225 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
+  --color-brand-accent: var(--brand-accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* AETHER design system — same OKLCH semantic-token STRUCTURE as ORION's
+   command-center theme (docs/MIGRATION_FROM_ORION.md), reused near-verbatim:
+   vivid ocean blue as the majority color (canvas tint, primary, sidebar/
+   header chrome), amber kept as the sole accent (active nav chip, CTA
+   buttons, small pops of highlight). Cards stay plain so content reads as an
+   "island" against the tinted canvas. Status tokens (--success/--warning/
+   --info/--danger) are semantic (error/success/info signals), not part of
+   the brand palette, and are shared by both hazard-type and risk-exposure
+   color scales in lib/chart-colors.ts. */
+:root {
+  --background: oklch(0.94 0.035 256);
+  --foreground: oklch(0.22 0.035 258);
+  --card: oklch(0.985 0.012 85);
+  --card-foreground: oklch(0.22 0.035 258);
+  --popover: oklch(0.985 0.012 85);
+  --popover-foreground: oklch(0.22 0.035 258);
+  --primary: oklch(0.5 0.19 258);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.9 0.05 256);
+  --secondary-foreground: oklch(0.5 0.19 258);
+  --muted: oklch(0.92 0.025 256);
+  --muted-foreground: oklch(0.24 0.055 58);
+  --subtle-foreground: oklch(0.68 0.03 256);
+  --accent: oklch(0.87 0.12 75);
+  --accent-foreground: oklch(0.3 0.08 70);
+  --brand-accent: oklch(0.7686 0.1647 70.08);
+  --brand-accent-foreground: oklch(0.2077 0.0398 265.75);
+  --destructive: oklch(0.577 0.245 27.325);
+  --danger: oklch(0.577 0.245 27.325);
+  --success: oklch(0.5081 0.1049 165.61);
+  --warning: oklch(0.5553 0.1455 49.0);
+  --info: oklch(0.5461 0.2152 262.88);
+  --border: oklch(0.85 0.03 256);
+  --input: oklch(0.85 0.03 256);
+  --ring: oklch(0.5 0.19 258);
+  --chart-1: oklch(0.5 0.19 258);
+  --chart-2: oklch(0.5461 0.2152 262.88);
+  --chart-3: oklch(0.7227 0.192 149.58);
+  --chart-4: oklch(0.7686 0.1647 70.08);
+  --chart-5: oklch(0.6368 0.2078 25.33);
+  --radius: 0.5rem;
+  --sidebar: oklch(0.42 0.15 258);
+  --sidebar-foreground: oklch(0.97 0.015 256);
+  --sidebar-primary: oklch(0.7686 0.1647 70.08);
+  --sidebar-primary-foreground: oklch(0.22 0.04 60);
+  --sidebar-accent: oklch(0.48 0.15 258);
+  --sidebar-accent-foreground: oklch(0.97 0.015 256);
+  --sidebar-border: oklch(0.35 0.13 258);
+  --sidebar-ring: oklch(0.7686 0.1647 70.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: oklch(0.1883 0.0288 253.67);
+    --foreground: oklch(0.9549 0.012 247.95);
+    --card: oklch(0.28 0.05 85);
+    --card-foreground: oklch(0.9549 0.012 247.95);
+    --popover: oklch(0.28 0.05 85);
+    --popover-foreground: oklch(0.9549 0.012 247.95);
+    --primary: oklch(0.6352 0.133 253.73);
+    --primary-foreground: oklch(0.1821 0.0388 258.33);
+    --secondary: oklch(0.2724 0.046 253.2);
+    --secondary-foreground: oklch(0.8666 0.0416 249.44);
+    --muted: oklch(0.28 0.05 85);
+    --muted-foreground: oklch(0.7583 0.0375 249.61);
+    --subtle-foreground: oklch(0.5366 0.0427 249.83);
+    --accent: oklch(0.2724 0.046 253.2);
+    --accent-foreground: oklch(0.9549 0.012 247.95);
+    --brand-accent: oklch(0.7686 0.1647 70.08);
+    --brand-accent-foreground: oklch(0.1918 0.0277 71.25);
+    --destructive: oklch(0.7106 0.1661 22.22);
+    --danger: oklch(0.7106 0.1661 22.22);
+    --success: oklch(0.7729 0.1535 163.22);
+    --warning: oklch(0.8369 0.1644 84.43);
+    --info: oklch(0.7137 0.1434 254.62);
+    --border: oklch(0.3078 0.0513 252.74);
+    --input: oklch(0.3078 0.0513 252.74);
+    --ring: oklch(0.6352 0.133 253.73);
+    --chart-1: oklch(0.6352 0.133 253.73);
+    --chart-2: oklch(0.7137 0.1434 254.62);
+    --chart-3: oklch(0.7729 0.1535 163.22);
+    --chart-4: oklch(0.7686 0.1647 70.08);
+    --chart-5: oklch(0.7106 0.1661 22.22);
+    --sidebar: oklch(0.2398 0.0647 255.61);
+    --sidebar-foreground: oklch(0.9549 0.012 247.95);
+    --sidebar-primary: oklch(0.7686 0.1647 70.08);
+    --sidebar-primary-foreground: oklch(0.1918 0.0277 71.25);
+    --sidebar-accent: oklch(0.2724 0.046 253.2);
+    --sidebar-accent-foreground: oklch(0.9549 0.012 247.95);
+    --sidebar-border: oklch(0.3078 0.0513 252.74);
+    --sidebar-ring: oklch(0.6352 0.133 253.73);
+  }
+}
+
+:root[data-theme="dark"] {
+  --background: oklch(0.1883 0.0288 253.67);
+  --foreground: oklch(0.9549 0.012 247.95);
+  --card: oklch(0.28 0.05 85);
+  --card-foreground: oklch(0.9549 0.012 247.95);
+  --popover: oklch(0.28 0.05 85);
+  --popover-foreground: oklch(0.9549 0.012 247.95);
+  --primary: oklch(0.6352 0.133 253.73);
+  --primary-foreground: oklch(0.1821 0.0388 258.33);
+  --secondary: oklch(0.2724 0.046 253.2);
+  --secondary-foreground: oklch(0.8666 0.0416 249.44);
+  --muted: oklch(0.28 0.05 85);
+  --muted-foreground: oklch(0.7583 0.0375 249.61);
+  --subtle-foreground: oklch(0.5366 0.0427 249.83);
+  --accent: oklch(0.2724 0.046 253.2);
+  --accent-foreground: oklch(0.9549 0.012 247.95);
+  --brand-accent: oklch(0.7686 0.1647 70.08);
+  --brand-accent-foreground: oklch(0.1918 0.0277 71.25);
+  --destructive: oklch(0.7106 0.1661 22.22);
+  --danger: oklch(0.7106 0.1661 22.22);
+  --success: oklch(0.7729 0.1535 163.22);
+  --warning: oklch(0.8369 0.1644 84.43);
+  --info: oklch(0.7137 0.1434 254.62);
+  --border: oklch(0.3078 0.0513 252.74);
+  --input: oklch(0.3078 0.0513 252.74);
+  --ring: oklch(0.6352 0.133 253.73);
+  --chart-1: oklch(0.6352 0.133 253.73);
+  --chart-2: oklch(0.7137 0.1434 254.62);
+  --chart-3: oklch(0.7729 0.1535 163.22);
+  --chart-4: oklch(0.7686 0.1647 70.08);
+  --chart-5: oklch(0.7106 0.1661 22.22);
+  --sidebar: oklch(0.2398 0.0647 255.61);
+  --sidebar-foreground: oklch(0.9549 0.012 247.95);
+  --sidebar-primary: oklch(0.7686 0.1647 70.08);
+  --sidebar-primary-foreground: oklch(0.1918 0.0277 71.25);
+  --sidebar-accent: oklch(0.2724 0.046 253.2);
+  --sidebar-accent-foreground: oklch(0.9549 0.012 247.95);
+  --sidebar-border: oklch(0.3078 0.0513 252.74);
+  --sidebar-ring: oklch(0.6352 0.133 253.73);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    color-scheme: light;
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+    }
+  }
+}
+
+/* Hazard map markers, high-severity — a slow radar-style pulse on the ones
+   that actually warrant a second look. Leaflet renders these as real SVG
+   paths, so a plain CSS animation on the className works. Generalized from
+   ORION's eq-marker-pulse (magnitude-only) to any hazard's "severe"
+   ExposureLevel. */
+@media (prefers-reduced-motion: no-preference) {
+  .hazard-marker-pulse {
+    animation: hazard-pulse 2.4s ease-in-out infinite;
+  }
+}
+@keyframes hazard-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); opacity: 1; }
+  50% { filter: drop-shadow(0 0 6px currentColor); opacity: 0.85; }
+}

@@ -1,0 +1,3 @@
+export const HAZARD_DATA_SOURCE_ADAPTERS = Symbol(
+  'HAZARD_DATA_SOURCE_ADAPTERS',
+);

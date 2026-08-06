@@ -1,0 +1,154 @@
+name: aether
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: aether-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aether}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aether}
+      POSTGRES_DB: ${POSTGRES_DB:-aether}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - aether_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aether}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: aether-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - aether_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: aether-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY_ID:-aether}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_ACCESS_KEY:-aether-dev-secret}
+    ports:
+      - "${STORAGE_PORT:-9000}:9000"
+      - "${STORAGE_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - aether_minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot init: creates the default bucket, then exits. api/ai-engine
+  # don't depend on this completing — bucket creation races startup
+  # harmlessly since `mc mb --ignore-existing` is idempotent and uploads
+  # are only attempted once a real request needs storage.
+  minio-init:
+    image: minio/mc:latest
+    container_name: aether-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 ${STORAGE_ACCESS_KEY_ID:-aether} ${STORAGE_SECRET_ACCESS_KEY:-aether-dev-secret} &&
+      mc mb --ignore-existing local/${STORAGE_BUCKET:-aether-media}
+      "
+
+  ai-engine:
+    build:
+      context: ../apps/ai-engine
+    container_name: aether-ai-engine
+    restart: unless-stopped
+    environment:
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
+      PORT: 8000
+    ports:
+      - "${AI_ENGINE_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      # Root context — see apps/api/Dockerfile's top comment (a build scoped
+      # to apps/api alone can't see the workspace lockfile/pnpm-workspace.yaml).
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: aether-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      ai-engine:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgres://${POSTGRES_USER:-aether}:${POSTGRES_PASSWORD:-aether}@postgres:5432/${POSTGRES_DB:-aether}
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret}
+      AI_ENGINE_URL: http://ai-engine:8000
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
+      BMKG_POLL_INTERVAL_MS: ${BMKG_POLL_INTERVAL_MS:-300000}
+      NASA_FIRMS_POLL_INTERVAL_MS: ${NASA_FIRMS_POLL_INTERVAL_MS:-3600000}
+      WEATHER_POLL_INTERVAL_MS: ${WEATHER_POLL_INTERVAL_MS:-900000}
+      RISK_NOTIFICATION_THRESHOLD: ${RISK_NOTIFICATION_THRESHOLD:-60}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@aether.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-ChangeMe123!}
+      WEATHER_API_BASE_URL: ${WEATHER_API_BASE_URL:-}
+      WEATHER_API_KEY: ${WEATHER_API_KEY:-}
+      NASA_FIRMS_BASE_URL: ${NASA_FIRMS_BASE_URL:-https://firms.modaps.eosdis.nasa.gov/api}
+      NASA_FIRMS_API_KEY: ${NASA_FIRMS_API_KEY:-}
+      SENTINEL_API_KEY: ${SENTINEL_API_KEY:-}
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_REGION: ${STORAGE_REGION:-us-east-1}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-aether-media}
+      STORAGE_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY_ID:-aether}
+      STORAGE_SECRET_ACCESS_KEY: ${STORAGE_SECRET_ACCESS_KEY:-aether-dev-secret}
+      STORAGE_FORCE_PATH_STYLE: "true"
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+
+  web:
+    build:
+      # Root context, not ../apps/web — apps/web depends on the workspace
+      # package @aether/contracts (packages/contracts), which a build scoped
+      # to apps/web alone can't see. See apps/web/Dockerfile's top comment.
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:4000}
+    container_name: aether-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+
+volumes:
+  aether_postgres_data:
+  aether_redis_data:
+  aether_minio_data:
