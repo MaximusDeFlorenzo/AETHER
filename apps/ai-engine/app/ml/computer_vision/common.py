@@ -13,6 +13,7 @@ interface once one exists, without changing `app/api/routes/computer_vision.py`.
 import base64
 import binascii
 from io import BytesIO
+from typing import Protocol
 
 import numpy as np
 from PIL import Image, UnidentifiedImageError
@@ -20,6 +21,21 @@ from scipy import ndimage
 
 from app.schemas.common import CvDetectionType
 from app.schemas.computer_vision import BoundingBox, CvDetectionResult
+
+
+class CvDetector(Protocol):
+    """Common interface every `computer_vision/*.py` detector satisfies —
+    what `app/api/routes/computer_vision.py` dispatches against. Each
+    module's heuristic stays a free `detect(image)` function (unit-tested
+    directly in tests/test_computer_vision.py); a thin class per module
+    (e.g. `fire.FireDetector`) adapts it to this Protocol. Swapping a
+    heuristic for a trained model later — the whole reason this interface
+    exists — means adding a class that satisfies `CvDetector` and pointing
+    the registry in `computer_vision/__init__.py` at it; the route layer
+    never changes.
+    """
+
+    def detect(self, image: np.ndarray) -> list[CvDetectionResult]: ...
 
 # Downscale very large photos before analysis — the color/blob heuristics
 # below don't benefit from full resolution, and this keeps latency bounded

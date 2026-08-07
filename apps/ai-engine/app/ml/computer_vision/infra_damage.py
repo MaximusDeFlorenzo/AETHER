@@ -46,3 +46,11 @@ def detect(image: np.ndarray) -> list[CvDetectionResult]:
     threshold = np.percentile(density, EDGE_DENSITY_PERCENTILE)
     mask = density >= threshold
     return mask_to_detections(mask, "infra_damage", confidence_ceiling=CONFIDENCE_CEILING)
+
+
+class InfraDamageDetector:
+    """Adapts `detect()` to the shared `CvDetector` interface — see
+    `common.py`'s `CvDetector` docstring."""
+
+    def detect(self, image: np.ndarray) -> list[CvDetectionResult]:
+        return detect(image)

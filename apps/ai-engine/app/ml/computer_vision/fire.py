@@ -35,3 +35,11 @@ def detect(image: np.ndarray) -> list[CvDetectionResult]:
         & (r - b >= RED_BLUE_MARGIN)
     )
     return mask_to_detections(mask, "fire")
+
+
+class FireDetector:
+    """Adapts `detect()` to the shared `CvDetector` interface — see
+    `common.py`'s `CvDetector` docstring."""
+
+    def detect(self, image: np.ndarray) -> list[CvDetectionResult]:
+        return detect(image)

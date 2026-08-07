@@ -36,3 +36,11 @@ def detect(image: np.ndarray) -> list[CvDetectionResult]:
         & (brightness <= BRIGHTNESS_MAX)
     )
     return mask_to_detections(mask, "smoke")
+
+
+class SmokeDetector:
+    """Adapts `detect()` to the shared `CvDetector` interface — see
+    `common.py`'s `CvDetector` docstring."""
+
+    def detect(self, image: np.ndarray) -> list[CvDetectionResult]:
+        return detect(image)

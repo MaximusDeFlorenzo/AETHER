@@ -28,3 +28,11 @@ def detect(image: np.ndarray) -> list[CvDetectionResult]:
 
     mask = muddy_water_mask | blue_water_mask
     return mask_to_detections(mask, "flood")
+
+
+class FloodDetector:
+    """Adapts `detect()` to the shared `CvDetector` interface — see
+    `common.py`'s `CvDetector` docstring."""
+
+    def detect(self, image: np.ndarray) -> list[CvDetectionResult]:
+        return detect(image)
