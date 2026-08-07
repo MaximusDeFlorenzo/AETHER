@@ -126,4 +126,27 @@ export class GeoService {
       distanceKm: Number.parseFloat(row.distanceKm),
     }));
   }
+
+  /**
+   * District centroid lat/lon — used by baseline/standing risk scoring
+   * (`RiskEngineOrchestrationService`) to synthesize a `HazardEventInput`
+   * for a district with no concrete triggering event.
+   */
+  async getDistrictCentroid(
+    districtId: string,
+  ): Promise<{ latitude: number; longitude: number }> {
+    const rows: Array<{ latitude: string; longitude: string }> =
+      await this.districtRepository.query(
+        `SELECT ST_Y(ST_Centroid(geom)) AS latitude, ST_X(ST_Centroid(geom)) AS longitude
+         FROM districts WHERE id = $1`,
+        [districtId],
+      );
+    if (!rows[0]) {
+      throw new NotFoundException('District not found');
+    }
+    return {
+      latitude: Number.parseFloat(rows[0].latitude),
+      longitude: Number.parseFloat(rows[0].longitude),
+    };
+  }
 }

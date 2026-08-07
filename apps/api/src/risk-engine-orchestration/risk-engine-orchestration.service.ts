@@ -42,6 +42,39 @@ const BASELINE_HAZARD_TYPES = [
   HazardType.WILDFIRE,
 ];
 
+/**
+ * Conservative "typical/background conditions" fallback used by baseline
+ * scans when a district has no prior `hazard_events` of a given type to
+ * average (e.g. a brand-new deployment, or a district that's simply never
+ * had one) — every value sits deliberately at the low end of its valid
+ * range so a district with zero history reads as low, not alarming, risk
+ * rather than being skipped outright. Real per-district history (see
+ * `buildBaselineHazardEventInput`) always takes precedence over these.
+ */
+const BASELINE_DEFAULTS = {
+  [HazardType.EARTHQUAKE]: { magnitude: 4.0, depthKm: 10 },
+  [HazardType.LANDSLIDE]: {
+    slopeDegrees: 10,
+    soilSaturation: 0.2,
+    triggeringRainfallMm: 0,
+  },
+  [HazardType.FLOOD]: { rainfallMm: 5, waterLevelM: 0.5 },
+  [HazardType.WILDFIRE]: {
+    frpConfidence: 0.05,
+    hotspotCount: 0,
+    brightnessKelvin: null as number | null,
+  },
+} as const;
+
+/** Postgres numeric aggregates (`AVG(...)`) come back as strings (or `null`
+ * when there are zero matching rows) via the pg driver — same reason
+ * `numericTransformer` exists on entities, but raw `AVG()` results bypass it. */
+function parseAvg(value: string | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 @Injectable()
 export class RiskEngineOrchestrationService {
   private readonly logger = new Logger(RiskEngineOrchestrationService.name);
@@ -104,13 +137,12 @@ export class RiskEngineOrchestrationService {
 
   /**
    * Standing/baseline risk scoring (docs/ARCHITECTURE.md §2.2) — the
-   * pipeline ORION never had. Periodically attempts every district for every
+   * pipeline ORION never had. Periodically scores every district for every
    * hazard type in `BASELINE_HAZARD_TYPES` with `hazardEvent = null`,
-   * independent of any active event. In practice every attempt is currently
-   * skipped by `buildHazardEventInput` (see its docstring) — there's no
-   * per-hazard "typical conditions" data source yet to synthesize a
-   * standing-risk input without a real event. The cron/loop stays in place
-   * so wiring that data source later is a drop-in change, not a redesign.
+   * independent of any active event. `buildBaselineHazardEventInput`
+   * synthesizes a "typical conditions" input per district/hazard type from
+   * that district's own hazard history, falling back to conservative
+   * defaults when there isn't any yet — see its docstring.
    */
   @Cron(CronExpression.EVERY_6_HOURS)
   async runBaselineScan(): Promise<void> {
@@ -133,19 +165,13 @@ export class RiskEngineOrchestrationService {
    * `*_details` row — apps/ai-engine's Pydantic schema requires
    * `latitude`/`longitude` plus a populated, hazard-type-matching details
    * block (docs/API_SPEC.md "Internal API"), not just a bare `hazardType`.
-   * Returns `null` (with a warning) if no concrete event was given (baseline
-   * scan — there's no per-hazard "typical conditions" data source yet to
-   * synthesize a standing-risk input without a real event) or if the
-   * matching details row is missing/incomplete, which callers must treat as
-   * "skip this district/hazard, don't call the AI engine."
+   * Returns `null` (with a warning) if the matching details row is
+   * missing/incomplete, which callers must treat as "skip this
+   * district/hazard, don't call the AI engine."
    */
   private async buildHazardEventInput(
-    hazardEvent: HazardEvent | null,
+    hazardEvent: HazardEvent,
   ): Promise<RiskEngineHazardEventInput | null> {
-    if (!hazardEvent) {
-      return null;
-    }
-
     const base = {
       hazardType: hazardEvent.hazardType,
       latitude: hazardEvent.latitude,
@@ -219,6 +245,144 @@ export class RiskEngineOrchestrationService {
     return null;
   }
 
+  /**
+   * Synthesizes a "typical conditions" `hazardEvent` input for a baseline
+   * scan (no concrete triggering event) — what `runBaselineScan` needs to
+   * actually produce a `risk_assessments` row instead of skipping every
+   * district/hazard-type combination forever.
+   *
+   * Primary source: average the real `*_details` fields across this
+   * district's own past `hazard_events` of the given type (resolved via
+   * `hazard_affected_regions`, the same join `SpatialIntelligenceService`
+   * uses) — genuine local signal, no new tables. Falls back to
+   * `BASELINE_DEFAULTS` when the district has no matching history yet.
+   * Never returns `null` for a type in `BASELINE_HAZARD_TYPES` — unlike
+   * `buildHazardEventInput`, there's no "incomplete details row" case here
+   * since every field is either an average or a documented default.
+   */
+  private async buildBaselineHazardEventInput(
+    districtId: string,
+    hazardType: HazardType,
+  ): Promise<RiskEngineHazardEventInput> {
+    const centroid = await this.geoService.getDistrictCentroid(districtId);
+    const base = {
+      hazardType,
+      latitude: centroid.latitude,
+      longitude: centroid.longitude,
+      eventTime: new Date().toISOString(),
+    };
+
+    if (hazardType === HazardType.EARTHQUAKE) {
+      const avg = await this.earthquakeDetailsRepository
+        .createQueryBuilder('d')
+        .innerJoin('d.hazardEvent', 'e')
+        .innerJoin(
+          'hazard_affected_regions',
+          'har',
+          'har.hazard_event_id = e.id',
+        )
+        .where('har.district_id = :districtId', { districtId })
+        .select('AVG(d.magnitude)', 'magnitude')
+        .addSelect('AVG(d.depthKm)', 'depthKm')
+        .getRawOne<{ magnitude: string | null; depthKm: string | null }>();
+      const defaults = BASELINE_DEFAULTS[HazardType.EARTHQUAKE];
+      return {
+        ...base,
+        earthquake: {
+          magnitude: parseAvg(avg?.magnitude) ?? defaults.magnitude,
+          depthKm: parseAvg(avg?.depthKm) ?? defaults.depthKm,
+        },
+      };
+    }
+
+    if (hazardType === HazardType.LANDSLIDE) {
+      const avg = await this.landslideDetailsRepository
+        .createQueryBuilder('d')
+        .innerJoin('d.hazardEvent', 'e')
+        .innerJoin(
+          'hazard_affected_regions',
+          'har',
+          'har.hazard_event_id = e.id',
+        )
+        .where('har.district_id = :districtId', { districtId })
+        .select('AVG(d.slopeDegrees)', 'slopeDegrees')
+        .addSelect('AVG(d.soilSaturation)', 'soilSaturation')
+        .addSelect('AVG(d.triggeringRainfallMm)', 'triggeringRainfallMm')
+        .getRawOne<{
+          slopeDegrees: string | null;
+          soilSaturation: string | null;
+          triggeringRainfallMm: string | null;
+        }>();
+      const defaults = BASELINE_DEFAULTS[HazardType.LANDSLIDE];
+      return {
+        ...base,
+        landslide: {
+          slopeDegrees: parseAvg(avg?.slopeDegrees) ?? defaults.slopeDegrees,
+          soilSaturation:
+            parseAvg(avg?.soilSaturation) ?? defaults.soilSaturation,
+          triggeringRainfallMm:
+            parseAvg(avg?.triggeringRainfallMm) ??
+            defaults.triggeringRainfallMm,
+        },
+      };
+    }
+
+    if (hazardType === HazardType.FLOOD) {
+      const avg = await this.floodDetailsRepository
+        .createQueryBuilder('d')
+        .innerJoin('d.hazardEvent', 'e')
+        .innerJoin(
+          'hazard_affected_regions',
+          'har',
+          'har.hazard_event_id = e.id',
+        )
+        .where('har.district_id = :districtId', { districtId })
+        .select('AVG(d.rainfallMm)', 'rainfallMm')
+        .addSelect('AVG(d.waterLevelM)', 'waterLevelM')
+        .getRawOne<{ rainfallMm: string | null; waterLevelM: string | null }>();
+      const defaults = BASELINE_DEFAULTS[HazardType.FLOOD];
+      return {
+        ...base,
+        flood: {
+          rainfallMm: parseAvg(avg?.rainfallMm) ?? defaults.rainfallMm,
+          waterLevelM: parseAvg(avg?.waterLevelM) ?? defaults.waterLevelM,
+        },
+      };
+    }
+
+    // hazardType === HazardType.WILDFIRE (the only remaining member of
+    // BASELINE_HAZARD_TYPES).
+    const avg = await this.wildfireDetailsRepository
+      .createQueryBuilder('d')
+      .innerJoin('d.hazardEvent', 'e')
+      .innerJoin(
+        'hazard_affected_regions',
+        'har',
+        'har.hazard_event_id = e.id',
+      )
+      .where('har.district_id = :districtId', { districtId })
+      .select('AVG(d.frpConfidence)', 'frpConfidence')
+      .addSelect('AVG(d.hotspotCount)', 'hotspotCount')
+      .addSelect('AVG(d.brightnessKelvin)', 'brightnessKelvin')
+      .getRawOne<{
+        frpConfidence: string | null;
+        hotspotCount: string | null;
+        brightnessKelvin: string | null;
+      }>();
+    const defaults = BASELINE_DEFAULTS[HazardType.WILDFIRE];
+    return {
+      ...base,
+      wildfire: {
+        frpConfidence: parseAvg(avg?.frpConfidence) ?? defaults.frpConfidence,
+        hotspotCount: Math.round(
+          parseAvg(avg?.hotspotCount) ?? defaults.hotspotCount,
+        ),
+        brightnessKelvin:
+          parseAvg(avg?.brightnessKelvin) ?? defaults.brightnessKelvin,
+      },
+    };
+  }
+
   private async processDistrict(
     hazardEventId: string | null,
     districtId: string,
@@ -235,23 +399,18 @@ export class RiskEngineOrchestrationService {
         : null;
       const resolvedHazardType = hazardEvent?.hazardType ?? hazardType;
 
-      const hazardEventInput = await this.buildHazardEventInput(hazardEvent);
+      const hazardEventInput = hazardEvent
+        ? await this.buildHazardEventInput(hazardEvent)
+        : await this.buildBaselineHazardEventInput(districtId, hazardType);
       if (!hazardEventInput) {
-        // Baseline scans (no concrete event) can't build a valid AI-engine
-        // input yet (see buildHazardEventInput's docstring) — skip quietly
-        // rather than writing a permanently-FAILED risk assessment every
-        // 6 hours for every district/hazard-type combination.
-        if (!hazardEventId) {
-          this.logger.debug(
-            `Skipping baseline scan for district=${districtId} hazardType=${hazardType}: ` +
-              'no concrete event to build a valid AI-engine input from',
-          );
-        } else {
-          this.logger.warn(
-            `Skipping risk pipeline for hazardEvent=${hazardEventId}: ` +
-              'matching *_details row is missing or incomplete',
-          );
-        }
+        // Only reachable for the event-triggered path — the matching
+        // *_details row is missing or incomplete (buildHazardEventInput's
+        // docstring). Baseline scans always produce a valid input (see
+        // buildBaselineHazardEventInput's docstring).
+        this.logger.warn(
+          `Skipping risk pipeline for hazardEvent=${hazardEventId}: ` +
+            'matching *_details row is missing or incomplete',
+        );
         return;
       }
 
