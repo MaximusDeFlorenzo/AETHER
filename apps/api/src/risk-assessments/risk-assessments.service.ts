@@ -40,7 +40,9 @@ export class RiskAssessmentsService {
     }
     if (filters.baseline !== undefined) {
       qb.andWhere(
-        filters.baseline ? 'ra.hazardEvent IS NULL' : 'ra.hazardEvent IS NOT NULL',
+        filters.baseline
+          ? 'ra.hazardEvent IS NULL'
+          : 'ra.hazardEvent IS NOT NULL',
       );
     }
 

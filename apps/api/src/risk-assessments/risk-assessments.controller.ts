@@ -1,4 +1,11 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RiskAssessmentsService } from './risk-assessments.service';
 import { QueryRiskAssessmentsDto } from './dto/query-risk-assessments.dto';
@@ -11,7 +18,9 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 @Controller('risk-assessments')
 @UseGuards(JwtAuthGuard)
 export class RiskAssessmentsController {
-  constructor(private readonly riskAssessmentsService: RiskAssessmentsService) {}
+  constructor(
+    private readonly riskAssessmentsService: RiskAssessmentsService,
+  ) {}
 
   @Get()
   findAll(@Query() query: QueryRiskAssessmentsDto) {

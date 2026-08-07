@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CvDetection, HazardEvent } from '../database/entities';
@@ -14,7 +10,9 @@ import { CvEngineClient } from '../risk-engine-orchestration/cv-engine.client';
 // citizen tagging their photo "wildfire" only needs fire/smoke checked, not
 // flood/infra_damage too. Omitted or unmapped hint types run every detector
 // (CvEngineClient.detectCv with `categories: undefined`).
-const CATEGORIES_BY_HAZARD_HINT: Partial<Record<HazardType, CvDetectionType[]>> = {
+const CATEGORIES_BY_HAZARD_HINT: Partial<
+  Record<HazardType, CvDetectionType[]>
+> = {
   [HazardType.FLOOD]: [CvDetectionType.FLOOD],
   [HazardType.WILDFIRE]: [CvDetectionType.FIRE, CvDetectionType.SMOKE],
   [HazardType.EARTHQUAKE]: [CvDetectionType.INFRA_DAMAGE],

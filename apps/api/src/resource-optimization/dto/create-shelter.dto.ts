@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsLatitude, IsLongitude, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsInt,
+  IsLatitude,
+  IsLongitude,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export class CreateShelterDto {
   @IsUUID()

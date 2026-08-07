@@ -117,6 +117,9 @@ importers:
         specifier: ^11.0.5
         version: 11.1.1
     devDependencies:
+      '@aether/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@eslint/eslintrc':
         specifier: ^3.2.0
         version: 3.3.6
@@ -259,6 +262,9 @@ importers:
         specifier: ^5.0.14
         version: 5.0.14(@types/react@19.2.17)(immer@11.1.15)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
     devDependencies:
+      '@aether/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@eslint/eslintrc':
         specifier: ^3.3.5
         version: 3.3.6

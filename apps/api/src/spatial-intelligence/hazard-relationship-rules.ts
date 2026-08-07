@@ -1,4 +1,7 @@
-import { HazardType, HazardRelationshipType } from '../common/enums/domain.enum';
+import {
+  HazardType,
+  HazardRelationshipType,
+} from '../common/enums/domain.enum';
 
 /**
  * Fixed time-window + distance-threshold correlation rules for cascading

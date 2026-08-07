@@ -281,7 +281,9 @@ export class SpatialIntelligenceService {
       type: 'FeatureCollection',
       features: districtRows.map((row) => ({
         type: 'Feature',
-        geometry: row.geojson ? (JSON.parse(row.geojson) as Record<string, unknown>) : null,
+        geometry: row.geojson
+          ? (JSON.parse(row.geojson) as Record<string, unknown>)
+          : null,
         properties: {
           districtId: row.id,
           districtName: row.name,

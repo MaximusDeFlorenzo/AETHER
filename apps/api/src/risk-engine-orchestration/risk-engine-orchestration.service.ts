@@ -105,7 +105,9 @@ export class RiskEngineOrchestrationService {
   ) {}
 
   @OnEvent(DomainEvents.HAZARD_EVENT_CREATED, { async: true })
-  async handleHazardEventCreated(event: HazardEventCreatedEvent): Promise<void> {
+  async handleHazardEventCreated(
+    event: HazardEventCreatedEvent,
+  ): Promise<void> {
     if (event.affectedDistrictIds.length === 0) {
       return;
     }
@@ -214,7 +216,11 @@ export class RiskEngineOrchestrationService {
       const details = await this.floodDetailsRepository.findOne({
         where: { hazardEventId: hazardEvent.id },
       });
-      if (!details || details.rainfallMm === null || details.waterLevelM === null) {
+      if (
+        !details ||
+        details.rainfallMm === null ||
+        details.waterLevelM === null
+      ) {
         return null;
       }
       return {
@@ -230,7 +236,11 @@ export class RiskEngineOrchestrationService {
       const details = await this.wildfireDetailsRepository.findOne({
         where: { hazardEventId: hazardEvent.id },
       });
-      if (!details || details.frpConfidence === null || details.hotspotCount === null) {
+      if (
+        !details ||
+        details.frpConfidence === null ||
+        details.hotspotCount === null
+      ) {
         return null;
       }
       return {
@@ -355,11 +365,7 @@ export class RiskEngineOrchestrationService {
     const avg = await this.wildfireDetailsRepository
       .createQueryBuilder('d')
       .innerJoin('d.hazardEvent', 'e')
-      .innerJoin(
-        'hazard_affected_regions',
-        'har',
-        'har.hazard_event_id = e.id',
-      )
+      .innerJoin('hazard_affected_regions', 'har', 'har.hazard_event_id = e.id')
       .where('har.district_id = :districtId', { districtId })
       .select('AVG(d.frpConfidence)', 'frpConfidence')
       .addSelect('AVG(d.hotspotCount)', 'hotspotCount')
@@ -494,7 +500,8 @@ export class RiskEngineOrchestrationService {
         });
 
       riskAssessment.riskScore = predictResult.riskScore;
-      riskAssessment.exposureLevel = predictResult.exposureLevel as ExposureLevel;
+      riskAssessment.exposureLevel =
+        predictResult.exposureLevel as ExposureLevel;
       riskAssessment.estimatedAffectedPopulation =
         predictResult.estimatedAffectedPopulation;
       riskAssessment.confidenceScore = predictResult.confidenceScore;

@@ -48,7 +48,7 @@ describe('IngestionScheduler', () => {
     jest.useRealTimers();
   });
 
-  it('registers one interval per registered adapter source, using each source\'s configured poll interval', () => {
+  it("registers one interval per registered adapter source, using each source's configured poll interval", () => {
     scheduler.onModuleInit();
 
     expect(schedulerRegistry.addInterval).toHaveBeenCalledTimes(3);

@@ -54,10 +54,7 @@ export class ResourceOptimizationService {
       const result = await this.riskEngineClient.optimizeResources({
         estimatedAffectedPopulation: event.estimatedAffectedPopulation ?? 0,
         exposureLevel: event.exposureLevel as
-          | 'low'
-          | 'moderate'
-          | 'high'
-          | 'severe',
+          'low' | 'moderate' | 'high' | 'severe',
       });
 
       const plan = await this.planRepository.save(
@@ -96,7 +93,11 @@ export class ResourceOptimizationService {
     }
   }
 
-  async findAllPlans(filters: { district?: string; page: number; limit: number }) {
+  async findAllPlans(filters: {
+    district?: string;
+    page: number;
+    limit: number;
+  }) {
     const qb = this.planRepository
       .createQueryBuilder('plan')
       .leftJoinAndSelect('plan.district', 'district')

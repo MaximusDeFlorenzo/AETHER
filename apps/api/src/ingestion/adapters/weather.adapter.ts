@@ -5,7 +5,10 @@ import { firstValueFrom } from 'rxjs';
 import { HazardType } from '../../common/enums/domain.enum';
 import type { NormalizedHazardEvent } from '../../hazard-events/hazard-event-normalized.interface';
 import type { HazardDataSourceAdapter } from './hazard-data-source-adapter.interface';
-import { WeatherStationReading, WeatherStationsResponse } from './weather.types';
+import {
+  WeatherStationReading,
+  WeatherStationsResponse,
+} from './weather.types';
 
 /**
  * Third concrete `HazardDataSourceAdapter`, alongside `BmkgAdapter`/
@@ -24,9 +27,7 @@ import { WeatherStationReading, WeatherStationsResponse } from './weather.types'
  * API, not a general-purpose weather service.
  */
 @Injectable()
-export class WeatherAdapter
-  implements HazardDataSourceAdapter<WeatherStationReading>
-{
+export class WeatherAdapter implements HazardDataSourceAdapter<WeatherStationReading> {
   readonly sourceId = 'weather_api';
 
   private readonly logger = new Logger(WeatherAdapter.name);
@@ -48,10 +49,10 @@ export class WeatherAdapter
 
     try {
       const { data } = await firstValueFrom(
-        this.http.get<WeatherStationsResponse>(
-          `${baseUrl}/stations/current`,
-          { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10_000 },
-        ),
+        this.http.get<WeatherStationsResponse>(`${baseUrl}/stations/current`, {
+          headers: { Authorization: `Bearer ${apiKey}` },
+          timeout: 10_000,
+        }),
       );
       return data.stations;
     } catch (error) {

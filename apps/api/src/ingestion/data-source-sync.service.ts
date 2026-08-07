@@ -36,7 +36,9 @@ export class DataSourceSyncService {
 
   private async upsert(
     sourceId: string,
-    patch: Partial<Pick<DataSourceSync, 'status' | 'lastSyncedAt' | 'errorMessage'>>,
+    patch: Partial<
+      Pick<DataSourceSync, 'status' | 'lastSyncedAt' | 'errorMessage'>
+    >,
   ): Promise<void> {
     const existing = await this.dataSourceSyncRepository.findOne({
       where: { sourceId },

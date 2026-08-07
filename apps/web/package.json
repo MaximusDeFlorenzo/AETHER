@@ -36,6 +36,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@aether/config": "workspace:*",
     "@eslint/eslintrc": "^3.3.5",
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.21",

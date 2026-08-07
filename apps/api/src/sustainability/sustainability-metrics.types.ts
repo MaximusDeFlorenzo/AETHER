@@ -6,7 +6,12 @@ export interface SdgIndicatorValue {
 }
 
 export interface SustainabilityMetricsResponse {
-  district: { id: string; bpsCode: string; name: string; areaKm2: number | null } | null;
+  district: {
+    id: string;
+    bpsCode: string;
+    name: string;
+    areaKm2: number | null;
+  } | null;
   periodStart: string;
   periodEnd: string;
   climateResilienceScore: number;

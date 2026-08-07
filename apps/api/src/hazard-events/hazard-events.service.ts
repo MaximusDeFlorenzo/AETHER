@@ -129,7 +129,9 @@ export class HazardEventsService {
     };
   }
 
-  async findOne(id: string): Promise<HazardEvent & { details: Record<string, unknown> | null }> {
+  async findOne(
+    id: string,
+  ): Promise<HazardEvent & { details: Record<string, unknown> | null }> {
     const event = await this.hazardEventRepository.findOne({ where: { id } });
     if (!event) {
       throw new NotFoundException('Hazard event not found');

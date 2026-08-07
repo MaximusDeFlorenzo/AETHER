@@ -84,7 +84,9 @@ export class NasaFirmsAdapter implements HazardDataSourceAdapter<FirmsHotspot> {
       details: {
         frpConfidence,
         hotspotCount: 1,
-        brightnessKelvin: Number.isFinite(brightnessKelvin) ? brightnessKelvin : null,
+        brightnessKelvin: Number.isFinite(brightnessKelvin)
+          ? brightnessKelvin
+          : null,
       },
     };
   }

@@ -41,7 +41,9 @@ export class HazardEventsGateway implements OnGatewayConnection {
   }
 
   @OnEvent(DomainEvents.HAZARD_EVENT_CREATED, { async: true })
-  async handleHazardEventCreated(event: HazardEventCreatedEvent): Promise<void> {
+  async handleHazardEventCreated(
+    event: HazardEventCreatedEvent,
+  ): Promise<void> {
     try {
       const hazardEvent = await this.hazardEventsService.findOne(
         event.hazardEventId,

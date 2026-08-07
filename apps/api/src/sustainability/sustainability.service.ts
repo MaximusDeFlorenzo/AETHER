@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Repository } from 'typeorm';
@@ -71,8 +76,12 @@ export class SustainabilityService implements OnModuleInit {
   async computeAndPersistMetrics(): Promise<void> {
     const districts = await this.districtRepository.find();
     const now = new Date();
-    const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+    const periodStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
+    const periodEnd = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0),
+    );
 
     this.logger.log(
       `Computing sustainability metrics for ${districts.length} district(s), period ${periodStart.toISOString().slice(0, 10)}..${periodEnd.toISOString().slice(0, 10)}`,
@@ -97,7 +106,10 @@ export class SustainabilityService implements OnModuleInit {
     periodEnd: Date,
   ): Promise<void> {
     const assessments = await this.riskAssessmentRepository.find({
-      where: { district: { id: district.id }, status: RiskAssessmentStatus.COMPLETED },
+      where: {
+        district: { id: district.id },
+        status: RiskAssessmentStatus.COMPLETED,
+      },
       relations: { hazardEvent: true, decisionRecommendation: true },
     });
     const periodAssessments = assessments.filter(
@@ -112,7 +124,9 @@ export class SustainabilityService implements OnModuleInit {
       (p) => p.createdAt >= periodStart && p.createdAt <= periodEnd,
     );
 
-    const withRecommendation = periodAssessments.filter((a) => a.decisionRecommendation);
+    const withRecommendation = periodAssessments.filter(
+      (a) => a.decisionRecommendation,
+    );
     const respondedPlanCount = periodPlans.filter((p) =>
       RESPONDED_PLAN_STATUSES.includes(p.status),
     ).length;
@@ -128,10 +142,13 @@ export class SustainabilityService implements OnModuleInit {
 
     const avgRiskScore =
       periodAssessments.length > 0
-        ? periodAssessments.reduce((sum, a) => sum + a.riskScore, 0) / periodAssessments.length
+        ? periodAssessments.reduce((sum, a) => sum + a.riskScore, 0) /
+          periodAssessments.length
         : 0;
     const riskComponent = clamp(100 - avgRiskScore, 0, 100);
-    const climateResilienceScore = round2(0.6 * riskComponent + 0.4 * planCoverageComponent);
+    const climateResilienceScore = round2(
+      0.6 * riskComponent + 0.4 * planCoverageComponent,
+    );
 
     const population = await this.populationStatisticRepository.findOne({
       where: { district: { id: district.id } },
@@ -150,7 +167,8 @@ export class SustainabilityService implements OnModuleInit {
         a.hazardType === HazardType.WILDFIRE &&
         periodPlans.some(
           (p) =>
-            p.riskAssessment?.id === a.id && RESPONDED_PLAN_STATUSES.includes(p.status),
+            p.riskAssessment?.id === a.id &&
+            RESPONDED_PLAN_STATUSES.includes(p.status),
         ),
     ).length;
     const carbonReductionEstimateTons =
@@ -171,8 +189,14 @@ export class SustainabilityService implements OnModuleInit {
       responseHours.length > 0
         ? responseHours.reduce((sum, h) => sum + h, 0) / responseHours.length
         : 0;
-    const speedComponent = clamp(100 - avgResponseHours * RESPONSE_HOURS_PENALTY_PER_HOUR, 0, 100);
-    const responseEfficiencyScore = round2(0.6 * speedComponent + 0.4 * planCoverageComponent);
+    const speedComponent = clamp(
+      100 - avgResponseHours * RESPONSE_HOURS_PENALTY_PER_HOUR,
+      0,
+      100,
+    );
+    const responseEfficiencyScore = round2(
+      0.6 * speedComponent + 0.4 * planCoverageComponent,
+    );
 
     const sdgIndicators = buildSdgIndicators(
       climateResilienceScore,
@@ -253,17 +277,25 @@ export class SustainabilityService implements OnModuleInit {
     }
 
     const avg = (values: number[]) =>
-      values.length ? round2(values.reduce((a, b) => a + b, 0) / values.length) : 0;
+      values.length
+        ? round2(values.reduce((a, b) => a + b, 0) / values.length)
+        : 0;
     const sum = (values: number[]) => values.reduce((a, b) => a + b, 0);
 
     return {
       district: null,
       periodStart: rows[0].periodStart,
       periodEnd: rows[0].periodEnd,
-      climateResilienceScore: avg(rows.map((r) => r.climateResilienceScore ?? 0)),
-      carbonReductionEstimateTons: sum(rows.map((r) => r.carbonReductionEstimate ?? 0)),
+      climateResilienceScore: avg(
+        rows.map((r) => r.climateResilienceScore ?? 0),
+      ),
+      carbonReductionEstimateTons: sum(
+        rows.map((r) => r.carbonReductionEstimate ?? 0),
+      ),
       protectedPopulation: sum(rows.map((r) => r.protectedPopulation ?? 0)),
-      responseEfficiencyScore: avg(rows.map((r) => r.responseEfficiencyScore ?? 0)),
+      responseEfficiencyScore: avg(
+        rows.map((r) => r.responseEfficiencyScore ?? 0),
+      ),
       sdgIndicators: averageSdgIndicators(rows.map((r) => r.sdgIndicators)),
     };
   }
@@ -283,10 +315,14 @@ export class SustainabilityService implements OnModuleInit {
       qb.andWhere('district.id = :district', { district: filters.district });
     }
     if (filters.periodStart) {
-      qb.andWhere('metric.periodStart >= :periodStart', { periodStart: filters.periodStart });
+      qb.andWhere('metric.periodStart >= :periodStart', {
+        periodStart: filters.periodStart,
+      });
     }
     if (filters.periodEnd) {
-      qb.andWhere('metric.periodEnd <= :periodEnd', { periodEnd: filters.periodEnd });
+      qb.andWhere('metric.periodEnd <= :periodEnd', {
+        periodEnd: filters.periodEnd,
+      });
     }
     return qb.getOne();
   }
@@ -305,10 +341,14 @@ export class SustainabilityService implements OnModuleInit {
       .orderBy('metric.periodStart', 'DESC');
 
     if (filters.periodStart) {
-      qb.andWhere('metric.periodStart >= :periodStart', { periodStart: filters.periodStart });
+      qb.andWhere('metric.periodStart >= :periodStart', {
+        periodStart: filters.periodStart,
+      });
     }
     if (filters.periodEnd) {
-      qb.andWhere('metric.periodEnd <= :periodEnd', { periodEnd: filters.periodEnd });
+      qb.andWhere('metric.periodEnd <= :periodEnd', {
+        periodEnd: filters.periodEnd,
+      });
     }
     const rows = await qb.getMany();
 
@@ -327,8 +367,12 @@ export class SustainabilityService implements OnModuleInit {
   ): SustainabilityMetricsResponse {
     if (!row) {
       const now = new Date();
-      const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-      const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+      const periodStart = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+      );
+      const periodEnd = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0),
+      );
       return {
         district,
         periodStart: periodStart.toISOString().slice(0, 10),
@@ -348,7 +392,8 @@ export class SustainabilityService implements OnModuleInit {
       carbonReductionEstimateTons: row.carbonReductionEstimate ?? 0,
       protectedPopulation: row.protectedPopulation ?? 0,
       responseEfficiencyScore: row.responseEfficiencyScore ?? 0,
-      sdgIndicators: (row.sdgIndicators as unknown as SdgIndicatorValue[] | undefined) ?? [],
+      sdgIndicators:
+        (row.sdgIndicators as unknown as SdgIndicatorValue[] | undefined) ?? [],
     };
   }
 }
@@ -377,7 +422,9 @@ function buildSdgIndicators(
       goal: 'SDG 13',
       label: 'Climate Action',
       score: clamp(
-        (carbonReductionEstimateTons / MONTHLY_CARBON_TARGET_TONS_PER_DISTRICT) * 100,
+        (carbonReductionEstimateTons /
+          MONTHLY_CARBON_TARGET_TONS_PER_DISTRICT) *
+          100,
         0,
         100,
       ),
@@ -406,7 +453,8 @@ function averageSdgIndicators(
     const matching = parsed
       .map((set) => set.find((i) => i.goal === goal))
       .filter((i): i is SdgIndicatorValue => !!i);
-    const avgScore = matching.reduce((sum, i) => sum + i.score, 0) / matching.length;
+    const avgScore =
+      matching.reduce((sum, i) => sum + i.score, 0) / matching.length;
     return {
       goal,
       label: matching[0].label,

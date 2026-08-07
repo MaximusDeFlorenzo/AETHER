@@ -16,7 +16,9 @@ function averageQueryBuilderMock(rawResult: Record<string, string | null>) {
 
 function makeDetailsRepo(rawResult: Record<string, string | null>) {
   return {
-    createQueryBuilder: jest.fn().mockReturnValue(averageQueryBuilderMock(rawResult)),
+    createQueryBuilder: jest
+      .fn()
+      .mockReturnValue(averageQueryBuilderMock(rawResult)),
     findOne: jest.fn(),
   };
 }

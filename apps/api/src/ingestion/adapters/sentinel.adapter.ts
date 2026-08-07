@@ -41,9 +41,7 @@ const TOKEN_EXPIRY_SAFETY_MARGIN_MS = 30_000;
  * though the registry doesn't call it today.
  */
 @Injectable()
-export class SentinelAdapter
-  implements HazardDataSourceAdapter<SentinelSceneRef>
-{
+export class SentinelAdapter implements HazardDataSourceAdapter<SentinelSceneRef> {
   readonly sourceId = 'sentinel';
   readonly producesHazardEvents = false;
 

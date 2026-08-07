@@ -38,7 +38,9 @@ export class NotificationsService {
   ) {}
 
   @OnEvent(DomainEvents.HAZARD_EVENT_CREATED, { async: true })
-  async handleHazardEventCreated(event: HazardEventCreatedEvent): Promise<void> {
+  async handleHazardEventCreated(
+    event: HazardEventCreatedEvent,
+  ): Promise<void> {
     await this.createAndPublish({
       type: NotificationType.NEW_HAZARD_EVENT,
       title: `New ${event.hazardType} event detected`,

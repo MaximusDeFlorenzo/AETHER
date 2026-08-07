@@ -45,7 +45,9 @@ export class FieldReportsController {
   @ApiConsumes('multipart/form-data')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.FIELD_REPORTER, RoleName.ADMIN, RoleName.AGENCY_OPERATOR)
-  @UseInterceptors(FileInterceptor('image', { limits: { fileSize: MAX_IMAGE_BYTES } }))
+  @UseInterceptors(
+    FileInterceptor('image', { limits: { fileSize: MAX_IMAGE_BYTES } }),
+  )
   async create(
     @UploadedFile() image: Express.Multer.File,
     @Body() dto: CreateFieldReportDto,

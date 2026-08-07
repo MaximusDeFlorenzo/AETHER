@@ -48,9 +48,7 @@ const DEFAULT_SLOPE_DEGREES = 25;
  * colliding on `hazard_events`' `(external_id, source)` unique constraint.
  */
 @Injectable()
-export class LandslideRainfallTriggerAdapter
-  implements HazardDataSourceAdapter<WeatherStationReading>
-{
+export class LandslideRainfallTriggerAdapter implements HazardDataSourceAdapter<WeatherStationReading> {
   readonly sourceId = 'landslide_rainfall_trigger';
 
   private readonly logger = new Logger(LandslideRainfallTriggerAdapter.name);
@@ -72,10 +70,10 @@ export class LandslideRainfallTriggerAdapter
 
     try {
       const { data } = await firstValueFrom(
-        this.http.get<WeatherStationsResponse>(
-          `${baseUrl}/stations/current`,
-          { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10_000 },
-        ),
+        this.http.get<WeatherStationsResponse>(`${baseUrl}/stations/current`, {
+          headers: { Authorization: `Bearer ${apiKey}` },
+          timeout: 10_000,
+        }),
       );
       return data.stations.filter(
         (station) => station.rainfallMm >= RAINFALL_TRIGGER_THRESHOLD_MM,

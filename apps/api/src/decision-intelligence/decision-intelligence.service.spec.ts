@@ -4,7 +4,13 @@ import { HazardType, PriorityLevel } from '../common/enums/domain.enum';
 
 function queryBuilderMock(result: { data: unknown[]; total: number }) {
   const qb: Record<string, jest.Mock> = {};
-  for (const method of ['leftJoinAndSelect', 'orderBy', 'andWhere', 'skip', 'take']) {
+  for (const method of [
+    'leftJoinAndSelect',
+    'orderBy',
+    'andWhere',
+    'skip',
+    'take',
+  ]) {
     qb[method] = jest.fn().mockReturnValue(qb);
   }
   qb.getManyAndCount = jest.fn().mockResolvedValue([result.data, result.total]);
@@ -25,9 +31,12 @@ describe('DecisionIntelligenceService', () => {
         limit: 20,
       });
 
-      expect(qb.andWhere).toHaveBeenCalledWith('rec.priorityLevel = :priorityLevel', {
-        priorityLevel: PriorityLevel.HIGH,
-      });
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'rec.priorityLevel = :priorityLevel',
+        {
+          priorityLevel: PriorityLevel.HIGH,
+        },
+      );
       expect(qb.andWhere).toHaveBeenCalledWith(
         'riskAssessment.hazardType = :hazardType',
         { hazardType: HazardType.FLOOD },
@@ -63,7 +72,9 @@ describe('DecisionIntelligenceService', () => {
   describe('findOne', () => {
     it('returns the recommendation with its risk-assessment/district/hazard-event relations', async () => {
       const recommendation = { id: 'rec-1' };
-      const repository = { findOne: jest.fn().mockResolvedValue(recommendation) };
+      const repository = {
+        findOne: jest.fn().mockResolvedValue(recommendation),
+      };
       const service = new DecisionIntelligenceService(repository as any);
 
       const result = await service.findOne('rec-1');
