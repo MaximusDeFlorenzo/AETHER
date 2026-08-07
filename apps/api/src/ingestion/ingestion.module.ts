@@ -6,6 +6,7 @@ import { HazardEventsModule } from '../hazard-events/hazard-events.module';
 import { BmkgAdapter } from './adapters/bmkg.adapter';
 import { NasaFirmsAdapter } from './adapters/nasa-firms.adapter';
 import { WeatherAdapter } from './adapters/weather.adapter';
+import { LandslideRainfallTriggerAdapter } from './adapters/landslide-rainfall-trigger.adapter';
 import { SentinelAdapter } from './adapters/sentinel.adapter';
 import { DataSourceSyncService } from './data-source-sync.service';
 import { IngestionRegistryService } from './ingestion-registry.service';
@@ -25,6 +26,7 @@ import { HAZARD_DATA_SOURCE_ADAPTERS } from './ingestion.constants';
     BmkgAdapter,
     NasaFirmsAdapter,
     WeatherAdapter,
+    LandslideRainfallTriggerAdapter,
     SentinelAdapter,
     DataSourceSyncService,
     IngestionRegistryService,
@@ -35,9 +37,22 @@ import { HAZARD_DATA_SOURCE_ADAPTERS } from './ingestion.constants';
         bmkgAdapter: BmkgAdapter,
         nasaFirmsAdapter: NasaFirmsAdapter,
         weatherAdapter: WeatherAdapter,
+        landslideRainfallTriggerAdapter: LandslideRainfallTriggerAdapter,
         sentinelAdapter: SentinelAdapter,
-      ) => [bmkgAdapter, nasaFirmsAdapter, weatherAdapter, sentinelAdapter],
-      inject: [BmkgAdapter, NasaFirmsAdapter, WeatherAdapter, SentinelAdapter],
+      ) => [
+        bmkgAdapter,
+        nasaFirmsAdapter,
+        weatherAdapter,
+        landslideRainfallTriggerAdapter,
+        sentinelAdapter,
+      ],
+      inject: [
+        BmkgAdapter,
+        NasaFirmsAdapter,
+        WeatherAdapter,
+        LandslideRainfallTriggerAdapter,
+        SentinelAdapter,
+      ],
     },
   ],
   exports: [IngestionRegistryService],

@@ -50,10 +50,17 @@ export class IngestionRegistryService {
     try {
       const rawEvents = await adapter.fetch();
       let ingested = 0;
-      for (const raw of rawEvents) {
-        const normalized = adapter.normalize(raw);
-        const result = await this.hazardEventsService.ingestEvent(normalized);
-        if (result) ingested += 1;
+      if (adapter.producesHazardEvents ?? true) {
+        for (const raw of rawEvents) {
+          const normalized = adapter.normalize(raw);
+          const result = await this.hazardEventsService.ingestEvent(normalized);
+          if (result) ingested += 1;
+        }
+      } else if (rawEvents.length > 0) {
+        this.logger.debug(
+          `Source=${sourceId} fetched ${rawEvents.length} record(s); ` +
+            'producesHazardEvents=false, skipping hazard-event ingestion',
+        );
       }
       await this.dataSourceSyncService.recordSuccess(sourceId);
       return { newEventsIngested: ingested, eventsFetched: rawEvents.length };

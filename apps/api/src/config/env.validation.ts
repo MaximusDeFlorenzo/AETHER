@@ -81,6 +81,18 @@ class EnvironmentVariables {
   @Min(1000)
   WEATHER_POLL_INTERVAL_MS = 900_000;
 
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1000)
+  LANDSLIDE_TRIGGER_POLL_INTERVAL_MS = 900_000;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1000)
+  SENTINEL_POLL_INTERVAL_MS = 3_600_000;
+
   // Standing/baseline risk-score threshold (0-100) above which a
   // notification is raised and resource optimization is considered — see
   // docs/ARCHITECTURE.md §2.2 and resource-optimization/ module.
@@ -107,12 +119,20 @@ class EnvironmentVariables {
   @IsString()
   NASA_FIRMS_API_KEY?: string;
 
-  // Sentinel adapter is a structural stub (docs/ARCHITECTURE.md §5) — no
-  // adapter reads this key yet, kept so the config shape is ready the moment
-  // Sentinel Hub OAuth2 is wired.
+  // Sentinel Hub OAuth2 client-credentials (sentinel.adapter.ts) — both
+  // optional, since the adapter gracefully no-ops without them (same
+  // posture as WEATHER_API_KEY/NASA_FIRMS_API_KEY).
   @IsOptional()
   @IsString()
-  SENTINEL_API_KEY?: string;
+  SENTINEL_CLIENT_ID?: string;
+
+  @IsOptional()
+  @IsString()
+  SENTINEL_CLIENT_SECRET?: string;
+
+  @IsOptional()
+  @IsString()
+  SENTINEL_BASE_URL = 'https://services.sentinel-hub.com';
 
   // --- Storage (S3/MinIO-compatible) — CV imagery + field-report uploads ---
   @IsOptional()

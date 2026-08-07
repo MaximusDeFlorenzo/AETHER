@@ -54,8 +54,10 @@ export enum HazardEventSource {
   BMKG_GEMPATERKINI = 'bmkg_gempaterkini',
   WEATHER_API = 'weather_api',
   NASA_FIRMS = 'nasa_firms',
-  // Registered like a real source (see SentinelAdapter's docstring) but
-  // never actually produced — its fetch() always returns [].
+  LANDSLIDE_RAINFALL_TRIGGER = 'landslide_rainfall_trigger',
+  // Never appears as a hazard_events.source value — SentinelAdapter sets
+  // producesHazardEvents=false, so its scenes never reach ingestEvent().
+  // Listed here for completeness/documentation only.
   SENTINEL = 'sentinel',
   MANUAL = 'manual',
 }

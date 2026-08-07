@@ -8,13 +8,13 @@ import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { IngestionRegistryService } from './ingestion-registry.service';
 
-// Per-source poll interval lookup. Sentinel has no entry — its adapter
-// always returns [] immediately, so polling it on the default interval is
-// harmless (a no-op) rather than needing its own configured cadence.
+// Per-source poll interval lookup.
 const POLL_INTERVAL_ENV_BY_SOURCE: Record<string, string> = {
   bmkg: 'BMKG_POLL_INTERVAL_MS',
   nasa_firms: 'NASA_FIRMS_POLL_INTERVAL_MS',
   weather_api: 'WEATHER_POLL_INTERVAL_MS',
+  landslide_rainfall_trigger: 'LANDSLIDE_TRIGGER_POLL_INTERVAL_MS',
+  sentinel: 'SENTINEL_POLL_INTERVAL_MS',
 };
 const DEFAULT_POLL_INTERVAL_MS = 300_000;
 
