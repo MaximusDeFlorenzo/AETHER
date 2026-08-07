@@ -2,8 +2,8 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { HazardEvent } from './hazard-event.entity';
 import { numericTransformer } from '../transformers/numeric.transformer';
 
-// Phase 2 — schema included now per docs/DATABASE_SCHEMA.md §14 so Phase 2 is
-// additive; no ingestion adapter or business logic populates this table yet.
+// Phase 2 (docs/DATABASE_SCHEMA.md §14) — populated by NasaFirmsAdapter
+// (ingestion/adapters/nasa-firms.adapter.ts) via HazardEventsService.ingestEvent().
 @Entity('wildfire_details')
 export class WildfireDetails {
   @PrimaryColumn({ type: 'uuid', name: 'hazard_event_id' })
