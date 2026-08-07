@@ -10,6 +10,36 @@ jobs:
   web-and-api:
     name: Lint, typecheck, build (web + api)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: aether
+          POSTGRES_PASSWORD: aether
+          POSTGRES_DB: aether
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aether"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://aether:aether@localhost:5432/aether
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-access-secret
+      JWT_REFRESH_SECRET: ci-refresh-secret
+      AI_ENGINE_URL: http://localhost:8000
+      INTERNAL_SERVICE_TOKEN: ci-internal-token
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +61,15 @@ jobs:
       - run: pnpm run build
 
       - run: pnpm run test
+
+      # Regenerate packages/contracts' generated types from apps/api's live
+      # OpenAPI doc (needs postgres/redis above — TypeOrmModule connects on
+      # bootstrap) and fail if the committed file is stale — the mechanism
+      # that actually "eliminates manual contract drift" rather than just
+      # making regeneration possible.
+      - run: pnpm run generate
+
+      - run: git diff --exit-code -- packages/contracts/src/generated.ts
 
   ai-engine:
     name: Test ai-engine (FastAPI)

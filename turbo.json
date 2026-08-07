@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "envMode": "loose",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -15,6 +16,17 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "generate": {
+      "cache": false
+    },
+    "@aether/api#generate": {
+      "cache": false
+    },
+    "@aether/contracts#generate": {
+      "dependsOn": ["@aether/api#generate"],
+      "cache": false,
+      "outputs": ["src/generated.ts"]
     }
   }
 }

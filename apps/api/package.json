@@ -23,7 +23,9 @@
     "migration:generate": "pnpm run typeorm -- migration:generate -d src/database/data-source.ts",
     "migration:run": "pnpm run typeorm -- migration:run -d src/database/data-source.ts",
     "migration:revert": "pnpm run typeorm -- migration:revert -d src/database/data-source.ts",
-    "seed": "ts-node --transpile-only -O \"{\\\"module\\\":\\\"commonjs\\\",\\\"moduleResolution\\\":\\\"node\\\",\\\"resolvePackageJsonExports\\\":false,\\\"experimentalDecorators\\\":true,\\\"emitDecoratorMetadata\\\":true}\" -r tsconfig-paths/register src/database/seeds/run-seed.ts"
+    "seed": "ts-node --transpile-only -O \"{\\\"module\\\":\\\"commonjs\\\",\\\"moduleResolution\\\":\\\"node\\\",\\\"resolvePackageJsonExports\\\":false,\\\"experimentalDecorators\\\":true,\\\"emitDecoratorMetadata\\\":true}\" -r tsconfig-paths/register src/database/seeds/run-seed.ts",
+    "generate:openapi": "ts-node --transpile-only -O \"{\\\"module\\\":\\\"commonjs\\\",\\\"moduleResolution\\\":\\\"node\\\",\\\"resolvePackageJsonExports\\\":false,\\\"experimentalDecorators\\\":true,\\\"emitDecoratorMetadata\\\":true}\" -r tsconfig-paths/register src/generate-openapi.ts",
+    "generate": "pnpm run generate:openapi"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.906.0",

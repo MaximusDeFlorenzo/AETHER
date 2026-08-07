@@ -10,6 +10,11 @@ build/
 .DS_Store
 coverage/
 
+# Intermediate OpenAPI doc for packages/contracts codegen (apps/api
+# generate:openapi) — regenerated on demand; packages/contracts/src/
+# generated.ts is the committed artifact, not this.
+apps/api/openapi.json
+
 # Python (apps/ai-engine)
 __pycache__/
 *.pyc
