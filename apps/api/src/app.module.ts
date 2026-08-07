@@ -13,6 +13,7 @@ import { RolesModule } from './roles/roles.module';
 import { AuditModule } from './audit/audit.module';
 import { GeoModule } from './geo/geo.module';
 import { HistoricalModule } from './historical/historical.module';
+import { VulnerabilityIndicatorsModule } from './vulnerability-indicators/vulnerability-indicators.module';
 import { HazardEventsModule } from './hazard-events/hazard-events.module';
 import { FieldReportsModule } from './field-reports/field-reports.module';
 import { IngestionModule } from './ingestion/ingestion.module';
@@ -41,6 +42,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     AuditModule,
     GeoModule,
     HistoricalModule,
+    VulnerabilityIndicatorsModule,
     SpatialIntelligenceModule,
     IngestionModule,
     HazardEventsModule,

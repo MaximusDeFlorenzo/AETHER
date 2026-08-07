@@ -13,8 +13,24 @@ import {
   HistoricalDisaster,
   PopulationStatistic,
   Province,
+  VulnerabilityIndicator,
 } from '../entities';
 import { HazardType } from '../../common/enums/domain.enum';
+
+// Illustrative baseline vulnerability_indicators (docs/DATABASE_SCHEMA.md
+// §19) so GET /spatial/overlay?layer=vulnerability returns real rows out of
+// the box — same "order-of-magnitude-accurate, not live" posture as the rest
+// of this file. building_quality/healthcare_access are 0-100 indices (higher
+// = better/more resilient); poverty_rate is a percentage. Values are a
+// simple, documented function of each district's own population density
+// (denser urban districts skew toward better healthcare access and
+// construction stock, worse poverty rate) — real operators overwrite these
+// via VulnerabilityIndicatorsService.upsert() (POST /vulnerability-indicators).
+const VULNERABILITY_INDICATOR_YEAR = 2025;
+
+function clampIndex(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
 
 interface ProvinceSeed {
   bpsCode: string;
@@ -249,6 +265,7 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
   const districtRepo = dataSource.getRepository(District);
   const populationRepo = dataSource.getRepository(PopulationStatistic);
   const historicalRepo = dataSource.getRepository(HistoricalDisaster);
+  const vulnerabilityRepo = dataSource.getRepository(VulnerabilityIndicator);
 
   const provinceByBpsCode = new Map<string, Province>();
   const districtByBpsCode = new Map<string, District>();
@@ -288,11 +305,12 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
       }
       districtByBpsCode.set(districtSeed.bpsCode, district);
 
+      const density = districtSeed.population / districtSeed.areaKm2;
+
       const existingStat = await populationRepo.findOne({
         where: { district: { id: district.id }, year: districtSeed.year },
       });
       if (!existingStat) {
-        const density = districtSeed.population / districtSeed.areaKm2;
         await populationRepo.save(
           populationRepo.create({
             district,
@@ -303,6 +321,49 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
           }),
         );
         console.log(`Seeded population statistic for ${district.name}`);
+      }
+
+      const indicatorSeeds: Array<{
+        indicatorType: string;
+        value: number;
+        unit: string;
+      }> = [
+        {
+          indicatorType: 'building_quality',
+          value: clampIndex(80 - density / 100),
+          unit: 'index',
+        },
+        {
+          indicatorType: 'healthcare_access',
+          value: clampIndex(50 + density / 50),
+          unit: 'index',
+        },
+        {
+          indicatorType: 'poverty_rate',
+          value: clampIndex(20 - density / 200),
+          unit: 'percent',
+        },
+      ];
+      for (const indicatorSeed of indicatorSeeds) {
+        const existingIndicator = await vulnerabilityRepo.findOne({
+          where: {
+            district: { id: district.id },
+            indicatorType: indicatorSeed.indicatorType,
+            year: VULNERABILITY_INDICATOR_YEAR,
+          },
+        });
+        if (!existingIndicator) {
+          await vulnerabilityRepo.save(
+            vulnerabilityRepo.create({
+              district,
+              indicatorType: indicatorSeed.indicatorType,
+              value: indicatorSeed.value,
+              unit: indicatorSeed.unit,
+              year: VULNERABILITY_INDICATOR_YEAR,
+              source: 'illustrative_seed',
+            }),
+          );
+        }
       }
     }
   }
