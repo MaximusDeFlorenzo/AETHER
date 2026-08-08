@@ -1,6 +1,7 @@
 'use client';
 
 import { use } from 'react';
+import Link from 'next/link';
 import { format } from 'date-fns';
 import {
   AlertTriangle,
@@ -11,6 +12,7 @@ import {
   Flame,
   Gauge,
   Info,
+  Lock,
   MapPin,
   Mountain,
   Thermometer,
@@ -27,6 +29,7 @@ import { RiskLevelBadge } from '@/components/shared/risk-level-badge';
 import { useAffectedRegions, useHazardEvent, useHazardEventRelationships } from '@/hooks/use-hazard-events';
 import { useRiskAssessments } from '@/hooks/use-risk-assessments';
 import { useDecisionRecommendations } from '@/hooks/use-decision-recommendations';
+import { useAuthStore } from '@/stores/auth-store';
 import { RISK_ASSESSMENT_STATUS_LABELS } from '@/lib/labels';
 import type { EarthquakeDetails, FloodDetails, LandslideDetails, WildfireDetails } from '@/types/domain';
 
@@ -94,12 +97,16 @@ function hazardDetailMetrics(hazardType: string, details: unknown) {
 
 export default function HazardEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const isAuthed = !!useAuthStore((state) => state.accessToken);
 
   const { data: event, isLoading } = useHazardEvent(id);
   const { data: affectedRegions = [], isLoading: regionsLoading } = useAffectedRegions(id);
   const { data: relationships = [] } = useHazardEventRelationships(id);
-  const { data: riskAssessmentsPage } = useRiskAssessments({ limit: 50 });
-  const { data: recommendationsPage } = useDecisionRecommendations({});
+  // /risk-assessments and /decision-recommendations require auth — gated so
+  // anonymous visitors to this public page don't 401 and get hard-redirected
+  // to /admin/login by the apiClient's global 401 handler.
+  const { data: riskAssessmentsPage } = useRiskAssessments({ limit: 50 }, isAuthed);
+  const { data: recommendationsPage } = useDecisionRecommendations({}, isAuthed);
 
   if (isLoading || !event) {
     return (
@@ -201,24 +208,24 @@ export default function HazardEventDetailPage({ params }: { params: Promise<{ id
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <Card className="xl:col-span-1">
+        <Card className="xl:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <MapPin className="h-4 w-4" /> Location
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
-            <HazardMap events={[event]} showTypeFilter={false} showOverlayToggle={false} />
+          <CardContent className="h-80 sm:h-96">
+            <HazardMap events={[event]} showTypeFilter={false} showOverlayToggle={false} focusZoom={10} />
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-2">
+        <Card className="xl:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Users className="h-4 w-4" /> Affected Regions
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="max-h-96 space-y-3 overflow-y-auto">
             {regionsLoading && <Skeleton className="h-24 w-full" />}
             {!regionsLoading && affectedRegions.length === 0 && (
               <p className="text-sm text-muted-foreground">
@@ -276,7 +283,15 @@ export default function HazardEventDetailPage({ params }: { params: Promise<{ id
           <CardTitle className="text-base">Decision Recommendations</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {recommendations.length === 0 && (
+          {!isAuthed && (
+            <Link
+              href="/admin/login"
+              className="flex items-center gap-2 rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground transition-colors hover:bg-muted"
+            >
+              <Lock className="h-3.5 w-3.5 shrink-0" /> Sign in to view decision recommendations
+            </Link>
+          )}
+          {isAuthed && recommendations.length === 0 && (
             <Alert variant="info">
               <Info />
               <AlertDescription>
@@ -289,7 +304,7 @@ export default function HazardEventDetailPage({ params }: { params: Promise<{ id
               key={rec.id}
               className={
                 index === 0
-                  ? 'rounded-lg border border-brand-accent/30 bg-gradient-to-br from-brand-accent/10 via-brand-accent/5 to-transparent p-4'
+                  ? 'rounded-lg border border-warning/30 bg-warning/10 p-4'
                   : 'rounded-lg border border-border/60 p-4'
               }
             >

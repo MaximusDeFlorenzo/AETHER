@@ -140,18 +140,17 @@ export default function HazardEventsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
-        <Card className="xl:col-span-2">
-          <CardHeader>
-            <CardTitle>Map</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[420px]">
-            {isLoading ? <Skeleton className="h-full w-full rounded-lg" /> : <HazardMap events={filtered} />}
-          </CardContent>
-        </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Map</CardTitle>
+        </CardHeader>
+        <CardContent className="h-[420px] sm:h-[480px]">
+          {isLoading ? <Skeleton className="h-full w-full rounded-lg" /> : <HazardMap events={filtered} />}
+        </CardContent>
+      </Card>
 
-        <Card className="xl:col-span-3">
-          <CardHeader>
+      <Card>
+        <CardHeader>
             <CardTitle>Events</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -232,7 +231,6 @@ export default function HazardEventsPage() {
             />
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

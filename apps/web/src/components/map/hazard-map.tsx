@@ -1,11 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CircleMarker, GeoJSON, MapContainer, Popup, TileLayer } from 'react-leaflet';
+import { CircleMarker, GeoJSON, MapContainer, Popup, TileLayer, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { format } from 'date-fns';
-import { useTheme } from '@/components/providers/theme-provider';
+import { Loader2 } from 'lucide-react';
 import { hazardTypeToColor, riskLevelToColor } from '@/lib/chart-colors';
+import { isHighSeverityHazardEvent } from '@/lib/hazard-severity';
 import { HAZARD_TYPE_LABELS } from '@/lib/labels';
 import { cn } from '@/lib/utils';
 import type {
@@ -19,18 +20,25 @@ import type {
 } from '@/types/domain';
 
 // Thresholds mirrored from apps/ai-engine (flood.py/wildfire.py's
-// MAX_RELEVANT_*, explainability.py's HIGH_WATER_LEVEL_M/HIGH_FRP_CONFIDENCE)
-// so the map's visual severity cues match what the risk engine itself
-// treats as significant.
+// MAX_RELEVANT_*) — governs marker radius only; "high severity" (pulse cue)
+// lives in lib/hazard-severity.ts, shared with the realtime alert sound.
 const MAX_RELEVANT_WATER_LEVEL_M = 5.0;
 const MAX_RELEVANT_HOTSPOT_COUNT = 20;
-const HIGH_WATER_LEVEL_M = 3.0;
-const HIGH_FRP_CONFIDENCE = 0.75;
 
-const TILE_URLS = {
-  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-};
+// Satellite imagery (Esri's free, no-API-key tile service) — swapped in from
+// the flat Carto light/dark basemap so terrain/land-cover (forest canopy vs.
+// built-up settlement) reads clearly at a glance, matching the "ArcGIS
+// Dashboard" reference point in the design brief. Tile scheme is {z}/{y}/{x}
+// (ArcGIS's convention, not the usual {z}/{x}/{y}).
+//
+// Deliberately NOT paired with Esri's "Reference/World_Boundaries_and_Places"
+// label overlay: stacked as a second TileLayer, its place-name labels
+// double-rendered at overlapping zoom levels (blurry ghost text under crisp
+// text) instead of cleanly replacing on zoom — a real rendering bug, not a
+// loading artifact. Event popups already carry the location name, so the
+// map itself stays label-free and clean.
+const SATELLITE_TILE_URL =
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
 const INDONESIA_CENTER: [number, number] = [-2.5, 118];
 
@@ -58,22 +66,6 @@ function hazardEventRadius(event: HazardEvent): number {
     default:
       return 6;
   }
-}
-
-function isHighSeverity(event: HazardEvent): boolean {
-  if (event.hazardType === 'earthquake') {
-    return ((event.details as EarthquakeDetails).magnitude ?? 0) >= 6;
-  }
-  if (event.hazardType === 'landslide') {
-    return ((event.details as LandslideDetails).soilSaturationPct ?? 0) >= 80;
-  }
-  if (event.hazardType === 'flood') {
-    return ((event.details as FloodDetails).waterLevelM ?? 0) >= HIGH_WATER_LEVEL_M;
-  }
-  if (event.hazardType === 'wildfire') {
-    return ((event.details as WildfireDetails).frpConfidence ?? 0) >= HIGH_FRP_CONFIDENCE;
-  }
-  return false;
 }
 
 function eventPopupDetail(event: HazardEvent): string | null {
@@ -126,14 +118,16 @@ export function HazardMap({
   showTypeFilter = true,
   showOverlayToggle = true,
 }: HazardMapProps) {
-  const { resolvedTheme } = useTheme();
-
   const presentTypes = useMemo(
     () => Array.from(new Set(events.map((e) => e.hazardType))) as HazardType[],
     [events],
   );
   const [enabledTypes, setEnabledTypes] = useState<Set<HazardType>>(() => new Set(presentTypes));
   const [overlayVisible, setOverlayVisible] = useState(true);
+  // Satellite JPEG tiles are much heavier than a vector basemap and can take
+  // several seconds on a slower connection — without this, the map reads as
+  // broken/stuck rather than "still loading" during that window.
+  const [tilesLoading, setTilesLoading] = useState(true);
 
   const toggleType = (type: HazardType) => {
     setEnabledTypes((prev) => {
@@ -172,10 +166,10 @@ export function HazardMap({
                   type="button"
                   onClick={() => toggleType(type)}
                   className={cn(
-                    'rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur-sm transition-colors',
+                    'rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm transition-colors',
                     active
                       ? 'border-transparent text-white'
-                      : 'border-border bg-card/90 text-muted-foreground hover:text-foreground',
+                      : 'border-border bg-card text-muted-foreground hover:text-foreground',
                   )}
                   style={active ? { background: hazardTypeToColor(type) } : undefined}
                 >
@@ -188,10 +182,10 @@ export function HazardMap({
               type="button"
               onClick={() => setOverlayVisible((v) => !v)}
               className={cn(
-                'rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur-sm transition-colors',
+                'rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm transition-colors',
                 overlayVisible
                   ? 'border-primary/40 bg-primary/15 text-primary'
-                  : 'border-border bg-card/90 text-muted-foreground hover:text-foreground',
+                  : 'border-border bg-card text-muted-foreground hover:text-foreground',
               )}
             >
               {overlayLabel}
@@ -200,18 +194,33 @@ export function HazardMap({
         </div>
       ) : null}
 
+      {tilesLoading && (
+        <div className="absolute top-2 right-2 z-[1000] flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground shadow-sm">
+          <Loader2 className="h-3 w-3 animate-spin" /> Loading imagery…
+        </div>
+      )}
+
       <MapContainer
         key={isSingleFocus ? events[0].id : 'overview'}
         center={center}
         zoom={zoom}
         scrollWheelZoom
+        zoomControl={false}
         style={{ height, width: '100%' }}
         className="z-0 rounded-lg"
       >
+        {/* Default top-left zoom control collides with the hazard-type/
+            overlay filter chips (also top-left) once there's more than one
+            hazard type present — moved out of the way rather than fighting
+            over the same corner. */}
+        <ZoomControl position="bottomright" />
         <TileLayer
-          key={resolvedTheme}
-          url={resolvedTheme === 'dark' ? TILE_URLS.dark : TILE_URLS.light}
-          attribution="&copy; OpenStreetMap contributors &copy; CARTO"
+          url={SATELLITE_TILE_URL}
+          attribution="Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"
+          eventHandlers={{
+            loading: () => setTilesLoading(true),
+            load: () => setTilesLoading(false),
+          }}
         />
 
         {overlay && overlayVisible && (
@@ -237,7 +246,7 @@ export function HazardMap({
               fillColor: hazardTypeToColor(event.hazardType),
               fillOpacity: 0.55,
               weight: 1.5,
-              className: isHighSeverity(event) ? 'hazard-marker-pulse' : undefined,
+              className: isHighSeverityHazardEvent(event) ? 'hazard-marker-pulse' : undefined,
             }}
             eventHandlers={onSelect ? { click: () => onSelect(event.id) } : undefined}
           >

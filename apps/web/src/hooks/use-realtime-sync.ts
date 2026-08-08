@@ -3,6 +3,8 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { playAlertSound } from '@/lib/alert-sound';
+import { isHighSeverityHazardEvent } from '@/lib/hazard-severity';
 import { getNamespaceSocket } from '@/lib/websocket';
 import { HAZARD_TYPE_LABELS } from '@/lib/labels';
 import type { DecisionRecommendation, HazardEvent, HazardRelationship, Notification } from '@/types/domain';
@@ -26,9 +28,12 @@ export function useRealtimeSync() {
     const handleHazardEventCreated = (hazardEvent: HazardEvent) => {
       void queryClient.invalidateQueries({ queryKey: ['hazard-events'] });
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      toast.info(`New ${HAZARD_TYPE_LABELS[hazardEvent.hazardType].toLowerCase()} detected`, {
-        description: hazardEvent.locationLabel ?? undefined,
-      });
+      const severe = isHighSeverityHazardEvent(hazardEvent);
+      if (severe) playAlertSound();
+      toast[severe ? 'warning' : 'info'](
+        `New ${HAZARD_TYPE_LABELS[hazardEvent.hazardType].toLowerCase()} detected`,
+        { description: hazardEvent.locationLabel ?? undefined },
+      );
     };
 
     const handleDecisionRecommendationCreated = (recommendation: DecisionRecommendation) => {
@@ -36,6 +41,7 @@ export function useRealtimeSync() {
       void queryClient.invalidateQueries({ queryKey: ['risk-assessments'] });
       void queryClient.invalidateQueries({ queryKey: ['decision-recommendations'] });
       if (recommendation.priorityLevel === 'critical' || recommendation.priorityLevel === 'high') {
+        playAlertSound();
         toast.warning('New high-priority decision recommendation', {
           description: recommendation.summaryText,
         });
@@ -45,6 +51,7 @@ export function useRealtimeSync() {
     const handleHazardRelationshipDetected = (relationship: HazardRelationship) => {
       void queryClient.invalidateQueries({ queryKey: ['hazard-events'] });
       void queryClient.invalidateQueries({ queryKey: ['decision-recommendations'] });
+      if (isHighSeverityHazardEvent(relationship.relatedHazardEvent)) playAlertSound();
       toast.info('Cascading hazard relationship detected', {
         description: relationship.detail,
       });

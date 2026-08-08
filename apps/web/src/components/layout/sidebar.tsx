@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Lock, Radar } from 'lucide-react';
+import { Lock, PanelLeftClose, PanelLeftOpen, Radar } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
+import { useUiStore } from '@/stores/ui-store';
 import { PUBLIC_NAV_ITEMS, WORKSPACE_NAV_ITEMS } from './nav-items';
 
 interface NavItem {
@@ -22,6 +23,8 @@ interface NavItem {
 export function Sidebar() {
   const pathname = usePathname();
   const accessToken = useAuthStore((state) => state.accessToken);
+  const collapsed = useUiStore((state) => state.sidebarCollapsed);
+  const toggleSidebar = useUiStore((state) => state.toggleSidebar);
 
   const renderItem = (item: NavItem, locked: boolean) => {
     const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -30,39 +33,71 @@ export function Sidebar() {
       <Link
         key={item.href}
         href={item.href}
+        title={collapsed ? item.label : undefined}
         className={cn(
-          'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          collapsed && 'justify-center px-0',
           isActive
-            ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
         )}
       >
-        <Icon className="h-4 w-4" />
-        <span className="flex-1">{item.label}</span>
-        {locked && <Lock className="h-3 w-3 opacity-50" />}
+        {isActive && (
+          <span className="absolute inset-y-1 left-0 w-0.5 rounded-full bg-sidebar-primary" />
+        )}
+        <Icon className="h-4 w-4 shrink-0" />
+        {!collapsed && (
+          <>
+            <span className="flex-1">{item.label}</span>
+            {locked && <Lock className="h-3 w-3 opacity-50" />}
+          </>
+        )}
       </Link>
     );
   };
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-border/60 bg-sidebar text-sidebar-foreground md:flex">
-      <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-5">
-        <Radar className="h-5 w-5 text-brand-accent" />
-        <span className="text-sm font-semibold tracking-wide">AETHER</span>
+    <aside
+      className={cn(
+        'hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 md:flex',
+        collapsed ? 'w-[68px]' : 'w-64',
+      )}
+    >
+      <div
+        className={cn(
+          'flex h-16 items-center gap-2 border-b border-sidebar-border px-5',
+          collapsed && 'justify-center px-0',
+        )}
+      >
+        <Radar className="h-5 w-5 shrink-0 text-sidebar-foreground" />
+        {!collapsed && <span className="text-sm font-semibold tracking-wide">AETHER</span>}
       </div>
       <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
         <div className="space-y-1">{PUBLIC_NAV_ITEMS.map((item) => renderItem(item, false))}</div>
         <div>
-          <p className="px-3 pb-1 text-[10.5px] font-semibold tracking-wide text-sidebar-foreground/40 uppercase">
-            Workspace
-          </p>
+          {!collapsed && (
+            <p className="px-3 pb-1 text-[10.5px] font-semibold tracking-wide text-sidebar-foreground/40 uppercase">
+              Workspace
+            </p>
+          )}
           <div className="space-y-1">
             {WORKSPACE_NAV_ITEMS.map((item) => renderItem(item, !accessToken))}
           </div>
         </div>
       </nav>
-      <div className="border-t border-sidebar-border px-5 py-3 text-xs text-sidebar-foreground/50">
-        Multi-Hazard Risk Intelligence
+      <div className="border-t border-sidebar-border px-3 py-3">
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className={cn(
+            'flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+            collapsed && 'justify-center',
+          )}
+        >
+          {collapsed ? <PanelLeftOpen className="h-4 w-4 shrink-0" /> : <PanelLeftClose className="h-4 w-4 shrink-0" />}
+          {!collapsed && <span>Collapse</span>}
+        </button>
       </div>
     </aside>
   );

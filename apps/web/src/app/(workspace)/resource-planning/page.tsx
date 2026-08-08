@@ -7,12 +7,34 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { HazardTypeBadge } from '@/components/shared/hazard-type-badge';
 import { useResourceOptimizationPlans, useShelters } from '@/hooks/use-resource-plans';
+import type { ResourceOptimizationPlan } from '@/types/domain';
 
 const PLAN_STATUS_VARIANT = {
   draft: 'outline',
   approved: 'default',
   executed: 'secondary',
 } as const;
+
+// planDetails is loosely-typed JSON (see ResourceOptimizationPlanDetails'
+// comment in types/domain.ts) — every read here defaults to 0 rather than
+// trusting the shape.
+function planVolunteers(plan: ResourceOptimizationPlan): number {
+  return plan.planDetails.volunteers?.total ?? 0;
+}
+function planAmbulances(plan: ResourceOptimizationPlan): number {
+  return plan.planDetails.ambulance?.required ?? 0;
+}
+function planVehicles(plan: ResourceOptimizationPlan): number {
+  const v = plan.planDetails.vehicles;
+  if (!v) return 0;
+  return (v.rescueVehicles ?? 0) + (v.logisticsTrucks ?? 0) + (v.excavators ?? 0) + (v.heavyEquipment ?? 0);
+}
+function planShelters(plan: ResourceOptimizationPlan): number {
+  return plan.planDetails.evacuationShelters ?? 0;
+}
+function planLogisticsAidTons(plan: ResourceOptimizationPlan): number {
+  return plan.planDetails.logisticsAidTons ?? 0;
+}
 
 // New for AETHER — evolves ORION's hospitals + resource_estimates concept
 // into resource_optimization_plans + shelters (docs/MIGRATION_FROM_ORION.md).
@@ -67,14 +89,18 @@ export default function ResourcePlanningPage() {
                   <TableRow key={plan.id}>
                     <TableCell>{plan.district.name}</TableCell>
                     <TableCell>
-                      <HazardTypeBadge hazardType={plan.hazardType} />
+                      {plan.hazardEvent ? (
+                        <HazardTypeBadge hazardType={plan.hazardEvent.hazardType} />
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </TableCell>
-                    <TableCell>{plan.personnelNeeded.toLocaleString()}</TableCell>
-                    <TableCell>{plan.volunteersNeeded.toLocaleString()}</TableCell>
-                    <TableCell>{plan.ambulancesRequired.toLocaleString()}</TableCell>
-                    <TableCell>{plan.vehiclesRequired.toLocaleString()}</TableCell>
-                    <TableCell>{plan.sheltersRequired.toLocaleString()}</TableCell>
-                    <TableCell>{plan.logisticsAidTons.toLocaleString()}</TableCell>
+                    <TableCell>{(plan.estimatedPersonnelNeeded ?? 0).toLocaleString()}</TableCell>
+                    <TableCell>{planVolunteers(plan).toLocaleString()}</TableCell>
+                    <TableCell>{planAmbulances(plan).toLocaleString()}</TableCell>
+                    <TableCell>{planVehicles(plan).toLocaleString()}</TableCell>
+                    <TableCell>{planShelters(plan).toLocaleString()}</TableCell>
+                    <TableCell>{planLogisticsAidTons(plan).toLocaleString()}</TableCell>
                     <TableCell>
                       <Badge variant={PLAN_STATUS_VARIANT[plan.status]} className="capitalize">
                         {plan.status}

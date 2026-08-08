@@ -72,7 +72,7 @@ export function AdminTopbar() {
             }
           >
             <Avatar className="h-7 w-7">
-              <AvatarFallback className="bg-white/15 text-xs text-sidebar-foreground">
+              <AvatarFallback className="bg-sidebar-accent text-xs text-sidebar-accent-foreground">
                 {user ? initials(user.fullName) : <UserIcon className="h-4 w-4" />}
               </AvatarFallback>
             </Avatar>

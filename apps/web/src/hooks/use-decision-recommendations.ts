@@ -9,7 +9,11 @@ export interface DecisionRecommendationFilters {
   limit?: number;
 }
 
-export function useDecisionRecommendations(filters: DecisionRecommendationFilters = {}) {
+// `enabled` defaults true for (workspace) callers (always behind AuthGuard);
+// the public dashboard passes `enabled: !!accessToken` since this endpoint
+// 401s for anonymous requests and the global 401 handler would otherwise
+// hard-redirect every signed-out visitor to /admin/login.
+export function useDecisionRecommendations(filters: DecisionRecommendationFilters = {}, enabled = true) {
   return useQuery({
     queryKey: ['decision-recommendations', filters],
     queryFn: async () => {
@@ -20,6 +24,7 @@ export function useDecisionRecommendations(filters: DecisionRecommendationFilter
       return data;
     },
     refetchInterval: 15_000,
+    enabled,
   });
 }
 

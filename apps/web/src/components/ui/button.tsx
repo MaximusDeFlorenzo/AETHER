@@ -9,11 +9,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/80",
-        // Vivid amber CTA, reserved for genuinely primary actions that
-        // should out-rank a default blue button (e.g. "view detail" on the
+        // Amber CTA, reserved for genuinely urgent actions that should
+        // out-rank a default blue button (e.g. "view detail" on the
         // top-priority alert). Dark text — white-on-amber fails WCAG AA.
         accent:
-          "bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent/85",
+          "bg-warning text-white hover:bg-warning/85",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:

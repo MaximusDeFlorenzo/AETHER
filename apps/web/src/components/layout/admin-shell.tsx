@@ -12,9 +12,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-svh overflow-hidden">
-      <aside className="hidden w-56 shrink-0 flex-col border-r border-border/60 bg-sidebar text-sidebar-foreground md:flex">
+      <aside className="hidden w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
         <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-5">
-          <ShieldCheck className="h-5 w-5 text-brand-accent" />
+          <ShieldCheck className="h-5 w-5 text-sidebar-foreground" />
           <span className="text-sm font-semibold tracking-wide">Admin AETHER</span>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
@@ -26,12 +26,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
                 )}
               >
+                {isActive && (
+                  <span className="absolute inset-y-1 left-0 w-0.5 rounded-full bg-sidebar-primary" />
+                )}
                 <Icon className="h-4 w-4" />
                 {item.label}
               </Link>

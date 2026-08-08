@@ -170,16 +170,29 @@ export interface SpatialOverlayFeatureCollection {
 
 // --- Resource optimization ------------------------------------------------
 
+// Mirrors apps/api's ResourceOptimizationPlan entity (leftJoinAndSelect'd
+// with district + hazardEvent only — riskAssessment is never selected by
+// findAllPlans/findOnePlan). `planDetails` is the raw, loosely-typed
+// apps/ai-engine `/optimize-resources` response (see risk-engine.types.ts'
+// OptimizeResourcesResponse) for auto-generated plans, but is arbitrary
+// caller-supplied JSON for manually-created ones (CreateResourceOptimizationPlanDto
+// only requires `IsObject()`) — every field below must be read defensively.
+export interface ResourceOptimizationPlanDetails {
+  hospital?: { hospitalsNeeded?: number };
+  ambulance?: { required?: number; available?: number; additionalNeeded?: number };
+  vehicles?: { rescueVehicles?: number; logisticsTrucks?: number; excavators?: number; heavyEquipment?: number };
+  volunteers?: { total?: number; medical?: number; logistics?: number; sar?: number };
+  evacuationShelters?: number;
+  logisticsAidTons?: number;
+}
+
 export interface ResourceOptimizationPlan {
   id: string;
   district: DistrictRef;
-  hazardType: HazardType;
-  personnelNeeded: number;
-  volunteersNeeded: number;
-  ambulancesRequired: number;
-  vehiclesRequired: number;
-  sheltersRequired: number;
-  logisticsAidTons: number;
+  hazardEvent: HazardEvent | null;
+  planType: string;
+  planDetails: ResourceOptimizationPlanDetails;
+  estimatedPersonnelNeeded: number | null;
   status: 'draft' | 'approved' | 'executed';
   createdAt: string;
 }

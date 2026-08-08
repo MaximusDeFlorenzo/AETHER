@@ -34,7 +34,14 @@ export function MobileNav({ items, brandIcon: BrandIcon, brandLabel, footer }: M
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
-        render={<Button variant="ghost" size="icon" className="md:hidden" aria-label="Buka navigasi" />}
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            aria-label="Buka navigasi"
+          />
+        }
       >
         <Menu className="h-5 w-5" />
       </SheetTrigger>

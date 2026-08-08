@@ -14,7 +14,12 @@ export interface RiskAssessmentFilters {
   limit?: number;
 }
 
-export function useRiskAssessments(filters: RiskAssessmentFilters = {}) {
+// `enabled` defaults true for the (workspace) risk-assessments page (always
+// behind AuthGuard); the public dashboard passes `enabled: !!accessToken`
+// since this endpoint 401s for anonymous requests (docs/API_SPEC.md's guard
+// posture) and the global 401 handler would otherwise hard-redirect every
+// signed-out visitor to /admin/login.
+export function useRiskAssessments(filters: RiskAssessmentFilters = {}, enabled = true) {
   return useQuery({
     queryKey: ['risk-assessments', filters],
     queryFn: async () => {
@@ -24,6 +29,7 @@ export function useRiskAssessments(filters: RiskAssessmentFilters = {}) {
       return data;
     },
     refetchInterval: 15_000,
+    enabled,
   });
 }
 
