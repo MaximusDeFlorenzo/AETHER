@@ -5,16 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
-import {
-  Activity,
-  Bell,
-  ClipboardList,
-  Leaf,
-  Lock,
-  MapPin,
-  Sparkles,
-  Users,
-} from 'lucide-react';
+import { Activity, Bell, ClipboardList, Leaf, MapPin, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -26,8 +17,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { HazardMap } from '@/components/map/map-loader';
 import { HazardTypeBadge } from '@/components/shared/hazard-type-badge';
-import { PriorityBadge } from '@/components/shared/priority-badge';
+import { LiveIndicator } from '@/components/shared/live-indicator';
 import { KpiRow, type Kpi } from '@/components/dashboard/kpi-row';
+import { AiDecisionIntelligence } from '@/components/dashboard/ai-decision-intelligence';
 import { useDashboardSummary, useAnalytics } from '@/hooks/use-dashboard';
 import { useHazardEvents } from '@/hooks/use-hazard-events';
 import { useSpatialOverlay } from '@/hooks/use-spatial-overlay';
@@ -35,9 +27,9 @@ import { useRiskAssessments } from '@/hooks/use-risk-assessments';
 import { useDecisionRecommendations } from '@/hooks/use-decision-recommendations';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useSustainabilityMetrics } from '@/hooks/use-sustainability';
-import { useAuthStore } from '@/stores/auth-store';
 import { EXPOSURE_LEVEL_COLORS } from '@/lib/chart-colors';
-import { EXPOSURE_LEVEL_LABELS, HAZARD_TYPE_LABELS } from '@/lib/labels';
+import { EXPOSURE_LEVEL_LABELS } from '@/lib/labels';
+import { formatHazardEventLocation } from '@/lib/hazard-severity';
 import type { ExposureLevel, SpatialOverlayLayer } from '@/types/domain';
 
 const DashboardActivityChart = dynamic(() => import('@/components/charts/dashboard-activity-chart'), {
@@ -58,18 +50,17 @@ const OVERLAY_OPTIONS: { value: SpatialOverlayLayer | 'none'; label: string }[] 
 
 const EXPOSURE_ORDER: ExposureLevel[] = ['low', 'moderate', 'high', 'severe'];
 
-// The Phase 1 multi-hazard operations dashboard: top KPI row, a large
-// interactive map, a right-side alert/recommendation panel, and bottom
-// trend charts — BMKG-style layout. Generalizes ORION's earthquake-only
-// dashboard map to earthquake + landslide + flood + wildfire markers, plus a
-// GeoJSON polygon overlay toggle ORION never had (docs/API_SPEC.md §6).
+// The AI Risk Intelligence Platform dashboard: page header, KPI row, a large
+// interactive map, a prominent AI decision-intelligence panel, recent
+// hazard/alert activity, and supporting analytics — in that order. Generalizes
+// ORION's earthquake-only dashboard map to earthquake + landslide + flood +
+// wildfire markers, plus a GeoJSON polygon overlay toggle ORION never had
+// (docs/API_SPEC.md §6).
 export default function RiskMapPage() {
   const router = useRouter();
   const [overlayLayer, setOverlayLayer] = useState<SpatialOverlayLayer | 'none'>('risk');
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const isAuthed = !!accessToken;
 
-  const { data: eventsPage, isLoading: eventsLoading } = useHazardEvents({ limit: 200 });
+  const { data: eventsPage, isLoading: eventsLoading, dataUpdatedAt } = useHazardEvents({ limit: 200 });
   const events = useMemo(() => eventsPage?.data ?? [], [eventsPage]);
 
   const { data: overlay } = useSpatialOverlay(
@@ -79,12 +70,8 @@ export default function RiskMapPage() {
 
   const { data: summary } = useDashboardSummary();
   const { data: analytics } = useAnalytics();
-  // /risk-assessments and /decision-recommendations require auth
-  // (docs/API_SPEC.md) — gated so anonymous visitors to this public
-  // dashboard don't 401 and get hard-redirected to /admin/login by the
-  // apiClient's global 401 handler (lib/api-client.ts).
-  const { data: riskAssessments } = useRiskAssessments({ limit: 200 }, isAuthed);
-  const { data: recommendations, isLoading: recsLoading } = useDecisionRecommendations({ limit: 5 }, isAuthed);
+  const { data: riskAssessments } = useRiskAssessments({ limit: 200 });
+  const { data: recommendations, isLoading: recsLoading } = useDecisionRecommendations({ limit: 5 });
   const { data: notifications = [] } = useNotifications();
   const { data: sustainability } = useSustainabilityMetrics();
 
@@ -115,8 +102,8 @@ export default function RiskMapPage() {
     };
   }, [riskAssessments]);
 
-  const recentEvents = (summary?.recentHazardEvents?.length ? summary.recentHazardEvents : events).slice(0, 6);
-  const unreadFirst = [...notifications].sort((a, b) => Number(a.isRead) - Number(b.isRead)).slice(0, 6);
+  const recentEvents = (summary?.recentHazardEvents?.length ? summary.recentHazardEvents : events).slice(0, 5);
+  const unreadFirst = [...notifications].sort((a, b) => Number(a.isRead) - Number(b.isRead)).slice(0, 5);
 
   const kpis: Kpi[] = [
     {
@@ -127,42 +114,48 @@ export default function RiskMapPage() {
     },
     {
       label: 'High Risk Districts',
-      value: isAuthed ? String(highRiskDistrictCount) : '—',
-      hint: isAuthed ? undefined : 'Sign in to view',
+      value: String(highRiskDistrictCount),
       icon: MapPin,
       tone: 'warning',
     },
     {
       label: 'Population at Risk',
-      value: isAuthed ? populationAtRisk.toLocaleString() : '—',
-      hint: isAuthed ? undefined : 'Sign in to view',
+      value: populationAtRisk.toLocaleString(),
       icon: Users,
       tone: 'danger',
     },
     {
-      label: 'Decision Recommendations',
-      value: isAuthed ? String(recommendations?.meta.total ?? 0) : '—',
-      hint: isAuthed ? undefined : 'Sign in to view',
+      label: 'AI Decision Recommendations',
+      value: String(recommendations?.meta.total ?? 0),
       icon: ClipboardList,
       tone: 'primary',
     },
   ];
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Risk Intelligence Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Live earthquake, landslide, flood, and wildfire monitoring across Indonesia.
-        </p>
+    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6">
+      {/* 1. Page header */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold tracking-widest text-primary uppercase">Indonesia</p>
+          <h1 className="mt-0.5 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            Risk Intelligence
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Real-time environmental risk intelligence and decision support.
+          </p>
+        </div>
+        <LiveIndicator updatedAt={dataUpdatedAt} className="mt-1 sm:mt-2" />
       </div>
 
+      {/* 2. Key metrics */}
       <KpiRow kpis={kpis} />
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
+      {/* 3. Large interactive Indonesia risk map */}
+      <Card className="py-0">
+        <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 border-b border-border py-3.5">
           <CardTitle className="flex items-center gap-2 text-base">
-            <MapPin className="h-4 w-4" /> Indonesia — Interactive Hazard Map
+            <MapPin className="h-4 w-4 text-primary" /> Indonesia — Interactive Hazard Map
           </CardTitle>
           <div className="w-44 shrink-0">
             <Select
@@ -182,7 +175,7 @@ export default function RiskMapPage() {
             </Select>
           </div>
         </CardHeader>
-        <CardContent className="h-[520px] sm:h-[600px]">
+        <CardContent className="h-[520px] p-3 sm:h-[640px] sm:p-4">
           {eventsLoading ? (
             <Skeleton className="h-full w-full rounded-lg" />
           ) : (
@@ -200,116 +193,74 @@ export default function RiskMapPage() {
         </CardContent>
       </Card>
 
+      {/* 4. AI / Decision Intelligence + 5. Recent hazard/activity information */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Bell className="h-4 w-4" /> Active Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2.5">
-            {unreadFirst.length === 0 && (
-              <p className="py-2 text-sm text-muted-foreground">No active alerts.</p>
-            )}
-            {unreadFirst.map((n) => (
-              <div key={n.id} className="flex items-start gap-2 text-sm">
-                {!n.isRead && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-danger" />}
-                <div className={n.isRead ? 'min-w-0 pl-3.5' : 'min-w-0'}>
-                  <p className="truncate font-medium text-foreground">{n.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-2">
+          <AiDecisionIntelligence
+            recommendations={recommendations?.data ?? []}
+            total={recommendations?.meta.total ?? 0}
+            isLoading={recsLoading}
+          />
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="h-4 w-4" /> Recent Events
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2.5">
-            {recentEvents.length === 0 && (
-              <p className="py-2 text-sm text-muted-foreground">No recent events.</p>
-            )}
-            {recentEvents.map((event) => (
-              <Link
-                key={event.id}
-                href={`/hazards/${event.id}`}
-                className="block rounded-lg px-1.5 py-1 -mx-1.5 text-sm transition-colors hover:bg-muted"
-              >
-                <div className="flex items-center gap-2">
-                  <HazardTypeBadge hazardType={event.hazardType} />
-                  <span className="truncate font-medium text-foreground">
-                    {event.locationLabel ?? HAZARD_TYPE_LABELS[event.hazardType]}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(event.eventTime), { addSuffix: true })}
-                </p>
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-4 w-4" /> AI Recommendations
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {!isAuthed && (
-              <Link
-                href="/admin/login"
-                className="flex items-center gap-2 rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground transition-colors hover:bg-muted"
-              >
-                <Lock className="h-3.5 w-3.5 shrink-0" /> Sign in to view AI recommendations
-              </Link>
-            )}
-            {isAuthed && recsLoading &&
-              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}
-            {isAuthed && !recsLoading && (recommendations?.data.length ?? 0) === 0 && (
-              <p className="py-2 text-sm text-muted-foreground">No recommendations yet.</p>
-            )}
-            {(recommendations?.data ?? []).map((rec) => {
-              const hazardEventId = rec.riskAssessment.hazardEvent?.id;
-              const content = (
-                <>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-medium text-foreground">
-                      {rec.riskAssessment.district.name}
-                    </span>
-                    <PriorityBadge level={rec.priorityLevel} />
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Bell className="h-4 w-4 text-primary" /> Active Alerts
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2.5">
+              {unreadFirst.length === 0 && (
+                <p className="py-2 text-sm text-muted-foreground">No active alerts.</p>
+              )}
+              {unreadFirst.map((n) => (
+                <div key={n.id} className="flex items-start gap-2 text-sm">
+                  {!n.isRead && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-danger" />}
+                  <div className={n.isRead ? 'min-w-0 pl-3.5' : 'min-w-0'}>
+                    <p className="truncate font-medium text-foreground">{n.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                    </p>
                   </div>
-                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{rec.summaryText}</p>
-                </>
-              );
-              return hazardEventId ? (
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Activity className="h-4 w-4 text-primary" /> Recent Events
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2.5">
+              {recentEvents.length === 0 && (
+                <p className="py-2 text-sm text-muted-foreground">No recent events.</p>
+              )}
+              {recentEvents.map((event) => (
                 <Link
-                  key={rec.id}
-                  href={`/hazards/${hazardEventId}`}
-                  className="block rounded-lg px-1.5 py-1 -mx-1.5 transition-colors hover:bg-muted"
+                  key={event.id}
+                  href={`/hazards/${event.id}`}
+                  className="-mx-1.5 block rounded-lg px-1.5 py-1 text-sm transition-colors hover:bg-muted"
                 >
-                  {content}
+                  <div className="flex items-center gap-2">
+                    <HazardTypeBadge hazardType={event.hazardType} />
+                    <span className="truncate font-medium text-foreground">
+                      {formatHazardEventLocation(event)}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(event.eventTime), { addSuffix: true })}
+                  </p>
                 </Link>
-              ) : (
-                <Link
-                  key={rec.id}
-                  href="/decision-intelligence"
-                  className="block rounded-lg px-1.5 py-1 -mx-1.5 transition-colors hover:bg-muted"
-                >
-                  {content}
-                </Link>
-              );
-            })}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
+      {/* 6. Supporting analytics */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -325,16 +276,7 @@ export default function RiskMapPage() {
             <CardTitle className="text-base">Risk Distribution</CardTitle>
           </CardHeader>
           <CardContent className="h-64">
-            {isAuthed ? (
-              <RiskDistributionChart data={riskDistribution} />
-            ) : (
-              <Link
-                href="/admin/login"
-                className="flex h-full items-center justify-center gap-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground transition-colors hover:bg-muted"
-              >
-                <Lock className="h-3.5 w-3.5 shrink-0" /> Sign in to view
-              </Link>
-            )}
+            <RiskDistributionChart data={riskDistribution} />
           </CardContent>
         </Card>
 

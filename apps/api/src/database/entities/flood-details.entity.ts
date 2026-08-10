@@ -37,4 +37,17 @@ export class FloodDetails {
 
   @Column({ type: 'varchar', length: 120, nullable: true, name: 'river_basin' })
   riverBasin: string | null;
+
+  // 0-1 hazard-susceptibility value from BNPB's InaRISK `INDEKS_BAHAYA_BANJIR`
+  // layer (bnpb-inarisk.client.ts), looked up per event coordinate at
+  // ingestion time. Only PetaBencana-sourced events populate this today.
+  @Column({
+    type: 'numeric',
+    precision: 4,
+    scale: 3,
+    nullable: true,
+    name: 'flood_hazard_index',
+    transformer: numericTransformer,
+  })
+  floodHazardIndex: number | null;
 }

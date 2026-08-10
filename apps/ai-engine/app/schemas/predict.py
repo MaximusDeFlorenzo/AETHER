@@ -31,11 +31,27 @@ class LandslideDetails(CamelModel):
 
 class FloodDetails(CamelModel):
     """Mirrors `flood_details` (docs/DATABASE_SCHEMA.md §13). `river_basin` is
-    descriptive only (feeds XAI narrative text), not a scoring input."""
+    descriptive only (feeds XAI narrative text), not a scoring input.
+    `rainfall_mm` is optional — water-level-only sources exist (e.g.
+    PetaBencana.id's flood gauge feed reports gauge readings but no rainfall
+    figure); `flood.py` treats a missing reading as no known contribution
+    rather than requiring it. `water_level_m` stays required since it's the
+    primary, most-heavily-weighted signal."""
 
-    rainfall_mm: confloat(ge=0)
-    water_level_m: confloat(ge=0)
+    rainfall_mm: confloat(ge=0) | None = None
+    # Not `ge=0`: PetaBencana's real gauge feed reports some reservoir
+    # stations (e.g. Jakarta's Waduk Pluit) relative to a below-datum
+    # reference, so a legitimate low-risk reading can be negative —
+    # `flood.py`'s `clamp()` floors it to a 0 contribution.
+    water_level_m: float
     river_basin: str | None = None
+    # 0-1 hazard-susceptibility value from BNPB's InaRISK
+    # `INDEKS_BAHAYA_BANJIR` layer, looked up per event coordinate at
+    # ingestion time (`apps/api/src/ingestion/adapters/bnpb-inarisk.client.ts`).
+    # Optional: only PetaBencana-sourced events populate it today; `flood.py`
+    # treats a missing value as no known contribution, same posture as
+    # `rainfall_mm`.
+    flood_hazard_index: confloat(ge=0, le=1) | None = None
 
 
 class WildfireDetails(CamelModel):

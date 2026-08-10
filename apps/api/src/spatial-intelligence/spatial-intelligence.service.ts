@@ -231,6 +231,38 @@ export class SpatialIntelligenceService {
     });
   }
 
+  findAffectedRegionsForEvent(
+    hazardEventId: string,
+  ): Promise<HazardAffectedRegion[]> {
+    return this.affectedRegionRepository.find({
+      where: { hazardEvent: { id: hazardEventId } },
+      relations: { district: { province: true } },
+      order: { distanceKm: 'ASC' },
+    });
+  }
+
+  /** Batched affected-district counts for the hazard-events list/detail
+   * views (`HazardEvent.affectedRegionCount`) — one grouped query rather
+   * than N+1 per event. */
+  async countAffectedRegionsForEvents(
+    hazardEventIds: string[],
+  ): Promise<Map<string, number>> {
+    if (hazardEventIds.length === 0) {
+      return new Map();
+    }
+    const rows: Array<{ hazardEventId: string; count: string }> =
+      await this.affectedRegionRepository.query(
+        `SELECT hazard_event_id AS "hazardEventId", COUNT(*) AS count
+         FROM hazard_affected_regions
+         WHERE hazard_event_id = ANY($1)
+         GROUP BY hazard_event_id`,
+        [hazardEventIds],
+      );
+    return new Map(
+      rows.map((row) => [row.hazardEventId, Number.parseInt(row.count, 10)]),
+    );
+  }
+
   private async distanceKm(a: HazardEvent, b: HazardEvent): Promise<number> {
     const rows: Array<{ distanceKm: string }> =
       await this.hazardEventRepository.query(

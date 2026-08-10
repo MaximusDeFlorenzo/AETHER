@@ -25,9 +25,10 @@ export interface RiskEngineLandslideDetails {
 }
 
 export interface RiskEngineFloodDetails {
-  rainfallMm: number;
+  rainfallMm: number | null;
   waterLevelM: number;
   riverBasin?: string | null;
+  floodHazardIndex?: number | null;
 }
 
 export interface RiskEngineWildfireDetails {

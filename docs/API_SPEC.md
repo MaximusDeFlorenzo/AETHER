@@ -137,11 +137,12 @@ gains a `hazardType` filter param.
 ## Auth guard posture
 
 Same per-endpoint (not global) `JwtAuthGuard`/`RolesGuard` pattern as ORION:
-- **No guard**: `/auth/login`, `/auth/refresh`, `/health`, `GET /hazard-events`,
-  `GET /spatial/overlay`, `GET /sustainability-metrics` — the public
-  risk-intelligence surface.
-- **`JwtAuthGuard` only**: `GET /risk-assessments`, `GET /decision-recommendations`
-  — any authenticated analyst/agency user.
+- **No guard**: `/auth/login`, `/auth/refresh`, `/health`, all `GET` routes
+  (`/hazard-events`, `/spatial/overlay`, `/sustainability-metrics`,
+  `/risk-assessments`, `/decision-recommendations`, `/audit-logs`,
+  `/resource-optimization-plans`, `/shelters`, etc.) — every *read* is public
+  risk-intelligence surface. Only mutating routes (`POST`/`PATCH`/`DELETE`)
+  are guarded.
 - **`JwtAuthGuard` + `@Roles('admin','agency_operator')`**: sync triggers,
   resource-plan/shelter writes, historical-disaster CRUD.
 - **`JwtAuthGuard` + `@Roles('admin')`**: user management, audit logs.

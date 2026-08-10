@@ -1,0 +1,5142 @@
+[
+  {
+    "districtCode": "11.01",
+    "districtName": "Kabupaten Aceh Selatan",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 3.16667,
+    "longitude": 97.4,
+    "areaKm2": 4174.211,
+    "population": 239629
+  },
+  {
+    "districtCode": "11.02",
+    "districtName": "Kabupaten Aceh Tenggara",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 3.33333,
+    "longitude": 97.7,
+    "areaKm2": 4179.123,
+    "population": 235589
+  },
+  {
+    "districtCode": "11.03",
+    "districtName": "Kabupaten Aceh Timur",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 4.61667,
+    "longitude": 97.71667,
+    "areaKm2": 5409.158,
+    "population": 461391
+  },
+  {
+    "districtCode": "11.04",
+    "districtName": "Kabupaten Aceh Tengah",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 4.51,
+    "longitude": 96.855,
+    "areaKm2": 4468.417,
+    "population": 232606
+  },
+  {
+    "districtCode": "11.05",
+    "districtName": "Kabupaten Aceh Barat",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 4.43333,
+    "longitude": 96.16667,
+    "areaKm2": 2782.606,
+    "population": 209220
+  },
+  {
+    "districtCode": "11.06",
+    "districtName": "Kabupaten Aceh Besar",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 5.4,
+    "longitude": 95.5,
+    "areaKm2": 2891.227,
+    "population": 442987
+  },
+  {
+    "districtCode": "11.07",
+    "districtName": "Kabupaten Pidie",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 5.08,
+    "longitude": 96.11,
+    "areaKm2": 3177.063,
+    "population": 451076
+  },
+  {
+    "districtCode": "11.08",
+    "districtName": "Kabupaten Aceh Utara",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 4.97,
+    "longitude": 97.14,
+    "areaKm2": 2705.045,
+    "population": 641007
+  },
+  {
+    "districtCode": "11.09",
+    "districtName": "Kabupaten Simeulue",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 2.61972,
+    "longitude": 96.07667,
+    "areaKm2": 1828.851,
+    "population": 96812
+  },
+  {
+    "districtCode": "11.10",
+    "districtName": "Kabupaten Aceh Singkil",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 2.38333,
+    "longitude": 97.96667,
+    "areaKm2": 1851.615,
+    "population": 140461
+  },
+  {
+    "districtCode": "11.11",
+    "districtName": "Kabupaten Bireuen",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 5.11667,
+    "longitude": 96.6,
+    "areaKm2": 1796.959,
+    "population": 468696
+  },
+  {
+    "districtCode": "11.12",
+    "districtName": "Kabupaten Aceh Barat Daya",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 3.81667,
+    "longitude": 96.88333,
+    "areaKm2": 1882.054,
+    "population": 156128
+  },
+  {
+    "districtCode": "11.13",
+    "districtName": "Kabupaten Gayo Lues",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 3.95,
+    "longitude": 97.39,
+    "areaKm2": 5541.285,
+    "population": 107506
+  },
+  {
+    "districtCode": "11.14",
+    "districtName": "Kabupaten Aceh Jaya",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 4.86,
+    "longitude": 95.64,
+    "areaKm2": 3870.566,
+    "population": 101407
+  },
+  {
+    "districtCode": "11.15",
+    "districtName": "Kabupaten Nagan Raya",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 4.15,
+    "longitude": 96.5,
+    "areaKm2": 3523.283,
+    "population": 181103
+  },
+  {
+    "districtCode": "11.16",
+    "districtName": "Kabupaten Aceh Tamiang",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 4.23333,
+    "longitude": 97.93333,
+    "areaKm2": 2187.817,
+    "population": 312061
+  },
+  {
+    "districtCode": "11.17",
+    "districtName": "Kabupaten Bener Meriah",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 4.73015,
+    "longitude": 96.86156,
+    "areaKm2": 1907.399,
+    "population": 181376
+  },
+  {
+    "districtCode": "11.18",
+    "districtName": "Kabupaten Pidie Jaya",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 5.15,
+    "longitude": 96.21667,
+    "areaKm2": 938.868,
+    "population": 166517
+  },
+  {
+    "districtCode": "11.71",
+    "districtName": "Kota Banda Aceh",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 5.55556,
+    "longitude": 95.32639,
+    "areaKm2": 56.835,
+    "population": 265310
+  },
+  {
+    "districtCode": "11.72",
+    "districtName": "Kota Sabang",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 5.87944,
+    "longitude": 95.33223,
+    "areaKm2": 121.867,
+    "population": 42793
+  },
+  {
+    "districtCode": "11.73",
+    "districtName": "Kota Lhokseumawe",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 5.18271,
+    "longitude": 97.12774,
+    "areaKm2": 132.966,
+    "population": 198705
+  },
+  {
+    "districtCode": "11.74",
+    "districtName": "Kota Langsa",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 4.47,
+    "longitude": 97.93,
+    "areaKm2": 224.203,
+    "population": 183914
+  },
+  {
+    "districtCode": "11.75",
+    "districtName": "Kota Subulussalam",
+    "provinceCode": "11",
+    "provinceName": "Aceh",
+    "latitude": 2.73333,
+    "longitude": 97.93333,
+    "areaKm2": 1183.601,
+    "population": 107185
+  },
+  {
+    "districtCode": "12.01",
+    "districtName": "Kabupaten Tapanuli Tengah",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.9,
+    "longitude": 98.66667,
+    "areaKm2": 2307.716,
+    "population": 369482
+  },
+  {
+    "districtCode": "12.02",
+    "districtName": "Kabupaten Tapanuli Utara",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.0028,
+    "longitude": 99.0707,
+    "areaKm2": 3895.604,
+    "population": 331475
+  },
+  {
+    "districtCode": "12.03",
+    "districtName": "Kabupaten Tapanuli Selatan",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.51667,
+    "longitude": 99.25,
+    "areaKm2": 4201.354,
+    "population": 324565
+  },
+  {
+    "districtCode": "12.04",
+    "districtName": "Kabupaten Nias",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.06667,
+    "longitude": 97.73333,
+    "areaKm2": 902.599,
+    "population": 147989
+  },
+  {
+    "districtCode": "12.05",
+    "districtName": "Kabupaten Langkat",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 3.68528,
+    "longitude": 98.21972,
+    "areaKm2": 6142.072,
+    "population": 1120709
+  },
+  {
+    "districtCode": "12.06",
+    "districtName": "Kabupaten Karo",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 3.1,
+    "longitude": 98.3,
+    "areaKm2": 2206.876,
+    "population": 422495
+  },
+  {
+    "districtCode": "12.07",
+    "districtName": "Kabupaten Deli Serdang",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 3.43333,
+    "longitude": 98.7,
+    "areaKm2": 2581.482,
+    "population": 2080408
+  },
+  {
+    "districtCode": "12.08",
+    "districtName": "Kabupaten Simalungun",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.88333,
+    "longitude": 98.96667,
+    "areaKm2": 4601.477,
+    "population": 1004303
+  },
+  {
+    "districtCode": "12.09",
+    "districtName": "Kabupaten Asahan",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.83333,
+    "longitude": 99.56667,
+    "areaKm2": 3738.42,
+    "population": 799451
+  },
+  {
+    "districtCode": "12.10",
+    "districtName": "Kabupaten Labuhanbatu",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.26667,
+    "longitude": 100.1,
+    "areaKm2": 2772.346,
+    "population": 513010
+  },
+  {
+    "districtCode": "12.11",
+    "districtName": "Kabupaten Dairi",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.85,
+    "longitude": 98.26667,
+    "areaKm2": 2083.604,
+    "population": 333335
+  },
+  {
+    "districtCode": "12.12",
+    "districtName": "Kabupaten Toba",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": -1.06667,
+    "longitude": 121.46667,
+    "areaKm2": 2291.616,
+    "population": 220508
+  },
+  {
+    "districtCode": "12.13",
+    "districtName": "Kabupaten Mandailing Natal",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 0.78378,
+    "longitude": 99.25495,
+    "areaKm2": 6546.567,
+    "population": 501618
+  },
+  {
+    "districtCode": "12.14",
+    "districtName": "Kabupaten Nias Selatan",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 0.77,
+    "longitude": 97.75,
+    "areaKm2": 2531.59,
+    "population": 369817
+  },
+  {
+    "districtCode": "12.15",
+    "districtName": "Kabupaten Pakpak Bharat",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.55444,
+    "longitude": 98.24056,
+    "areaKm2": 1365.607,
+    "population": 57280
+  },
+  {
+    "districtCode": "12.16",
+    "districtName": "Kabupaten Humbang Hasundutan",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.26551,
+    "longitude": 98.50376,
+    "areaKm2": 2351.514,
+    "population": 211022
+  },
+  {
+    "districtCode": "12.17",
+    "districtName": "Kabupaten Samosir",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.64025,
+    "longitude": 98.71525,
+    "areaKm2": 1850.035,
+    "population": 149875
+  },
+  {
+    "districtCode": "12.18",
+    "districtName": "Kabupaten Serdang Bedagai",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 3.36667,
+    "longitude": 99.08333,
+    "areaKm2": 1949.978,
+    "population": 696845
+  },
+  {
+    "districtCode": "12.19",
+    "districtName": "Kabupaten Batu Bara",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 3.16166,
+    "longitude": 99.52652,
+    "areaKm2": 888.676,
+    "population": 474832
+  },
+  {
+    "districtCode": "12.20",
+    "districtName": "Kabupaten Padang Lawas Utara",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.46011,
+    "longitude": 99.67346,
+    "areaKm2": 3914.413,
+    "population": 273586
+  },
+  {
+    "districtCode": "12.21",
+    "districtName": "Kabupaten Padang Lawas",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.15659,
+    "longitude": 99.81136,
+    "areaKm2": 3914.413,
+    "population": 271274
+  },
+  {
+    "districtCode": "12.22",
+    "districtName": "Kabupaten Labuhanbatu Selatan",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.983,
+    "longitude": 100.0976,
+    "areaKm2": 3079.61,
+    "population": 332459
+  },
+  {
+    "districtCode": "12.23",
+    "districtName": "Kabupaten Labuhanbatu Utara",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.33349,
+    "longitude": 99.63776,
+    "areaKm2": 3687.179,
+    "population": 399306
+  },
+  {
+    "districtCode": "12.24",
+    "districtName": "Kabupaten Nias Utara",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.33037,
+    "longitude": 97.31964,
+    "areaKm2": 1239.502,
+    "population": 153338
+  },
+  {
+    "districtCode": "12.25",
+    "districtName": "Kabupaten Nias Barat",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.05966,
+    "longitude": 97.58606,
+    "areaKm2": 464.65,
+    "population": 97526
+  },
+  {
+    "districtCode": "12.71",
+    "districtName": "Kota Medan",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 3.59333,
+    "longitude": 98.66944,
+    "areaKm2": 279.239,
+    "population": 2546452
+  },
+  {
+    "districtCode": "12.72",
+    "districtName": "Kota Pematangsiantar",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.96667,
+    "longitude": 99.06667,
+    "areaKm2": 75.919,
+    "population": 279772
+  },
+  {
+    "districtCode": "12.73",
+    "districtName": "Kota Sibolga",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.74333,
+    "longitude": 98.78694,
+    "areaKm2": 12.645,
+    "population": 100282
+  },
+  {
+    "districtCode": "12.74",
+    "districtName": "Kota Tanjungbalai",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 2.95,
+    "longitude": 99.8,
+    "areaKm2": 60.072,
+    "population": 187939
+  },
+  {
+    "districtCode": "12.75",
+    "districtName": "Kota Binjai",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 3.5986,
+    "longitude": 98.48028,
+    "areaKm2": 93.77,
+    "population": 315609
+  },
+  {
+    "districtCode": "12.76",
+    "districtName": "Kota Tebing Tinggi",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 3.325,
+    "longitude": 99.14167,
+    "areaKm2": 39.17,
+    "population": 184064
+  },
+  {
+    "districtCode": "12.77",
+    "districtName": "Kota Padangsidimpuan",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.37375,
+    "longitude": 99.26843,
+    "areaKm2": 159.298,
+    "population": 231982
+  },
+  {
+    "districtCode": "12.78",
+    "districtName": "Kota Gunungsitoli",
+    "provinceCode": "12",
+    "provinceName": "Sumatera Utara",
+    "latitude": 1.32731,
+    "longitude": 97.55018,
+    "areaKm2": 208.742,
+    "population": 138297
+  },
+  {
+    "districtCode": "13.01",
+    "districtName": "Kabupaten Pesisir Selatan",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -1.56806,
+    "longitude": 100.81694,
+    "areaKm2": 6045.676,
+    "population": 533786
+  },
+  {
+    "districtCode": "13.02",
+    "districtName": "Kabupaten Solok",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.77853,
+    "longitude": 100.63982,
+    "areaKm2": 3590.404,
+    "population": 413075
+  },
+  {
+    "districtCode": "13.03",
+    "districtName": "Kabupaten Sijunjung",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.64866,
+    "longitude": 101.06793,
+    "areaKm2": 3150.58,
+    "population": 247323
+  },
+  {
+    "districtCode": "13.04",
+    "districtName": "Kabupaten Tanah Datar",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.4555,
+    "longitude": 100.5771,
+    "areaKm2": 1377.186,
+    "population": 382674
+  },
+  {
+    "districtCode": "13.05",
+    "districtName": "Kabupaten Padang Pariaman",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.55,
+    "longitude": 100.23333,
+    "areaKm2": 1341.879,
+    "population": 458310
+  },
+  {
+    "districtCode": "13.06",
+    "districtName": "Kabupaten Agam",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.23333,
+    "longitude": 100.21667,
+    "areaKm2": 2225.34,
+    "population": 533254
+  },
+  {
+    "districtCode": "13.07",
+    "districtName": "Kabupaten Lima Puluh Kota",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.0168,
+    "longitude": 100.5872,
+    "areaKm2": 3273.405,
+    "population": 402788
+  },
+  {
+    "districtCode": "13.08",
+    "districtName": "Kabupaten Pasaman",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": 0.42503,
+    "longitude": 99.94606,
+    "areaKm2": 3902.444,
+    "population": 313837
+  },
+  {
+    "districtCode": "13.09",
+    "districtName": "Kabupaten Kepulauan Mentawai",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -1.35927,
+    "longitude": 98.89552,
+    "areaKm2": 5973.917,
+    "population": 97837
+  },
+  {
+    "districtCode": "13.10",
+    "districtName": "Kabupaten Dharmasraya",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -1.2506,
+    "longitude": 101.58645,
+    "areaKm2": 2920.925,
+    "population": 242192
+  },
+  {
+    "districtCode": "13.11",
+    "districtName": "Kabupaten Solok Selatan",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -1.23333,
+    "longitude": 101.417,
+    "areaKm2": 3282.144,
+    "population": 181525
+  },
+  {
+    "districtCode": "13.12",
+    "districtName": "Kabupaten Pasaman Barat",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": 0.28152,
+    "longitude": 99.51965,
+    "areaKm2": 3851.883,
+    "population": 454053
+  },
+  {
+    "districtCode": "13.71",
+    "districtName": "Kota Padang",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.9,
+    "longitude": 100.45,
+    "areaKm2": 694.315,
+    "population": 946982
+  },
+  {
+    "districtCode": "13.72",
+    "districtName": "Kota Solok",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.77853,
+    "longitude": 100.63982,
+    "areaKm2": 58.72,
+    "population": 85553
+  },
+  {
+    "districtCode": "13.73",
+    "districtName": "Kota Sawahlunto",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.6,
+    "longitude": 100.75,
+    "areaKm2": 231.945,
+    "population": 68559
+  },
+  {
+    "districtCode": "13.74",
+    "districtName": "Kota Padang Panjang",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.46953,
+    "longitude": 100.40364,
+    "areaKm2": 23.56,
+    "population": 63895
+  },
+  {
+    "districtCode": "13.75",
+    "districtName": "Kota Bukittinggi",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.29921,
+    "longitude": 100.37223,
+    "areaKm2": 24.173,
+    "population": 141804
+  },
+  {
+    "districtCode": "13.76",
+    "districtName": "Kota Payakumbuh",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.21667,
+    "longitude": 100.63333,
+    "areaKm2": 74.552,
+    "population": 149077
+  },
+  {
+    "districtCode": "13.77",
+    "districtName": "Kota Pariaman",
+    "provinceCode": "13",
+    "provinceName": "Sumatera Barat",
+    "latitude": -0.62682,
+    "longitude": 100.12047,
+    "areaKm2": 64.626,
+    "population": 103835
+  },
+  {
+    "districtCode": "14.01",
+    "districtName": "Kabupaten Kampar",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": 0.2344,
+    "longitude": 101.2131,
+    "areaKm2": 10352.803,
+    "population": 898973
+  },
+  {
+    "districtCode": "14.02",
+    "districtName": "Kabupaten Indragiri Hulu",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": -0.53333,
+    "longitude": 102.33333,
+    "areaKm2": 7871.85,
+    "population": 487039
+  },
+  {
+    "districtCode": "14.03",
+    "districtName": "Kabupaten Bengkalis",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": 1.29882,
+    "longitude": 101.54527,
+    "areaKm2": 8604.179,
+    "population": 681884
+  },
+  {
+    "districtCode": "14.04",
+    "districtName": "Kabupaten Indragiri Hilir",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": -0.22056,
+    "longitude": 103.12167,
+    "areaKm2": 13518.47,
+    "population": 713294
+  },
+  {
+    "districtCode": "14.05",
+    "districtName": "Kabupaten Pelalawan",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": 0.20822,
+    "longitude": 102.18607,
+    "areaKm2": 13256.104,
+    "population": 446439
+  },
+  {
+    "districtCode": "14.06",
+    "districtName": "Kabupaten Rokan Hulu",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": 0.88333,
+    "longitude": 100.48333,
+    "areaKm2": 7658.149,
+    "population": 586994
+  },
+  {
+    "districtCode": "14.07",
+    "districtName": "Kabupaten Rokan Hilir",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": 2.16599,
+    "longitude": 100.82514,
+    "areaKm2": 9068.605,
+    "population": 688073
+  },
+  {
+    "districtCode": "14.08",
+    "districtName": "Kabupaten Siak",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": 0.97453,
+    "longitude": 102.01355,
+    "areaKm2": 7803.566,
+    "population": 495760
+  },
+  {
+    "districtCode": "14.09",
+    "districtName": "Kabupaten Kuantan Singingi",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": -0.47532,
+    "longitude": 101.45857,
+    "areaKm2": 5457.863,
+    "population": 365989
+  },
+  {
+    "districtCode": "14.10",
+    "districtName": "Kabupaten Kepulauan Meranti",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": 0.97488,
+    "longitude": 102.69539,
+    "areaKm2": 3609.397,
+    "population": 211997
+  },
+  {
+    "districtCode": "14.71",
+    "districtName": "Kota Pekanbaru",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": 0.55,
+    "longitude": 101.48333,
+    "areaKm2": 638.331,
+    "population": 1167599
+  },
+  {
+    "districtCode": "14.72",
+    "districtName": "Kota Dumai",
+    "provinceCode": "14",
+    "provinceName": "Riau",
+    "latitude": 1.61592,
+    "longitude": 101.4917,
+    "areaKm2": 2061.463,
+    "population": 355256
+  },
+  {
+    "districtCode": "15.01",
+    "districtName": "Kabupaten Kerinci",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -2.01667,
+    "longitude": 101.5,
+    "areaKm2": 3445.196,
+    "population": 268951
+  },
+  {
+    "districtCode": "15.02",
+    "districtName": "Kabupaten Merangin",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -2.06933,
+    "longitude": 102.13303,
+    "areaKm2": 7540.118,
+    "population": 397461
+  },
+  {
+    "districtCode": "15.03",
+    "districtName": "Kabupaten Sarolangun",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -2.26667,
+    "longitude": 102.73333,
+    "areaKm2": 5935.894,
+    "population": 313097
+  },
+  {
+    "districtCode": "15.04",
+    "districtName": "Kabupaten Batanghari",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -1.7,
+    "longitude": 103.1,
+    "areaKm2": 5453.689,
+    "population": 307361
+  },
+  {
+    "districtCode": "15.05",
+    "districtName": "Kabupaten Muaro Jambi",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -1.55214,
+    "longitude": 103.82163,
+    "areaKm2": 5159.623,
+    "population": 457238
+  },
+  {
+    "districtCode": "15.06",
+    "districtName": "Kabupaten Tanjung Jabung Barat",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -1.1544,
+    "longitude": 103.24402,
+    "areaKm2": 5544.567,
+    "population": 336978
+  },
+  {
+    "districtCode": "15.07",
+    "districtName": "Kabupaten Tanjung Jabung Timur",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -1.13198,
+    "longitude": 103.61755,
+    "areaKm2": 4544.575,
+    "population": 244905
+  },
+  {
+    "districtCode": "15.08",
+    "districtName": "Kabupaten Bungo",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -1.50222,
+    "longitude": 101.96,
+    "areaKm2": 4760.827,
+    "population": 380027
+  },
+  {
+    "districtCode": "15.09",
+    "districtName": "Kabupaten Tebo",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -1.45576,
+    "longitude": 102.37473,
+    "areaKm2": 6103.737,
+    "population": 376541
+  },
+  {
+    "districtCode": "15.71",
+    "districtName": "Kota Jambi",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -1.61694,
+    "longitude": 103.60028,
+    "areaKm2": 169.887,
+    "population": 649656
+  },
+  {
+    "districtCode": "15.72",
+    "districtName": "Kota Sungai Penuh",
+    "provinceCode": "15",
+    "provinceName": "Jambi",
+    "latitude": -2.10896,
+    "longitude": 101.32175,
+    "areaKm2": 364.924,
+    "population": 102224
+  },
+  {
+    "districtCode": "16.01",
+    "districtName": "Kabupaten Ogan Komering Ulu",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -4.13333,
+    "longitude": 104.06667,
+    "areaKm2": 3774.497,
+    "population": 390048
+  },
+  {
+    "districtCode": "16.02",
+    "districtName": "Kabupaten Ogan Komering Ilir",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -3.35,
+    "longitude": 105.38333,
+    "areaKm2": 17075.713,
+    "population": 801059
+  },
+  {
+    "districtCode": "16.03",
+    "districtName": "Kabupaten Muara Enim",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -4.2327,
+    "longitude": 103.6141,
+    "areaKm2": 6763.912,
+    "population": 653731
+  },
+  {
+    "districtCode": "16.04",
+    "districtName": "Kabupaten Lahat",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -3.75,
+    "longitude": 103.0,
+    "areaKm2": 4333.065,
+    "population": 448141
+  },
+  {
+    "districtCode": "16.05",
+    "districtName": "Kabupaten Musi Rawas",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -3.16667,
+    "longitude": 103.21667,
+    "areaKm2": 6122.588,
+    "population": 427723
+  },
+  {
+    "districtCode": "16.06",
+    "districtName": "Kabupaten Musi Banyuasin",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -2.46667,
+    "longitude": 103.73333,
+    "areaKm2": 14550.788,
+    "population": 736897
+  },
+  {
+    "districtCode": "16.07",
+    "districtName": "Kabupaten Banyuasin",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -2.88333,
+    "longitude": 104.38306,
+    "areaKm2": 12258.593,
+    "population": 888324
+  },
+  {
+    "districtCode": "16.08",
+    "districtName": "Kabupaten Ogan Komering Ulu Timur",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -3.85679,
+    "longitude": 104.75209,
+    "areaKm2": 3412.716,
+    "population": 694832
+  },
+  {
+    "districtCode": "16.09",
+    "districtName": "Kabupaten Ogan Komering Ulu Selatan",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -4.65728,
+    "longitude": 104.00659,
+    "areaKm2": 4369.252,
+    "population": 406938
+  },
+  {
+    "districtCode": "16.10",
+    "districtName": "Kabupaten Ogan Ilir",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -3.43186,
+    "longitude": 104.62727,
+    "areaKm2": 2302.858,
+    "population": 446020
+  },
+  {
+    "districtCode": "16.11",
+    "districtName": "Kabupaten Empat Lawang",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -3.71629,
+    "longitude": 102.94511,
+    "areaKm2": 2234.097,
+    "population": 336783
+  },
+  {
+    "districtCode": "16.12",
+    "districtName": "Kabupaten Penukal Abab Lematang Ilir",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -3.21342,
+    "longitude": 104.08722,
+    "areaKm2": 1842.563,
+    "population": 214795
+  },
+  {
+    "districtCode": "16.13",
+    "districtName": "Kabupaten Musi Rawas Utara",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -2.70606,
+    "longitude": 102.7632,
+    "areaKm2": 5937.803,
+    "population": 203688
+  },
+  {
+    "districtCode": "16.71",
+    "districtName": "Kota Palembang",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -2.96667,
+    "longitude": 104.75,
+    "areaKm2": 352.523,
+    "population": 1801367
+  },
+  {
+    "districtCode": "16.72",
+    "districtName": "Kota Pagar Alam",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -4.13055,
+    "longitude": 103.26822,
+    "areaKm2": 625.913,
+    "population": 153271
+  },
+  {
+    "districtCode": "16.73",
+    "districtName": "Kota Lubuk Linggau",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -3.29308,
+    "longitude": 102.85503,
+    "areaKm2": 367.726,
+    "population": 247550
+  },
+  {
+    "districtCode": "16.74",
+    "districtName": "Kota Prabumulih",
+    "provinceCode": "16",
+    "provinceName": "Sumatera Selatan",
+    "latitude": -3.46202,
+    "longitude": 104.2229,
+    "areaKm2": 447.311,
+    "population": 213523
+  },
+  {
+    "districtCode": "17.01",
+    "districtName": "Kabupaten Bengkulu Selatan",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -4.36667,
+    "longitude": 103.01667,
+    "areaKm2": 1219.063,
+    "population": 177137
+  },
+  {
+    "districtCode": "17.02",
+    "districtName": "Kabupaten Rejang Lebong",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -3.41667,
+    "longitude": 102.71667,
+    "areaKm2": 1559.419,
+    "population": 288582
+  },
+  {
+    "districtCode": "17.03",
+    "districtName": "Kabupaten Bengkulu Utara",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -3.23333,
+    "longitude": 102.0,
+    "areaKm2": 4478.107,
+    "population": 309773
+  },
+  {
+    "districtCode": "17.04",
+    "districtName": "Kabupaten Kaur",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -4.78179,
+    "longitude": 103.36109,
+    "areaKm2": 2607.839,
+    "population": 136533
+  },
+  {
+    "districtCode": "17.05",
+    "districtName": "Kabupaten Seluma",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -3.96644,
+    "longitude": 102.47429,
+    "areaKm2": 2432.088,
+    "population": 216028
+  },
+  {
+    "districtCode": "17.06",
+    "districtName": "Kabupaten Mukomuko",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -3.07438,
+    "longitude": 101.54766,
+    "areaKm2": 4137.52,
+    "population": 205602
+  },
+  {
+    "districtCode": "17.07",
+    "districtName": "Kabupaten Lebong",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -3.24278,
+    "longitude": 102.3349,
+    "areaKm2": 1666.621,
+    "population": 115520
+  },
+  {
+    "districtCode": "17.08",
+    "districtName": "Kabupaten Kepahiang",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -3.60194,
+    "longitude": 102.56424,
+    "areaKm2": 738.965,
+    "population": 151910
+  },
+  {
+    "districtCode": "17.09",
+    "districtName": "Kabupaten Bengkulu Tengah",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -3.67775,
+    "longitude": 102.39648,
+    "areaKm2": 1132.405,
+    "population": 126339
+  },
+  {
+    "districtCode": "17.71",
+    "districtName": "Kota Bengkulu",
+    "provinceCode": "17",
+    "provinceName": "Bengkulu",
+    "latitude": -3.83333,
+    "longitude": 102.31667,
+    "areaKm2": 150.183,
+    "population": 400533
+  },
+  {
+    "districtCode": "18.01",
+    "districtName": "Kabupaten Lampung Selatan",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -5.53965,
+    "longitude": 105.49741,
+    "areaKm2": 2227.357,
+    "population": 1124683
+  },
+  {
+    "districtCode": "18.02",
+    "districtName": "Kabupaten Lampung Tengah",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -4.86667,
+    "longitude": 105.26667,
+    "areaKm2": 4559.57,
+    "population": 1394395
+  },
+  {
+    "districtCode": "18.03",
+    "districtName": "Kabupaten Lampung Utara",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -4.81667,
+    "longitude": 104.8,
+    "areaKm2": 2669.304,
+    "population": 675626
+  },
+  {
+    "districtCode": "18.04",
+    "districtName": "Kabupaten Lampung Barat",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -5.14904,
+    "longitude": 104.19309,
+    "areaKm2": 2110.101,
+    "population": 313756
+  },
+  {
+    "districtCode": "18.05",
+    "districtName": "Kabupaten Tulang Bawang",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -4.20604,
+    "longitude": 105.57999,
+    "areaKm2": 3118.613,
+    "population": 440040
+  },
+  {
+    "districtCode": "18.06",
+    "districtName": "Kabupaten Tanggamus",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -5.38508,
+    "longitude": 104.62349,
+    "areaKm2": 2947.187,
+    "population": 641036
+  },
+  {
+    "districtCode": "18.07",
+    "districtName": "Kabupaten Lampung Timur",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -5.10273,
+    "longitude": 105.68003,
+    "areaKm2": 3860.546,
+    "population": 1122605
+  },
+  {
+    "districtCode": "18.08",
+    "districtName": "Kabupaten Way Kanan",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -4.44705,
+    "longitude": 104.52753,
+    "areaKm2": 3522.114,
+    "population": 495058
+  },
+  {
+    "districtCode": "18.09",
+    "districtName": "Kabupaten Pesawaran",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -5.4298,
+    "longitude": 105.17899,
+    "areaKm2": 1286.843,
+    "population": 501047
+  },
+  {
+    "districtCode": "18.10",
+    "districtName": "Kabupaten Pringsewu",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -5.42211,
+    "longitude": 104.93454,
+    "areaKm2": 617.192,
+    "population": 444834
+  },
+  {
+    "districtCode": "18.11",
+    "districtName": "Kabupaten Mesuji",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -4.0439,
+    "longitude": 105.4013,
+    "areaKm2": 2200.414,
+    "population": 241280
+  },
+  {
+    "districtCode": "18.12",
+    "districtName": "Kabupaten Tulang Bawang Barat",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -4.43356,
+    "longitude": 105.16004,
+    "areaKm2": 1257.088,
+    "population": 312516
+  },
+  {
+    "districtCode": "18.13",
+    "districtName": "Kabupaten Pesisir Barat",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -7.0339,
+    "longitude": 112.6379,
+    "areaKm2": 2937.496,
+    "population": 177430
+  },
+  {
+    "districtCode": "18.71",
+    "districtName": "Kota Bandar Lampung",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -5.41667,
+    "longitude": 105.26667,
+    "areaKm2": 183.719,
+    "population": 1077664
+  },
+  {
+    "districtCode": "18.72",
+    "districtName": "Kota Metro",
+    "provinceCode": "18",
+    "provinceName": "Lampung",
+    "latitude": -5.11856,
+    "longitude": 105.29949,
+    "areaKm2": 73.214,
+    "population": 182293
+  },
+  {
+    "districtCode": "19.01",
+    "districtName": "Kabupaten Bangka",
+    "provinceCode": "19",
+    "provinceName": "Kepulauan Bangka Belitung",
+    "latitude": -1.91667,
+    "longitude": 105.96667,
+    "areaKm2": 3011.435,
+    "population": 337755
+  },
+  {
+    "districtCode": "19.02",
+    "districtName": "Kabupaten Belitung",
+    "provinceCode": "19",
+    "provinceName": "Kepulauan Bangka Belitung",
+    "latitude": -2.86667,
+    "longitude": 107.68333,
+    "areaKm2": 2266.107,
+    "population": 192405
+  },
+  {
+    "districtCode": "19.03",
+    "districtName": "Kabupaten Bangka Selatan",
+    "provinceCode": "19",
+    "provinceName": "Kepulauan Bangka Belitung",
+    "latitude": -2.66803,
+    "longitude": 106.01257,
+    "areaKm2": 3595.446,
+    "population": 216079
+  },
+  {
+    "districtCode": "19.04",
+    "districtName": "Kabupaten Bangka Tengah",
+    "provinceCode": "19",
+    "provinceName": "Kepulauan Bangka Belitung",
+    "latitude": -2.33989,
+    "longitude": 106.1142,
+    "areaKm2": 2253.854,
+    "population": 210684
+  },
+  {
+    "districtCode": "19.05",
+    "districtName": "Kabupaten Bangka Barat",
+    "provinceCode": "19",
+    "provinceName": "Kepulauan Bangka Belitung",
+    "latitude": -1.95839,
+    "longitude": 105.53741,
+    "areaKm2": 2853.411,
+    "population": 217859
+  },
+  {
+    "districtCode": "19.06",
+    "districtName": "Kabupaten Belitung Timur",
+    "provinceCode": "19",
+    "provinceName": "Kepulauan Bangka Belitung",
+    "latitude": -2.9627,
+    "longitude": 108.15216,
+    "areaKm2": 2585.734,
+    "population": 132495
+  },
+  {
+    "districtCode": "19.71",
+    "districtName": "Kota Pangkal Pinang",
+    "provinceCode": "19",
+    "provinceName": "Kepulauan Bangka Belitung",
+    "latitude": -2.11667,
+    "longitude": 106.11667,
+    "areaKm2": 104.238,
+    "population": 242285
+  },
+  {
+    "districtCode": "21.01",
+    "districtName": "Kabupaten Bintan",
+    "provinceCode": "21",
+    "provinceName": "Kepulauan Riau",
+    "latitude": 0.95,
+    "longitude": 104.61944,
+    "areaKm2": 1311.868,
+    "population": 180404
+  },
+  {
+    "districtCode": "21.02",
+    "districtName": "Kabupaten Karimun",
+    "provinceCode": "21",
+    "provinceName": "Kepulauan Riau",
+    "latitude": 0.80764,
+    "longitude": 103.41911,
+    "areaKm2": 916.331,
+    "population": 273946
+  },
+  {
+    "districtCode": "21.03",
+    "districtName": "Kabupaten Natuna",
+    "provinceCode": "21",
+    "provinceName": "Kepulauan Riau",
+    "latitude": 4.71417,
+    "longitude": 107.97639,
+    "areaKm2": 1978.01,
+    "population": 84325
+  },
+  {
+    "districtCode": "21.04",
+    "districtName": "Kabupaten Lingga",
+    "provinceCode": "21",
+    "provinceName": "Kepulauan Riau",
+    "latitude": -0.5091,
+    "longitude": 104.41448,
+    "areaKm2": 2173.63,
+    "population": 101039
+  },
+  {
+    "districtCode": "21.05",
+    "districtName": "Kabupaten Kepulauan Anambas",
+    "provinceCode": "21",
+    "provinceName": "Kepulauan Riau",
+    "latitude": 2.93966,
+    "longitude": 105.76071,
+    "areaKm2": 620.622,
+    "population": 50922
+  },
+  {
+    "districtCode": "21.71",
+    "districtName": "Kota Batam",
+    "provinceCode": "21",
+    "provinceName": "Kepulauan Riau",
+    "latitude": 1.05211,
+    "longitude": 104.02851,
+    "areaKm2": 1020.28,
+    "population": 1342038
+  },
+  {
+    "districtCode": "21.72",
+    "districtName": "Kota Tanjung Pinang",
+    "provinceCode": "21",
+    "provinceName": "Kepulauan Riau",
+    "latitude": 0.91683,
+    "longitude": 104.44329,
+    "areaKm2": 149.634,
+    "population": 239216
+  },
+  {
+    "districtCode": "31.01",
+    "districtName": "Kabupaten Administrasi Kepulauan Seribu",
+    "provinceCode": "31",
+    "provinceName": "Daerah Khusus Ibukota Jakarta",
+    "latitude": -5.80308,
+    "longitude": 106.52257,
+    "areaKm2": 10.951,
+    "population": 30334
+  },
+  {
+    "districtCode": "31.71",
+    "districtName": "Kota Administrasi Jakarta Pusat",
+    "provinceCode": "31",
+    "provinceName": "Daerah Khusus Ibukota Jakarta",
+    "latitude": -6.18333,
+    "longitude": 106.83333,
+    "areaKm2": 47.565,
+    "population": 1057270
+  },
+  {
+    "districtCode": "31.72",
+    "districtName": "Kota Administrasi Jakarta Utara ",
+    "provinceCode": "31",
+    "provinceName": "Daerah Khusus Ibukota Jakarta",
+    "latitude": -6.13611,
+    "longitude": 106.90417,
+    "areaKm2": 147.534,
+    "population": 1832032
+  },
+  {
+    "districtCode": "31.73",
+    "districtName": "Kota Administrasi Jakarta Barat",
+    "provinceCode": "31",
+    "provinceName": "Daerah Khusus Ibukota Jakarta",
+    "latitude": -6.16667,
+    "longitude": 106.75,
+    "areaKm2": 125.0,
+    "population": 2556752
+  },
+  {
+    "districtCode": "31.74",
+    "districtName": "Kota Administrasi Jakarta Selatan",
+    "provinceCode": "31",
+    "provinceName": "Daerah Khusus Ibukota Jakarta",
+    "latitude": -6.26667,
+    "longitude": 106.80833,
+    "areaKm2": 144.942,
+    "population": 2331411
+  },
+  {
+    "districtCode": "31.75",
+    "districtName": "Kota Administrasi Jakarta Timur",
+    "provinceCode": "31",
+    "provinceName": "Daerah Khusus Ibukota Jakarta",
+    "latitude": -6.25,
+    "longitude": 106.8875,
+    "areaKm2": 185.538,
+    "population": 3230417
+  },
+  {
+    "districtCode": "32.01",
+    "districtName": "Kabupaten Bogor",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.59,
+    "longitude": 106.80111,
+    "areaKm2": 2991.778,
+    "population": 5809790
+  },
+  {
+    "districtCode": "32.02",
+    "districtName": "Kabupaten Sukabumi",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.93333,
+    "longitude": 106.93333,
+    "areaKm2": 4163.824,
+    "population": 2868943
+  },
+  {
+    "districtCode": "32.03",
+    "districtName": "Kabupaten Cianjur",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.7725,
+    "longitude": 107.08306,
+    "areaKm2": 3631.969,
+    "population": 2638825
+  },
+  {
+    "districtCode": "32.04",
+    "districtName": "Kabupaten Bandung",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -7.1,
+    "longitude": 107.61667,
+    "areaKm2": 1740.843,
+    "population": 3839721
+  },
+  {
+    "districtCode": "32.05",
+    "districtName": "Kabupaten Garut",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -7.41667,
+    "longitude": 107.78333,
+    "areaKm2": 3101.132,
+    "population": 2851877
+  },
+  {
+    "districtCode": "32.06",
+    "districtName": "Kabupaten Tasikmalaya",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -7.35472,
+    "longitude": 108.22139,
+    "areaKm2": 2706.972,
+    "population": 1996059
+  },
+  {
+    "districtCode": "32.07",
+    "districtName": "Kabupaten Ciamis",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -7.28333,
+    "longitude": 108.41667,
+    "areaKm2": 1595.936,
+    "population": 1297783
+  },
+  {
+    "districtCode": "32.08",
+    "districtName": "Kabupaten Kuningan",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -7.0,
+    "longitude": 108.56667,
+    "areaKm2": 1193.449,
+    "population": 1239999
+  },
+  {
+    "districtCode": "32.09",
+    "districtName": "Kabupaten Cirebon",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.75,
+    "longitude": 108.55,
+    "areaKm2": 1073.772,
+    "population": 2489046
+  },
+  {
+    "districtCode": "32.10",
+    "districtName": "Kabupaten Majalengka",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.81667,
+    "longitude": 108.28333,
+    "areaKm2": 1331.553,
+    "population": 1369569
+  },
+  {
+    "districtCode": "32.11",
+    "districtName": "Kabupaten Sumedang",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.83333,
+    "longitude": 107.98333,
+    "areaKm2": 1566.204,
+    "population": 1226660
+  },
+  {
+    "districtCode": "32.12",
+    "districtName": "Kabupaten Indramayu",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.45,
+    "longitude": 108.16667,
+    "areaKm2": 2076.266,
+    "population": 1980080
+  },
+  {
+    "districtCode": "32.13",
+    "districtName": "Kabupaten Subang",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.50833,
+    "longitude": 107.7025,
+    "areaKm2": 2168.909,
+    "population": 1677628
+  },
+  {
+    "districtCode": "32.14",
+    "districtName": "Kabupaten Purwakarta",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.6,
+    "longitude": 107.43333,
+    "areaKm2": 993.092,
+    "population": 1063932
+  },
+  {
+    "districtCode": "32.15",
+    "districtName": "Kabupaten Karawang",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.24972,
+    "longitude": 107.41611,
+    "areaKm2": 1916.056,
+    "population": 2612065
+  },
+  {
+    "districtCode": "32.16",
+    "districtName": "Kabupaten Bekasi",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.21611,
+    "longitude": 107.15,
+    "areaKm2": 1255.001,
+    "population": 3387601
+  },
+  {
+    "districtCode": "32.17",
+    "districtName": "Kabupaten Bandung Barat",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.83333,
+    "longitude": 107.48333,
+    "areaKm2": 1283.439,
+    "population": 1911661
+  },
+  {
+    "districtCode": "32.18",
+    "districtName": "Kabupaten Pangandaran",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -7.6673,
+    "longitude": 108.64037,
+    "areaKm2": 1128.122,
+    "population": 447272
+  },
+  {
+    "districtCode": "32.71",
+    "districtName": "Kota Bogor",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.59,
+    "longitude": 106.80111,
+    "areaKm2": 111.366,
+    "population": 1144108
+  },
+  {
+    "districtCode": "32.72",
+    "districtName": "Kota Sukabumi",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.93333,
+    "longitude": 106.93333,
+    "areaKm2": 48.314,
+    "population": 370096
+  },
+  {
+    "districtCode": "32.73",
+    "districtName": "Kota Bandung",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -7.1,
+    "longitude": 107.61667,
+    "areaKm2": 166.593,
+    "population": 2591763
+  },
+  {
+    "districtCode": "32.74",
+    "districtName": "Kota Cirebon",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.75,
+    "longitude": 108.55,
+    "areaKm2": 39.398,
+    "population": 356629
+  },
+  {
+    "districtCode": "32.75",
+    "districtName": "Kota Bekasi",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.21611,
+    "longitude": 107.15,
+    "areaKm2": 213.036,
+    "population": 2572209
+  },
+  {
+    "districtCode": "32.76",
+    "districtName": "Kota Depok",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.39611,
+    "longitude": 106.81667,
+    "areaKm2": 199.906,
+    "population": 2010912
+  },
+  {
+    "districtCode": "32.77",
+    "districtName": "Kota Cimahi",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -6.88333,
+    "longitude": 107.54167,
+    "areaKm2": 42.432,
+    "population": 581994
+  },
+  {
+    "districtCode": "32.78",
+    "districtName": "Kota Tasikmalaya",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -7.35472,
+    "longitude": 108.22139,
+    "areaKm2": 182.964,
+    "population": 770839
+  },
+  {
+    "districtCode": "32.79",
+    "districtName": "Kota Banjar",
+    "provinceCode": "32",
+    "provinceName": "Jawa Barat",
+    "latitude": -3.38333,
+    "longitude": 115.08333,
+    "areaKm2": 131.005,
+    "population": 209317
+  },
+  {
+    "districtCode": "33.01",
+    "districtName": "Kabupaten Cilacap",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.57417,
+    "longitude": 108.98861,
+    "areaKm2": 2325.173,
+    "population": 2059748
+  },
+  {
+    "districtCode": "33.02",
+    "districtName": "Kabupaten Banyumas",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.43333,
+    "longitude": 109.15,
+    "areaKm2": 1391.153,
+    "population": 1868446
+  },
+  {
+    "districtCode": "33.03",
+    "districtName": "Kabupaten Purbalingga",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.28417,
+    "longitude": 109.35028,
+    "areaKm2": 805.757,
+    "population": 1057750
+  },
+  {
+    "districtCode": "33.04",
+    "districtName": "Kabupaten Banjarnegara",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.35111,
+    "longitude": 109.5875,
+    "areaKm2": 1144.896,
+    "population": 1071977
+  },
+  {
+    "districtCode": "33.05",
+    "districtName": "Kabupaten Kebumen",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.63917,
+    "longitude": 109.66056,
+    "areaKm2": 1333.902,
+    "population": 1446833
+  },
+  {
+    "districtCode": "33.06",
+    "districtName": "Kabupaten Purworejo",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.7,
+    "longitude": 109.96667,
+    "areaKm2": 1081.763,
+    "population": 809651
+  },
+  {
+    "districtCode": "33.07",
+    "districtName": "Kabupaten Wonosobo",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.36139,
+    "longitude": 109.92667,
+    "areaKm2": 1011.623,
+    "population": 945955
+  },
+  {
+    "districtCode": "33.08",
+    "districtName": "Kabupaten Magelang",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.48333,
+    "longitude": 110.21667,
+    "areaKm2": 1129.983,
+    "population": 1345662
+  },
+  {
+    "districtCode": "33.09",
+    "districtName": "Kabupaten Boyolali",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.46667,
+    "longitude": 110.71667,
+    "areaKm2": 1096.613,
+    "population": 1114070
+  },
+  {
+    "districtCode": "33.10",
+    "districtName": "Kabupaten Klaten",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.68333,
+    "longitude": 110.63333,
+    "areaKm2": 701.511,
+    "population": 1302648
+  },
+  {
+    "districtCode": "33.11",
+    "districtName": "Kabupaten Sukoharjo",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.67889,
+    "longitude": 110.86389,
+    "areaKm2": 493.601,
+    "population": 916472
+  },
+  {
+    "districtCode": "33.12",
+    "districtName": "Kabupaten Wonogiri",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.91667,
+    "longitude": 111.0,
+    "areaKm2": 1905.823,
+    "population": 1057495
+  },
+  {
+    "districtCode": "33.13",
+    "districtName": "Kabupaten Karanganyar",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.62806,
+    "longitude": 111.0625,
+    "areaKm2": 802.848,
+    "population": 953696
+  },
+  {
+    "districtCode": "33.14",
+    "districtName": "Kabupaten Sragen",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.41278,
+    "longitude": 110.935,
+    "areaKm2": 994.573,
+    "population": 1023538
+  },
+  {
+    "districtCode": "33.15",
+    "districtName": "Kabupaten Grobogan",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.13333,
+    "longitude": 110.91667,
+    "areaKm2": 2023.849,
+    "population": 1520974
+  },
+  {
+    "districtCode": "33.16",
+    "districtName": "Kabupaten Blora",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.08333,
+    "longitude": 111.41667,
+    "areaKm2": 1957.289,
+    "population": 927961
+  },
+  {
+    "districtCode": "33.17",
+    "districtName": "Kabupaten Rembang",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -6.78333,
+    "longitude": 111.46667,
+    "areaKm2": 1038.32,
+    "population": 665501
+  },
+  {
+    "districtCode": "33.18",
+    "districtName": "Kabupaten Pati",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -6.73333,
+    "longitude": 111.08333,
+    "areaKm2": 1576.69,
+    "population": 1385904
+  },
+  {
+    "districtCode": "33.19",
+    "districtName": "Kabupaten Kudus",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -6.78333,
+    "longitude": 110.88333,
+    "areaKm2": 447.445,
+    "population": 877821
+  },
+  {
+    "districtCode": "33.20",
+    "districtName": "Kabupaten Jepara",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -6.6,
+    "longitude": 110.78333,
+    "areaKm2": 1020.124,
+    "population": 1283687
+  },
+  {
+    "districtCode": "33.21",
+    "districtName": "Kabupaten Demak",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -6.8993,
+    "longitude": 110.6122,
+    "areaKm2": 970.077,
+    "population": 1254204
+  },
+  {
+    "districtCode": "33.22",
+    "districtName": "Kabupaten Semarang",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.025,
+    "longitude": 110.385,
+    "areaKm2": 1019.27,
+    "population": 1088729
+  },
+  {
+    "districtCode": "33.23",
+    "districtName": "Kabupaten Temanggung",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.25,
+    "longitude": 110.13333,
+    "areaKm2": 864.834,
+    "population": 822880
+  },
+  {
+    "districtCode": "33.24",
+    "districtName": "Kabupaten Kendal",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.0256,
+    "longitude": 110.1685,
+    "areaKm2": 1006.174,
+    "population": 1094214
+  },
+  {
+    "districtCode": "33.25",
+    "districtName": "Kabupaten Batang",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.025,
+    "longitude": 109.8675,
+    "areaKm2": 857.073,
+    "population": 855878
+  },
+  {
+    "districtCode": "33.26",
+    "districtName": "Kabupaten Pekalongan",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -6.89333,
+    "longitude": 109.67583,
+    "areaKm2": 892.578,
+    "population": 1034241
+  },
+  {
+    "districtCode": "33.27",
+    "districtName": "Kabupaten Pemalang",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.05,
+    "longitude": 109.38333,
+    "areaKm2": 1135.757,
+    "population": 1601007
+  },
+  {
+    "districtCode": "33.28",
+    "districtName": "Kabupaten Tegal",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.03333,
+    "longitude": 109.16667,
+    "areaKm2": 983.713,
+    "population": 1745278
+  },
+  {
+    "districtCode": "33.29",
+    "districtName": "Kabupaten Brebes",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.05,
+    "longitude": 108.9,
+    "areaKm2": 1754.77,
+    "population": 2066426
+  },
+  {
+    "districtCode": "33.71",
+    "districtName": "Kota Magelang",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.48333,
+    "longitude": 110.21667,
+    "areaKm2": 18.558,
+    "population": 128709
+  },
+  {
+    "districtCode": "33.72",
+    "districtName": "Kota Surakarta",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.55806,
+    "longitude": 110.82333,
+    "areaKm2": 46.802,
+    "population": 589242
+  },
+  {
+    "districtCode": "33.73",
+    "districtName": "Kota Salatiga",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.33278,
+    "longitude": 110.48333,
+    "areaKm2": 54.983,
+    "population": 198971
+  },
+  {
+    "districtCode": "33.74",
+    "districtName": "Kota Semarang",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.025,
+    "longitude": 110.385,
+    "areaKm2": 374.747,
+    "population": 1702379
+  },
+  {
+    "districtCode": "33.75",
+    "districtName": "Kota Pekalongan",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -6.89333,
+    "longitude": 109.67583,
+    "areaKm2": 46.076,
+    "population": 318221
+  },
+  {
+    "districtCode": "33.76",
+    "districtName": "Kota Tegal",
+    "provinceCode": "33",
+    "provinceName": "Jawa Tengah",
+    "latitude": -7.03333,
+    "longitude": 109.16667,
+    "areaKm2": 39.08,
+    "population": 294477
+  },
+  {
+    "districtCode": "34.01",
+    "districtName": "Kabupaten Kulon Progo",
+    "provinceCode": "34",
+    "provinceName": "Daerah Istimewa Yogyakarta",
+    "latitude": -7.81256,
+    "longitude": 110.15133,
+    "areaKm2": 576.803,
+    "population": 444994
+  },
+  {
+    "districtCode": "34.02",
+    "districtName": "Kabupaten Bantul",
+    "provinceCode": "34",
+    "provinceName": "Daerah Istimewa Yogyakarta",
+    "latitude": -7.9,
+    "longitude": 110.3625,
+    "areaKm2": 511.527,
+    "population": 980269
+  },
+  {
+    "districtCode": "34.03",
+    "districtName": "Kabupaten Gunungkidul",
+    "provinceCode": "34",
+    "provinceName": "Daerah Istimewa Yogyakarta",
+    "latitude": -7.99444,
+    "longitude": 110.6125,
+    "areaKm2": 1475.465,
+    "population": 776926
+  },
+  {
+    "districtCode": "34.04",
+    "districtName": "Kabupaten Sleman",
+    "provinceCode": "34",
+    "provinceName": "Daerah Istimewa Yogyakarta",
+    "latitude": -7.68167,
+    "longitude": 110.32333,
+    "areaKm2": 573.749,
+    "population": 1125571
+  },
+  {
+    "districtCode": "34.71",
+    "districtName": "Kota Yogyakarta",
+    "provinceCode": "34",
+    "provinceName": "Daerah Istimewa Yogyakarta",
+    "latitude": -7.8,
+    "longitude": 110.375,
+    "areaKm2": 32.819,
+    "population": 415605
+  },
+  {
+    "districtCode": "35.01",
+    "districtName": "Kabupaten Pacitan",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -8.125,
+    "longitude": 111.17806,
+    "areaKm2": 1434.818,
+    "population": 588718
+  },
+  {
+    "districtCode": "35.02",
+    "districtName": "Kabupaten Ponorogo",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.93333,
+    "longitude": 111.5,
+    "areaKm2": 1418.618,
+    "population": 979008
+  },
+  {
+    "districtCode": "35.03",
+    "districtName": "Kabupaten Trenggalek",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -8.15972,
+    "longitude": 111.62639,
+    "areaKm2": 1249.367,
+    "population": 753810
+  },
+  {
+    "districtCode": "35.04",
+    "districtName": "Kabupaten Tulungagung",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -8.13333,
+    "longitude": 111.91667,
+    "areaKm2": 1144.856,
+    "population": 1139224
+  },
+  {
+    "districtCode": "35.05",
+    "districtName": "Kabupaten Blitar",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -8.1,
+    "longitude": 112.16667,
+    "areaKm2": 1745.383,
+    "population": 1261699
+  },
+  {
+    "districtCode": "35.06",
+    "districtName": "Kabupaten Kediri",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.825,
+    "longitude": 112.01667,
+    "areaKm2": 1523.563,
+    "population": 1691976
+  },
+  {
+    "districtCode": "35.07",
+    "districtName": "Kabupaten Malang",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.98333,
+    "longitude": 112.63333,
+    "areaKm2": 3473.747,
+    "population": 2734623
+  },
+  {
+    "districtCode": "35.08",
+    "districtName": "Kabupaten Lumajang",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -8.13333,
+    "longitude": 113.13333,
+    "areaKm2": 1796.489,
+    "population": 1116231
+  },
+  {
+    "districtCode": "35.09",
+    "districtName": "Kabupaten Jember",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -8.23333,
+    "longitude": 113.66667,
+    "areaKm2": 3314.358,
+    "population": 2615874
+  },
+  {
+    "districtCode": "35.10",
+    "districtName": "Kabupaten Banyuwangi",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -8.36667,
+    "longitude": 114.16667,
+    "areaKm2": 3593.849,
+    "population": 1791789
+  },
+  {
+    "districtCode": "35.11",
+    "districtName": "Kabupaten Bondowoso",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.9404,
+    "longitude": 113.9834,
+    "areaKm2": 1554.992,
+    "population": 788007
+  },
+  {
+    "districtCode": "35.12",
+    "districtName": "Kabupaten Situbondo",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.68333,
+    "longitude": 114.03333,
+    "areaKm2": 1654.705,
+    "population": 691635
+  },
+  {
+    "districtCode": "35.13",
+    "districtName": "Kabupaten Probolinggo",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.775,
+    "longitude": 113.20833,
+    "areaKm2": 1725.171,
+    "population": 1200931
+  },
+  {
+    "districtCode": "35.14",
+    "districtName": "Kabupaten Pasuruan",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.65,
+    "longitude": 112.90833,
+    "areaKm2": 1493.161,
+    "population": 1665922
+  },
+  {
+    "districtCode": "35.15",
+    "districtName": "Kabupaten Sidoarjo",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.45,
+    "longitude": 112.7,
+    "areaKm2": 724.766,
+    "population": 2027874
+  },
+  {
+    "districtCode": "35.16",
+    "districtName": "Kabupaten Mojokerto",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.47083,
+    "longitude": 112.4375,
+    "areaKm2": 984.38,
+    "population": 1156144
+  },
+  {
+    "districtCode": "35.17",
+    "districtName": "Kabupaten Jombang",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.55,
+    "longitude": 112.26667,
+    "areaKm2": 1109.835,
+    "population": 1378005
+  },
+  {
+    "districtCode": "35.18",
+    "districtName": "Kabupaten Nganjuk",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.56667,
+    "longitude": 111.95,
+    "areaKm2": 1289.067,
+    "population": 1152575
+  },
+  {
+    "districtCode": "35.19",
+    "districtName": "Kabupaten Madiun",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.62778,
+    "longitude": 111.52778,
+    "areaKm2": 1113.627,
+    "population": 737875
+  },
+  {
+    "districtCode": "35.20",
+    "districtName": "Kabupaten Magetan",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.64472,
+    "longitude": 111.35917,
+    "areaKm2": 706.444,
+    "population": 692800
+  },
+  {
+    "districtCode": "35.21",
+    "districtName": "Kabupaten Ngawi",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.47444,
+    "longitude": 111.33444,
+    "areaKm2": 1395.804,
+    "population": 907002
+  },
+  {
+    "districtCode": "35.22",
+    "districtName": "Kabupaten Bojonegoro",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.25,
+    "longitude": 111.80833,
+    "areaKm2": 2312.627,
+    "population": 1366227
+  },
+  {
+    "districtCode": "35.23",
+    "districtName": "Kabupaten Tuban",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -6.95,
+    "longitude": 111.89167,
+    "areaKm2": 1973.515,
+    "population": 1266396
+  },
+  {
+    "districtCode": "35.24",
+    "districtName": "Kabupaten Lamongan",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.13333,
+    "longitude": 112.31667,
+    "areaKm2": 1752.989,
+    "population": 1367503
+  },
+  {
+    "districtCode": "35.25",
+    "districtName": "Kabupaten Gresik",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.15389,
+    "longitude": 112.65611,
+    "areaKm2": 1264.009,
+    "population": 1327497
+  },
+  {
+    "districtCode": "35.26",
+    "districtName": "Kabupaten Bangkalan",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.05,
+    "longitude": 112.93333,
+    "areaKm2": 1302.64,
+    "population": 1042031
+  },
+  {
+    "districtCode": "35.27",
+    "districtName": "Kabupaten Sampang",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.05,
+    "longitude": 113.25,
+    "areaKm2": 1229.165,
+    "population": 1033926
+  },
+  {
+    "districtCode": "35.28",
+    "districtName": "Kabupaten Pamekasan",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.06667,
+    "longitude": 113.5,
+    "areaKm2": 796.241,
+    "population": 904965
+  },
+  {
+    "districtCode": "35.29",
+    "districtName": "Kabupaten Sumenep",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -6.98333,
+    "longitude": 113.81667,
+    "areaKm2": 2083.048,
+    "population": 1143002
+  },
+  {
+    "districtCode": "35.71",
+    "districtName": "Kota Kediri",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.825,
+    "longitude": 112.01667,
+    "areaKm2": 67.232,
+    "population": 301424
+  },
+  {
+    "districtCode": "35.72",
+    "districtName": "Kota Blitar",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -8.1,
+    "longitude": 112.16667,
+    "areaKm2": 33.203,
+    "population": 161204
+  },
+  {
+    "districtCode": "35.73",
+    "districtName": "Kota Malang",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.98333,
+    "longitude": 112.63333,
+    "areaKm2": 111.077,
+    "population": 889359
+  },
+  {
+    "districtCode": "35.74",
+    "districtName": "Kota Probolinggo",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.775,
+    "longitude": 113.20833,
+    "areaKm2": 55.197,
+    "population": 243746
+  },
+  {
+    "districtCode": "35.75",
+    "districtName": "Kota Pasuruan",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.65,
+    "longitude": 112.90833,
+    "areaKm2": 39.109,
+    "population": 213469
+  },
+  {
+    "districtCode": "35.76",
+    "districtName": "Kota Mojokerto",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.47083,
+    "longitude": 112.4375,
+    "areaKm2": 20.48,
+    "population": 142272
+  },
+  {
+    "districtCode": "35.77",
+    "districtName": "Kota Madiun",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.62778,
+    "longitude": 111.52778,
+    "areaKm2": 36.126,
+    "population": 201733
+  },
+  {
+    "districtCode": "35.78",
+    "districtName": "Kota Surabaya",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.275,
+    "longitude": 112.71667,
+    "areaKm2": 338.048,
+    "population": 3018022
+  },
+  {
+    "districtCode": "35.79",
+    "districtName": "Kota Batu",
+    "provinceCode": "35",
+    "provinceName": "Jawa Timur",
+    "latitude": -7.83272,
+    "longitude": 112.53751,
+    "areaKm2": 194.17,
+    "population": 225408
+  },
+  {
+    "districtCode": "36.01",
+    "districtName": "Kabupaten Pandeglang",
+    "provinceCode": "36",
+    "provinceName": "Banten",
+    "latitude": -6.49861,
+    "longitude": 105.89167,
+    "areaKm2": 2771.488,
+    "population": 1437046
+  },
+  {
+    "districtCode": "36.02",
+    "districtName": "Kabupaten Lebak",
+    "provinceCode": "36",
+    "provinceName": "Banten",
+    "latitude": -6.65,
+    "longitude": 106.21667,
+    "areaKm2": 3312.298,
+    "population": 1531564
+  },
+  {
+    "districtCode": "36.03",
+    "districtName": "Kabupaten Tangerang",
+    "provinceCode": "36",
+    "provinceName": "Banten",
+    "latitude": -6.16667,
+    "longitude": 106.48333,
+    "areaKm2": 1028.335,
+    "population": 3459706
+  },
+  {
+    "districtCode": "36.04",
+    "districtName": "Kabupaten Serang",
+    "provinceCode": "36",
+    "provinceName": "Banten",
+    "latitude": -6.15,
+    "longitude": 105.96667,
+    "areaKm2": 1471.543,
+    "population": 1791795
+  },
+  {
+    "districtCode": "36.71",
+    "districtName": "Kota Tangerang",
+    "provinceCode": "36",
+    "provinceName": "Banten",
+    "latitude": -6.16667,
+    "longitude": 106.48333,
+    "areaKm2": 178.347,
+    "population": 1957349
+  },
+  {
+    "districtCode": "36.72",
+    "districtName": "Kota Cilegon",
+    "provinceCode": "36",
+    "provinceName": "Banten",
+    "latitude": -6.0,
+    "longitude": 106.02917,
+    "areaKm2": 162.578,
+    "population": 480378
+  },
+  {
+    "districtCode": "36.73",
+    "districtName": "Kota Serang",
+    "provinceCode": "36",
+    "provinceName": "Banten",
+    "latitude": -6.15,
+    "longitude": 105.96667,
+    "areaKm2": 266.314,
+    "population": 759929
+  },
+  {
+    "districtCode": "36.74",
+    "districtName": "Kota Tangerang Selatan",
+    "provinceCode": "36",
+    "provinceName": "Banten",
+    "latitude": -6.29373,
+    "longitude": 106.71244,
+    "areaKm2": 164.86,
+    "population": 1463607
+  },
+  {
+    "districtCode": "51.01",
+    "districtName": "Kabupaten Jembrana",
+    "provinceCode": "51",
+    "provinceName": "Bali",
+    "latitude": -8.31667,
+    "longitude": 114.68333,
+    "areaKm2": 847.515,
+    "population": 330221
+  },
+  {
+    "districtCode": "51.02",
+    "districtName": "Kabupaten Tabanan",
+    "provinceCode": "51",
+    "provinceName": "Bali",
+    "latitude": -8.43333,
+    "longitude": 115.08333,
+    "areaKm2": 848.539,
+    "population": 478393
+  },
+  {
+    "districtCode": "51.03",
+    "districtName": "Kabupaten Badung",
+    "provinceCode": "51",
+    "provinceName": "Bali",
+    "latitude": -8.56667,
+    "longitude": 115.2,
+    "areaKm2": 397.395,
+    "population": 537739
+  },
+  {
+    "districtCode": "51.04",
+    "districtName": "Kabupaten Gianyar",
+    "provinceCode": "51",
+    "provinceName": "Bali",
+    "latitude": -8.48333,
+    "longitude": 115.28333,
+    "areaKm2": 363.782,
+    "population": 504845
+  },
+  {
+    "districtCode": "51.05",
+    "districtName": "Kabupaten Klungkung",
+    "provinceCode": "51",
+    "provinceName": "Bali",
+    "latitude": -8.55,
+    "longitude": 115.41667,
+    "areaKm2": 312.115,
+    "population": 223723
+  },
+  {
+    "districtCode": "51.06",
+    "districtName": "Kabupaten Bangli",
+    "provinceCode": "51",
+    "provinceName": "Bali",
+    "latitude": -8.26667,
+    "longitude": 115.35,
+    "areaKm2": 526.764,
+    "population": 260526
+  },
+  {
+    "districtCode": "51.07",
+    "districtName": "Kabupaten Karangasem",
+    "provinceCode": "51",
+    "provinceName": "Bali",
+    "latitude": -8.3891,
+    "longitude": 115.5393,
+    "areaKm2": 838.899,
+    "population": 538390
+  },
+  {
+    "districtCode": "51.08",
+    "districtName": "Kabupaten Buleleng",
+    "provinceCode": "51",
+    "provinceName": "Bali",
+    "latitude": -8.25,
+    "longitude": 114.95,
+    "areaKm2": 1322.124,
+    "population": 828156
+  },
+  {
+    "districtCode": "51.71",
+    "districtName": "Kota Denpasar",
+    "provinceCode": "51",
+    "provinceName": "Bali",
+    "latitude": -8.66667,
+    "longitude": 115.21667,
+    "areaKm2": 125.694,
+    "population": 673270
+  },
+  {
+    "districtCode": "52.01",
+    "districtName": "Kabupaten Lombok Barat",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.66667,
+    "longitude": 116.13333,
+    "areaKm2": 919.44,
+    "population": 762757
+  },
+  {
+    "districtCode": "52.02",
+    "districtName": "Kabupaten Lombok Tengah",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.7,
+    "longitude": 116.3,
+    "areaKm2": 1167.029,
+    "population": 1128716
+  },
+  {
+    "districtCode": "52.03",
+    "districtName": "Kabupaten Lombok Timur",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.53333,
+    "longitude": 116.51667,
+    "areaKm2": 1602.377,
+    "population": 1457591
+  },
+  {
+    "districtCode": "52.04",
+    "districtName": "Kabupaten Sumbawa",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.7439,
+    "longitude": 117.3324,
+    "areaKm2": 6645.723,
+    "population": 527715
+  },
+  {
+    "districtCode": "52.05",
+    "districtName": "Kabupaten Dompu",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.5094,
+    "longitude": 118.4816,
+    "areaKm2": 2270.36,
+    "population": 277837
+  },
+  {
+    "districtCode": "52.06",
+    "districtName": "Kabupaten Bima",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.61667,
+    "longitude": 118.75,
+    "areaKm2": 4208.861,
+    "population": 543582
+  },
+  {
+    "districtCode": "52.07",
+    "districtName": "Kabupaten Sumbawa Barat",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.75159,
+    "longitude": 116.92132,
+    "areaKm2": 1739.564,
+    "population": 156059
+  },
+  {
+    "districtCode": "52.08",
+    "districtName": "Kabupaten Lombok Utara",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.35214,
+    "longitude": 116.40152,
+    "areaKm2": 810.185,
+    "population": 269989
+  },
+  {
+    "districtCode": "52.71",
+    "districtName": "Kota Mataram",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.58333,
+    "longitude": 116.11667,
+    "areaKm2": 60.063,
+    "population": 461936
+  },
+  {
+    "districtCode": "52.72",
+    "districtName": "Kota Bima",
+    "provinceCode": "52",
+    "provinceName": "Nusa Tenggara Barat",
+    "latitude": -8.61667,
+    "longitude": 118.75,
+    "areaKm2": 208.389,
+    "population": 165113
+  },
+  {
+    "districtCode": "53.01",
+    "districtName": "Kabupaten Kupang",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -10.19694,
+    "longitude": 123.59806,
+    "areaKm2": 5130.659,
+    "population": 391539
+  },
+  {
+    "districtCode": "53.02",
+    "districtName": "Kabupaten Timor Tengah Selatan",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -9.83333,
+    "longitude": 124.4,
+    "areaKm2": 3931.747,
+    "population": 490642
+  },
+  {
+    "districtCode": "53.03",
+    "districtName": "Kabupaten Timor Tengah Utara",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -9.33136,
+    "longitude": 124.51904,
+    "areaKm2": 2622.293,
+    "population": 276032
+  },
+  {
+    "districtCode": "53.04",
+    "districtName": "Kabupaten Belu",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -9.17581,
+    "longitude": 124.91628,
+    "areaKm2": 1126.77,
+    "population": 232788
+  },
+  {
+    "districtCode": "53.05",
+    "districtName": "Kabupaten Alor",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.28333,
+    "longitude": 124.73333,
+    "areaKm2": 2918.753,
+    "population": 229730
+  },
+  {
+    "districtCode": "53.06",
+    "districtName": "Kabupaten Flores Timur",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.24224,
+    "longitude": 122.96817,
+    "areaKm2": 1741.064,
+    "population": 289881
+  },
+  {
+    "districtCode": "53.07",
+    "districtName": "Kabupaten Sikka",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.68333,
+    "longitude": 122.33333,
+    "areaKm2": 1669.713,
+    "population": 346614
+  },
+  {
+    "districtCode": "53.08",
+    "districtName": "Kabupaten Ende",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.84056,
+    "longitude": 121.66389,
+    "areaKm2": 2084.076,
+    "population": 283806
+  },
+  {
+    "districtCode": "53.09",
+    "districtName": "Kabupaten Ngada",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.66667,
+    "longitude": 121.0,
+    "areaKm2": 1736.735,
+    "population": 169445
+  },
+  {
+    "districtCode": "53.10",
+    "districtName": "Kabupaten Manggarai",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.56667,
+    "longitude": 120.43333,
+    "areaKm2": 1343.335,
+    "population": 349836
+  },
+  {
+    "districtCode": "53.11",
+    "districtName": "Kabupaten Sumba Timur",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -9.88167,
+    "longitude": 120.215,
+    "areaKm2": 6975.198,
+    "population": 277290
+  },
+  {
+    "districtCode": "53.12",
+    "districtName": "Kabupaten Sumba Barat",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -9.63333,
+    "longitude": 119.41667,
+    "areaKm2": 755.836,
+    "population": 141760
+  },
+  {
+    "districtCode": "53.13",
+    "districtName": "Kabupaten Lembata",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.41396,
+    "longitude": 123.55225,
+    "areaKm2": 1263.767,
+    "population": 149921
+  },
+  {
+    "districtCode": "53.14",
+    "districtName": "Kabupaten Rote Ndao",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -10.73617,
+    "longitude": 123.12054,
+    "areaKm2": 1277.256,
+    "population": 154027
+  },
+  {
+    "districtCode": "53.15",
+    "districtName": "Kabupaten Manggarai Barat",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.64484,
+    "longitude": 119.88281,
+    "areaKm2": 3120.028,
+    "population": 290688
+  },
+  {
+    "districtCode": "53.16",
+    "districtName": "Kabupaten Nagekeo",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.8721,
+    "longitude": 121.20963,
+    "areaKm2": 1397.969,
+    "population": 164457
+  },
+  {
+    "districtCode": "53.17",
+    "districtName": "Kabupaten Sumba Tengah",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -9.62941,
+    "longitude": 119.61914,
+    "areaKm2": 1786.436,
+    "population": 92138
+  },
+  {
+    "districtCode": "53.18",
+    "districtName": "Kabupaten Sumba Barat Daya",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -9.56216,
+    "longitude": 119.08905,
+    "areaKm2": 1381.943,
+    "population": 355022
+  },
+  {
+    "districtCode": "53.19",
+    "districtName": "Kabupaten Manggarai Timur",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -8.55533,
+    "longitude": 120.59761,
+    "areaKm2": 2389.499,
+    "population": 305268
+  },
+  {
+    "districtCode": "53.20",
+    "districtName": "Kabupaten Sabu Raijua",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -10.56286,
+    "longitude": 121.78894,
+    "areaKm2": 457.14,
+    "population": 94860
+  },
+  {
+    "districtCode": "53.21",
+    "districtName": "Kabupaten Malaka",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -9.5632,
+    "longitude": 124.89481,
+    "areaKm2": 1109.003,
+    "population": 210908
+  },
+  {
+    "districtCode": "53.71",
+    "districtName": "Kota Kupang",
+    "provinceCode": "53",
+    "provinceName": "Nusa Tenggara Timur",
+    "latitude": -10.19694,
+    "longitude": 123.59806,
+    "areaKm2": 158.885,
+    "population": 404120
+  },
+  {
+    "districtCode": "61.01",
+    "districtName": "Kabupaten Sambas",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": 1.43333,
+    "longitude": 109.35,
+    "areaKm2": 5928.221,
+    "population": 651246
+  },
+  {
+    "districtCode": "61.02",
+    "districtName": "Kabupaten Mempawah",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": 0.25,
+    "longitude": 109.16667,
+    "areaKm2": 1934.827,
+    "population": 314148
+  },
+  {
+    "districtCode": "61.03",
+    "districtName": "Kabupaten Sanggau",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": 0.21667,
+    "longitude": 110.46667,
+    "areaKm2": 12452.224,
+    "population": 499074
+  },
+  {
+    "districtCode": "61.04",
+    "districtName": "Kabupaten Ketapang",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": -1.58333,
+    "longitude": 110.56667,
+    "areaKm2": 30012.023,
+    "population": 583541
+  },
+  {
+    "districtCode": "61.05",
+    "districtName": "Kabupaten Sintang",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": -0.08333,
+    "longitude": 112.08333,
+    "areaKm2": 22025.788,
+    "population": 457204
+  },
+  {
+    "districtCode": "61.06",
+    "districtName": "Kabupaten Kapuas Hulu",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": 0.83333,
+    "longitude": 112.8,
+    "areaKm2": 31318.246,
+    "population": 276988
+  },
+  {
+    "districtCode": "61.07",
+    "districtName": "Kabupaten Bengkayang",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": 1.06911,
+    "longitude": 109.66393,
+    "areaKm2": 5488.322,
+    "population": 295966
+  },
+  {
+    "districtCode": "61.08",
+    "districtName": "Kabupaten Landak",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": 0.42373,
+    "longitude": 109.75917,
+    "areaKm2": 8430.711,
+    "population": 415033
+  },
+  {
+    "districtCode": "61.09",
+    "districtName": "Kabupaten Sekadau",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": 0.03485,
+    "longitude": 110.95066,
+    "areaKm2": 5979.044,
+    "population": 225494
+  },
+  {
+    "districtCode": "61.10",
+    "districtName": "Kabupaten Melawi",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": -0.33617,
+    "longitude": 111.698,
+    "areaKm2": 10122.513,
+    "population": 217600
+  },
+  {
+    "districtCode": "61.11",
+    "districtName": "Kabupaten Kayong Utara",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": -1.06023,
+    "longitude": 110.10402,
+    "areaKm2": 4108.533,
+    "population": 126898
+  },
+  {
+    "districtCode": "61.12",
+    "districtName": "Kabupaten Kubu Raya",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": -0.31924,
+    "longitude": 109.51865,
+    "areaKm2": 8549.057,
+    "population": 646091
+  },
+  {
+    "districtCode": "61.71",
+    "districtName": "Kota Pontianak",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": 0.00832,
+    "longitude": 109.33146,
+    "areaKm2": 118.209,
+    "population": 687031
+  },
+  {
+    "districtCode": "61.72",
+    "districtName": "Kota Singkawang",
+    "provinceCode": "61",
+    "provinceName": "Kalimantan Barat",
+    "latitude": 0.90734,
+    "longitude": 109.00103,
+    "areaKm2": 550.345,
+    "population": 249954
+  },
+  {
+    "districtCode": "62.01",
+    "districtName": "Kabupaten Kotawaringin Barat",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -2.51667,
+    "longitude": 111.7,
+    "areaKm2": 9475.854,
+    "population": 294602
+  },
+  {
+    "districtCode": "62.02",
+    "districtName": "Kabupaten Kotawaringin Timur",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -2.08333,
+    "longitude": 112.76667,
+    "areaKm2": 15541.88,
+    "population": 454515
+  },
+  {
+    "districtCode": "62.03",
+    "districtName": "Kabupaten Kapuas",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -1.75,
+    "longitude": 114.3,
+    "areaKm2": 17033.54,
+    "population": 417854
+  },
+  {
+    "districtCode": "62.04",
+    "districtName": "Kabupaten Barito Selatan",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -1.76667,
+    "longitude": 114.78333,
+    "areaKm2": 6267.084,
+    "population": 137914
+  },
+  {
+    "districtCode": "62.05",
+    "districtName": "Kabupaten Barito Utara",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -0.93333,
+    "longitude": 115.06667,
+    "areaKm2": 9984.808,
+    "population": 159848
+  },
+  {
+    "districtCode": "62.06",
+    "districtName": "Kabupaten Katingan",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -1.68333,
+    "longitude": 113.21667,
+    "areaKm2": 20380.503,
+    "population": 181963
+  },
+  {
+    "districtCode": "62.07",
+    "districtName": "Kabupaten Seruyan",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -2.55,
+    "longitude": 112.25,
+    "areaKm2": 15211.714,
+    "population": 159849
+  },
+  {
+    "districtCode": "62.08",
+    "districtName": "Kabupaten Sukamara",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -2.62675,
+    "longitude": 111.23681,
+    "areaKm2": 3310.13,
+    "population": 67234
+  },
+  {
+    "districtCode": "62.09",
+    "districtName": "Kabupaten Lamandau",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -1.83828,
+    "longitude": 111.2869,
+    "areaKm2": 7632.394,
+    "population": 114257
+  },
+  {
+    "districtCode": "62.10",
+    "districtName": "Kabupaten Gunung Mas",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -1.03333,
+    "longitude": 113.56667,
+    "areaKm2": 9305.756,
+    "population": 134482
+  },
+  {
+    "districtCode": "62.11",
+    "districtName": "Kabupaten Pulang Pisau",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -3.11858,
+    "longitude": 113.8623,
+    "areaKm2": 9650.158,
+    "population": 144663
+  },
+  {
+    "districtCode": "62.12",
+    "districtName": "Kabupaten Murung Raya",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -0.03333,
+    "longitude": 114.28333,
+    "areaKm2": 23575.328,
+    "population": 124291
+  },
+  {
+    "districtCode": "62.13",
+    "districtName": "Kabupaten Barito Timur",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -1.98333,
+    "longitude": 115.15,
+    "areaKm2": 3212.515,
+    "population": 118665
+  },
+  {
+    "districtCode": "62.71",
+    "districtName": "Kota Palangkaraya",
+    "provinceCode": "62",
+    "provinceName": "Kalimantan Tengah",
+    "latitude": -1.76979,
+    "longitude": 113.73126,
+    "areaKm2": 2848.699,
+    "population": 315153
+  },
+  {
+    "districtCode": "63.01",
+    "districtName": "Kabupaten Tanah Laut",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -3.85,
+    "longitude": 114.83333,
+    "areaKm2": 3841.157,
+    "population": 369818
+  },
+  {
+    "districtCode": "63.02",
+    "districtName": "Kabupaten Kotabaru",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -2.76667,
+    "longitude": 116.0,
+    "areaKm2": 9345.91,
+    "population": 332787
+  },
+  {
+    "districtCode": "63.03",
+    "districtName": "Kabupaten Banjar",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -3.38333,
+    "longitude": 115.08333,
+    "areaKm2": 4588.37,
+    "population": 590393
+  },
+  {
+    "districtCode": "63.04",
+    "districtName": "Kabupaten Barito Kuala",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -3.08333,
+    "longitude": 114.68333,
+    "areaKm2": 2425.829,
+    "population": 329799
+  },
+  {
+    "districtCode": "63.05",
+    "districtName": "Kabupaten Tapin",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -2.96667,
+    "longitude": 115.03333,
+    "areaKm2": 2155.939,
+    "population": 202061
+  },
+  {
+    "districtCode": "63.06",
+    "districtName": "Kabupaten Hulu Sungai Selatan",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -2.76667,
+    "longitude": 115.21667,
+    "areaKm2": 1697.224,
+    "population": 239471
+  },
+  {
+    "districtCode": "63.07",
+    "districtName": "Kabupaten Hulu Sungai Tengah",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -2.6,
+    "longitude": 115.51667,
+    "areaKm2": 1573.538,
+    "population": 271505
+  },
+  {
+    "districtCode": "63.08",
+    "districtName": "Kabupaten Hulu Sungai Utara",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -2.43333,
+    "longitude": 115.16667,
+    "areaKm2": 907.491,
+    "population": 238250
+  },
+  {
+    "districtCode": "63.09",
+    "districtName": "Kabupaten Tabalong",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -1.83333,
+    "longitude": 115.55,
+    "areaKm2": 3473.069,
+    "population": 267787
+  },
+  {
+    "districtCode": "63.10",
+    "districtName": "Kabupaten Tanah Bumbu",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -3.45413,
+    "longitude": 115.70372,
+    "areaKm2": 4884.861,
+    "population": 357221
+  },
+  {
+    "districtCode": "63.11",
+    "districtName": "Kabupaten Balangan",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -2.32314,
+    "longitude": 115.62922,
+    "areaKm2": 1828.513,
+    "population": 138950
+  },
+  {
+    "districtCode": "63.71",
+    "districtName": "Kota Banjarmasin",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -3.32444,
+    "longitude": 114.59102,
+    "areaKm2": 98.372,
+    "population": 681693
+  },
+  {
+    "districtCode": "63.72",
+    "districtName": "Kota Banjarbaru",
+    "provinceCode": "63",
+    "provinceName": "Kalimantan Selatan",
+    "latitude": -3.48304,
+    "longitude": 114.81162,
+    "areaKm2": 305.153,
+    "population": 285546
+  },
+  {
+    "districtCode": "64.01",
+    "districtName": "Kabupaten Paser",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": -1.43517,
+    "longitude": 116.23535,
+    "areaKm2": 10780.677,
+    "population": 309667
+  },
+  {
+    "districtCode": "64.02",
+    "districtName": "Kabupaten Kutai Kartanegara",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": -0.44019,
+    "longitude": 116.98139,
+    "areaKm2": 26912.065,
+    "population": 806964
+  },
+  {
+    "districtCode": "64.03",
+    "districtName": "Kabupaten Berau",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": 2.02889,
+    "longitude": 117.11833,
+    "areaKm2": 20999.287,
+    "population": 299005
+  },
+  {
+    "districtCode": "64.07",
+    "districtName": "Kabupaten Kutai Barat",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": -0.59417,
+    "longitude": 115.51575,
+    "areaKm2": 13611.168,
+    "population": 186581
+  },
+  {
+    "districtCode": "64.08",
+    "districtName": "Kabupaten Kutai Timur",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": 1.03769,
+    "longitude": 117.83112,
+    "areaKm2": 31572.691,
+    "population": 448850
+  },
+  {
+    "districtCode": "64.09",
+    "districtName": "Kabupaten Penajam Paser Utara",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": -1.20333,
+    "longitude": 116.57169,
+    "areaKm2": 3197.199,
+    "population": 202067
+  },
+  {
+    "districtCode": "64.11",
+    "districtName": "Kabupaten Mahakam Ulu",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": 0.37822,
+    "longitude": 115.38048,
+    "areaKm2": 18492.238,
+    "population": 39715
+  },
+  {
+    "districtCode": "64.71",
+    "districtName": "Kota Balikpapan",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": -1.15,
+    "longitude": 116.86667,
+    "areaKm2": 509.45,
+    "population": 757418
+  },
+  {
+    "districtCode": "64.72",
+    "districtName": "Kota Samarinda",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": -0.5,
+    "longitude": 117.14,
+    "areaKm2": 716.783,
+    "population": 881225
+  },
+  {
+    "districtCode": "64.74",
+    "districtName": "Kota Bontang",
+    "provinceCode": "64",
+    "provinceName": "Kalimantan Timur",
+    "latitude": 0.12526,
+    "longitude": 117.49603,
+    "areaKm2": 160.2,
+    "population": 191811
+  },
+  {
+    "districtCode": "65.01",
+    "districtName": "Kabupaten Bulungan",
+    "provinceCode": "65",
+    "provinceName": "Kalimantan Utara",
+    "latitude": 3.0,
+    "longitude": 117.16667,
+    "areaKm2": 13719.983,
+    "population": 170239
+  },
+  {
+    "districtCode": "65.02",
+    "districtName": "Kabupaten Malinau",
+    "provinceCode": "65",
+    "provinceName": "Kalimantan Utara",
+    "latitude": 2.48333,
+    "longitude": 115.71667,
+    "areaKm2": 38901.819,
+    "population": 87582
+  },
+  {
+    "districtCode": "65.03",
+    "districtName": "Kabupaten Nunukan",
+    "provinceCode": "65",
+    "provinceName": "Kalimantan Utara",
+    "latitude": 4.1,
+    "longitude": 116.68333,
+    "areaKm2": 13549.868,
+    "population": 227460
+  },
+  {
+    "districtCode": "65.04",
+    "districtName": "Kabupaten Tana Tidung",
+    "provinceCode": "65",
+    "provinceName": "Kalimantan Utara",
+    "latitude": 3.55,
+    "longitude": 116.96667,
+    "areaKm2": 3481.039,
+    "population": 30036
+  },
+  {
+    "districtCode": "65.71",
+    "districtName": "Kota Tarakan",
+    "provinceCode": "65",
+    "provinceName": "Kalimantan Utara",
+    "latitude": 3.35,
+    "longitude": 117.6,
+    "areaKm2": 248.177,
+    "population": 255310
+  },
+  {
+    "districtCode": "71.01",
+    "districtName": "Kabupaten Bolaang Mongondow",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 0.71667,
+    "longitude": 124.03333,
+    "areaKm2": 3291.237,
+    "population": 257378
+  },
+  {
+    "districtCode": "71.02",
+    "districtName": "Kabupaten Minahasa",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 1.2537,
+    "longitude": 124.83,
+    "areaKm2": 1128.25,
+    "population": 330843
+  },
+  {
+    "districtCode": "71.03",
+    "districtName": "Kabupaten Kepulauan Sangihe",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 3.55,
+    "longitude": 125.55,
+    "areaKm2": 596.459,
+    "population": 135860
+  },
+  {
+    "districtCode": "71.04",
+    "districtName": "Kabupaten Kepulauan Talaud",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 4.31178,
+    "longitude": 126.78085,
+    "areaKm2": 1009.738,
+    "population": 100376
+  },
+  {
+    "districtCode": "71.05",
+    "districtName": "Kabupaten Minahasa Selatan",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 1.21291,
+    "longitude": 124.59708,
+    "areaKm2": 1455.907,
+    "population": 243297
+  },
+  {
+    "districtCode": "71.06",
+    "districtName": "Kabupaten Minahasa Utara",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 1.4025,
+    "longitude": 124.96,
+    "areaKm2": 992.981,
+    "population": 229231
+  },
+  {
+    "districtCode": "71.07",
+    "districtName": "Kabupaten Minahasa Tenggara",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 1.05633,
+    "longitude": 124.7925,
+    "areaKm2": 752.788,
+    "population": 121554
+  },
+  {
+    "districtCode": "71.08",
+    "districtName": "Kabupaten Bolaang Mongondow Utara",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 0.78527,
+    "longitude": 123.41766,
+    "areaKm2": 1643.863,
+    "population": 88002
+  },
+  {
+    "districtCode": "71.09",
+    "districtName": "Kabupaten Kep. Siau Tagulandang Biaro",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 2.11728,
+    "longitude": 125.37512,
+    "areaKm2": 215.611,
+    "population": 70528
+  },
+  {
+    "districtCode": "71.10",
+    "districtName": "Kabupaten Bolaang Mongondow Timur",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 0.72073,
+    "longitude": 124.50256,
+    "areaKm2": 859.683,
+    "population": 91344
+  },
+  {
+    "districtCode": "71.11",
+    "districtName": "Kabupaten Bolaang Mongondow Selatan",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 0.40912,
+    "longitude": 123.75961,
+    "areaKm2": 1772.832,
+    "population": 76105
+  },
+  {
+    "districtCode": "71.71",
+    "districtName": "Kota Manado",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 1.51389,
+    "longitude": 124.88194,
+    "areaKm2": 161.76,
+    "population": 459409
+  },
+  {
+    "districtCode": "71.72",
+    "districtName": "Kota Bitung",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 1.5,
+    "longitude": 125.15,
+    "areaKm2": 329.363,
+    "population": 216026
+  },
+  {
+    "districtCode": "71.73",
+    "districtName": "Kota Tomohon",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 1.31307,
+    "longitude": 124.83404,
+    "areaKm2": 169.064,
+    "population": 103812
+  },
+  {
+    "districtCode": "71.74",
+    "districtName": "Kota Kotamobagu",
+    "provinceCode": "71",
+    "provinceName": "Sulawesi Utara",
+    "latitude": 0.68915,
+    "longitude": 124.32678,
+    "areaKm2": 108.893,
+    "population": 121526
+  },
+  {
+    "districtCode": "72.01",
+    "districtName": "Kabupaten Banggai",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -0.91141,
+    "longitude": 122.71836,
+    "areaKm2": 8241.143,
+    "population": 377804
+  },
+  {
+    "districtCode": "72.02",
+    "districtName": "Kabupaten Poso",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -1.68333,
+    "longitude": 120.51667,
+    "areaKm2": 7544.965,
+    "population": 253350
+  },
+  {
+    "districtCode": "72.03",
+    "districtName": "Kabupaten Donggala",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -0.33333,
+    "longitude": 119.85,
+    "areaKm2": 5122.736,
+    "population": 318613
+  },
+  {
+    "districtCode": "72.04",
+    "districtName": "Kabupaten Toli-Toli",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": 1.30862,
+    "longitude": 120.88643,
+    "areaKm2": 3695.945,
+    "population": 242783
+  },
+  {
+    "districtCode": "72.05",
+    "districtName": "Kabupaten Buol",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": 1.04656,
+    "longitude": 121.36867,
+    "areaKm2": 3719.205,
+    "population": 162273
+  },
+  {
+    "districtCode": "72.06",
+    "districtName": "Kabupaten Morowali",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -1.86667,
+    "longitude": 121.5,
+    "areaKm2": 4433.535,
+    "population": 198968
+  },
+  {
+    "districtCode": "72.07",
+    "districtName": "Kabupaten Banggai Kepulauan",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -1.30236,
+    "longitude": 123.03726,
+    "areaKm2": 2378.048,
+    "population": 130008
+  },
+  {
+    "districtCode": "72.08",
+    "districtName": "Kabupaten Parigi Moutong",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": 0.3368,
+    "longitude": 120.17841,
+    "areaKm2": 5800.059,
+    "population": 461576
+  },
+  {
+    "districtCode": "72.09",
+    "districtName": "Kabupaten Tojo Una Una",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -1.2036,
+    "longitude": 121.48201,
+    "areaKm2": 5565.953,
+    "population": 173534
+  },
+  {
+    "districtCode": "72.10",
+    "districtName": "Kabupaten Sigi",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -1.385,
+    "longitude": 119.96694,
+    "areaKm2": 5225.435,
+    "population": 273460
+  },
+  {
+    "districtCode": "72.11",
+    "districtName": "Kabupaten Banggai Laut",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -1.61841,
+    "longitude": 123.49388,
+    "areaKm2": 680.306,
+    "population": 77830
+  },
+  {
+    "districtCode": "72.12",
+    "districtName": "Kabupaten Morowali Utara",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -1.7207,
+    "longitude": 121.24649,
+    "areaKm2": 8733.733,
+    "population": 154004
+  },
+  {
+    "districtCode": "72.71",
+    "districtName": "Kota Palu",
+    "provinceCode": "72",
+    "provinceName": "Sulawesi Tengah",
+    "latitude": -0.86972,
+    "longitude": 119.9,
+    "areaKm2": 355.92,
+    "population": 395291
+  },
+  {
+    "districtCode": "73.01",
+    "districtName": "Kabupaten Kepulauan Selayar",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -6.81667,
+    "longitude": 120.8,
+    "areaKm2": 1163.383,
+    "population": 143096
+  },
+  {
+    "districtCode": "73.02",
+    "districtName": "Kabupaten Bulukumba",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -5.43333,
+    "longitude": 120.23333,
+    "areaKm2": 1175.562,
+    "population": 480672
+  },
+  {
+    "districtCode": "73.03",
+    "districtName": "Kabupaten Bantaeng",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -5.48333,
+    "longitude": 119.98333,
+    "areaKm2": 390.95,
+    "population": 217267
+  },
+  {
+    "districtCode": "73.04",
+    "districtName": "Kabupaten Jeneponto",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -5.63333,
+    "longitude": 119.71667,
+    "areaKm2": 795.131,
+    "population": 423005
+  },
+  {
+    "districtCode": "73.05",
+    "districtName": "Kabupaten Takalar",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -5.41667,
+    "longitude": 119.5,
+    "areaKm2": 553.206,
+    "population": 332863
+  },
+  {
+    "districtCode": "73.06",
+    "districtName": "Kabupaten Gowa",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -5.31667,
+    "longitude": 119.71667,
+    "areaKm2": 1812.988,
+    "population": 825369
+  },
+  {
+    "districtCode": "73.07",
+    "districtName": "Kabupaten Sinjai",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -5.2,
+    "longitude": 120.13333,
+    "areaKm2": 865.695,
+    "population": 276269
+  },
+  {
+    "districtCode": "73.08",
+    "districtName": "Kabupaten Bone",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -4.7,
+    "longitude": 120.13333,
+    "areaKm2": 4568.033,
+    "population": 827372
+  },
+  {
+    "districtCode": "73.09",
+    "districtName": "Kabupaten Maros",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -5.05,
+    "longitude": 119.68333,
+    "areaKm2": 1443.788,
+    "population": 414406
+  },
+  {
+    "districtCode": "73.10",
+    "districtName": "Kabupaten Pangkajene dan Kepulauan",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -4.7827,
+    "longitude": 119.5506,
+    "areaKm2": 883.553,
+    "population": 361791
+  },
+  {
+    "districtCode": "73.11",
+    "districtName": "Kabupaten Barru",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -4.45,
+    "longitude": 119.695,
+    "areaKm2": 1201.322,
+    "population": 196001
+  },
+  {
+    "districtCode": "73.12",
+    "districtName": "Kabupaten Soppeng",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -4.3842,
+    "longitude": 119.89,
+    "areaKm2": 1385.546,
+    "population": 241333
+  },
+  {
+    "districtCode": "73.13",
+    "districtName": "Kabupaten Wajo",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -4.0,
+    "longitude": 120.16667,
+    "areaKm2": 2505.492,
+    "population": 400699
+  },
+  {
+    "districtCode": "73.14",
+    "districtName": "Kabupaten Sidenreng Rappang",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -3.86667,
+    "longitude": 119.96667,
+    "areaKm2": 1935.326,
+    "population": 332560
+  },
+  {
+    "districtCode": "73.15",
+    "districtName": "Kabupaten Pinrang",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -3.61667,
+    "longitude": 119.6,
+    "areaKm2": 1895.008,
+    "population": 423146
+  },
+  {
+    "districtCode": "73.16",
+    "districtName": "Kabupaten Enrekang",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -3.5,
+    "longitude": 119.86667,
+    "areaKm2": 1806.816,
+    "population": 234470
+  },
+  {
+    "districtCode": "73.17",
+    "districtName": "Kabupaten Luwu",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -3.34836,
+    "longitude": 120.22127,
+    "areaKm2": 2901.696,
+    "population": 385361
+  },
+  {
+    "districtCode": "73.18",
+    "districtName": "Kabupaten Tana Toraja",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -3.05671,
+    "longitude": 119.7617,
+    "areaKm2": 2043.623,
+    "population": 258934
+  },
+  {
+    "districtCode": "73.22",
+    "districtName": "Kabupaten Luwu Utara",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -2.6,
+    "longitude": 120.25,
+    "areaKm2": 7422.257,
+    "population": 335161
+  },
+  {
+    "districtCode": "73.24",
+    "districtName": "Kabupaten Luwu Timur",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -2.5321,
+    "longitude": 121.12305,
+    "areaKm2": 6745.772,
+    "population": 323422
+  },
+  {
+    "districtCode": "73.26",
+    "districtName": "Kabupaten Toraja Utara",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -2.92738,
+    "longitude": 119.79218,
+    "areaKm2": 1289.134,
+    "population": 266513
+  },
+  {
+    "districtCode": "73.71",
+    "districtName": "Kota Makassar",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -5.13333,
+    "longitude": 119.46667,
+    "areaKm2": 177.174,
+    "population": 1482354
+  },
+  {
+    "districtCode": "73.72",
+    "districtName": "Kota Parepare",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -4.03333,
+    "longitude": 119.66667,
+    "areaKm2": 89.626,
+    "population": 163314
+  },
+  {
+    "districtCode": "73.73",
+    "districtName": "Kota Palopo",
+    "provinceCode": "73",
+    "provinceName": "Sulawesi Selatan",
+    "latitude": -2.97841,
+    "longitude": 120.11078,
+    "areaKm2": 272.894,
+    "population": 182898
+  },
+  {
+    "districtCode": "74.01",
+    "districtName": "Kabupaten Kolaka",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -3.96667,
+    "longitude": 121.56667,
+    "areaKm2": 2958.87,
+    "population": 257733
+  },
+  {
+    "districtCode": "74.02",
+    "districtName": "Kabupaten Konawe",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -3.91717,
+    "longitude": 122.08823,
+    "areaKm2": 5352.922,
+    "population": 269128
+  },
+  {
+    "districtCode": "74.03",
+    "districtName": "Kabupaten Muna",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -4.96667,
+    "longitude": 122.66667,
+    "areaKm2": 1856.91,
+    "population": 233470
+  },
+  {
+    "districtCode": "74.04",
+    "districtName": "Kabupaten Buton",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -5.31667,
+    "longitude": 122.93333,
+    "areaKm2": 1664.982,
+    "population": 122024
+  },
+  {
+    "districtCode": "74.05",
+    "districtName": "Kabupaten Konawe Selatan",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -4.19191,
+    "longitude": 122.44854,
+    "areaKm2": 4234.214,
+    "population": 332389
+  },
+  {
+    "districtCode": "74.06",
+    "districtName": "Kabupaten Bombana",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -4.6257,
+    "longitude": 121.81641,
+    "areaKm2": 3291.922,
+    "population": 168055
+  },
+  {
+    "districtCode": "74.07",
+    "districtName": "Kabupaten Wakatobi",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -5.31934,
+    "longitude": 123.5948,
+    "areaKm2": 450.8,
+    "population": 118793
+  },
+  {
+    "districtCode": "74.08",
+    "districtName": "Kabupaten Kolaka Utara",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -3.10452,
+    "longitude": 121.12427,
+    "areaKm2": 2931.677,
+    "population": 143604
+  },
+  {
+    "districtCode": "74.09",
+    "districtName": "Kabupaten Konawe Utara",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -3.41552,
+    "longitude": 121.99081,
+    "areaKm2": 4219.214,
+    "population": 83449
+  },
+  {
+    "districtCode": "74.10",
+    "districtName": "Kabupaten Buton Utara",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -5.01457,
+    "longitude": 122.93015,
+    "areaKm2": 1752.37,
+    "population": 74718
+  },
+  {
+    "districtCode": "74.11",
+    "districtName": "Kabupaten Kolaka Timur",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -4.01807,
+    "longitude": 121.86172,
+    "areaKm2": 3992.531,
+    "population": 130691
+  },
+  {
+    "districtCode": "74.12",
+    "districtName": "Kabupaten Konawe Kepulauan",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -4.11656,
+    "longitude": 123.10181,
+    "areaKm2": 704.184,
+    "population": 44091
+  },
+  {
+    "districtCode": "74.13",
+    "districtName": "Kabupaten Muna Barat",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -4.83333,
+    "longitude": 122.48333,
+    "areaKm2": 816.717,
+    "population": 91571
+  },
+  {
+    "districtCode": "74.14",
+    "districtName": "Kabupaten Buton Tengah",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -5.26667,
+    "longitude": 122.45,
+    "areaKm2": 835.562,
+    "population": 121745
+  },
+  {
+    "districtCode": "74.15",
+    "districtName": "Kabupaten Buton Selatan",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -5.56667,
+    "longitude": 122.7,
+    "areaKm2": 516.479,
+    "population": 102881
+  },
+  {
+    "districtCode": "74.71",
+    "districtName": "Kota Kendari",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -4.01667,
+    "longitude": 122.53333,
+    "areaKm2": 265.845,
+    "population": 366454
+  },
+  {
+    "districtCode": "74.72",
+    "districtName": "Kota Bau Bau",
+    "provinceCode": "74",
+    "provinceName": "Sulawesi Tenggara",
+    "latitude": -5.477,
+    "longitude": 122.6166,
+    "areaKm2": 294.104,
+    "population": 163793
+  },
+  {
+    "districtCode": "75.01",
+    "districtName": "Kabupaten Gorontalo",
+    "provinceCode": "75",
+    "provinceName": "Gorontalo",
+    "latitude": 0.5345,
+    "longitude": 123.04312,
+    "areaKm2": 2160.183,
+    "population": 423981
+  },
+  {
+    "districtCode": "75.02",
+    "districtName": "Kabupaten Boalemo",
+    "provinceCode": "75",
+    "provinceName": "Gorontalo",
+    "latitude": 0.62689,
+    "longitude": 122.3568,
+    "areaKm2": 1831.637,
+    "population": 152851
+  },
+  {
+    "districtCode": "75.03",
+    "districtName": "Kabupaten Bone Bolango",
+    "provinceCode": "75",
+    "provinceName": "Gorontalo",
+    "latitude": 0.50296,
+    "longitude": 123.27501,
+    "areaKm2": 1888.935,
+    "population": 174788
+  },
+  {
+    "districtCode": "75.04",
+    "districtName": "Kabupaten Pohuwato",
+    "provinceCode": "75",
+    "provinceName": "Gorontalo",
+    "latitude": 0.7098,
+    "longitude": 121.59582,
+    "areaKm2": 4370.656,
+    "population": 162989
+  },
+  {
+    "districtCode": "75.05",
+    "districtName": "Kabupaten Gorontalo Utara",
+    "provinceCode": "75",
+    "provinceName": "Gorontalo",
+    "latitude": 0.86508,
+    "longitude": 123.04891,
+    "areaKm2": 1702.746,
+    "population": 131991
+  },
+  {
+    "districtCode": "75.71",
+    "districtName": "Kota Gorontalo",
+    "provinceCode": "75",
+    "provinceName": "Gorontalo",
+    "latitude": 0.5345,
+    "longitude": 123.04312,
+    "areaKm2": 70.825,
+    "population": 204360
+  },
+  {
+    "districtCode": "76.01",
+    "districtName": "Kabupaten Pasangkayu",
+    "provinceCode": "76",
+    "provinceName": "Sulawesi Barat",
+    "latitude": -1.1746,
+    "longitude": 119.3608,
+    "areaKm2": 2901.704,
+    "population": 183376
+  },
+  {
+    "districtCode": "76.02",
+    "districtName": "Kabupaten Mamuju",
+    "provinceCode": "76",
+    "provinceName": "Sulawesi Barat",
+    "latitude": -2.46667,
+    "longitude": 119.4,
+    "areaKm2": 4942.041,
+    "population": 288382
+  },
+  {
+    "districtCode": "76.03",
+    "districtName": "Kabupaten Mamasa",
+    "provinceCode": "76",
+    "provinceName": "Sulawesi Barat",
+    "latitude": -2.96492,
+    "longitude": 119.30631,
+    "areaKm2": 3016.13,
+    "population": 167611
+  },
+  {
+    "districtCode": "76.04",
+    "districtName": "Kabupaten Polewali Mandar",
+    "provinceCode": "76",
+    "provinceName": "Sulawesi Barat",
+    "latitude": -3.31667,
+    "longitude": 119.15,
+    "areaKm2": 2074.191,
+    "population": 492339
+  },
+  {
+    "districtCode": "76.05",
+    "districtName": "Kabupaten Majene",
+    "provinceCode": "76",
+    "provinceName": "Sulawesi Barat",
+    "latitude": -3.13139,
+    "longitude": 118.87139,
+    "areaKm2": 900.525,
+    "population": 190223
+  },
+  {
+    "districtCode": "76.06",
+    "districtName": "Kabupaten Mamuju Tengah",
+    "provinceCode": "76",
+    "provinceName": "Sulawesi Barat",
+    "latitude": -2.0216,
+    "longitude": 119.54054,
+    "areaKm2": 2756.076,
+    "population": 144810
+  },
+  {
+    "districtCode": "81.01",
+    "districtName": "Kabupaten Maluku Tengah",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -3.29167,
+    "longitude": 128.9675,
+    "areaKm2": 8253.421,
+    "population": 432361
+  },
+  {
+    "districtCode": "81.02",
+    "districtName": "Kabupaten Maluku Tenggara",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -5.78333,
+    "longitude": 132.73333,
+    "areaKm2": 1016.082,
+    "population": 129169
+  },
+  {
+    "districtCode": "81.03",
+    "districtName": "Kabupaten Kepulauan Tanimbar",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -7.98618,
+    "longitude": 131.29675,
+    "areaKm2": 4427.811,
+    "population": 132337
+  },
+  {
+    "districtCode": "81.04",
+    "districtName": "Kabupaten Buru",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -3.32767,
+    "longitude": 126.68413,
+    "areaKm2": 4914.066,
+    "population": 142347
+  },
+  {
+    "districtCode": "81.05",
+    "districtName": "Kabupaten Seram Bagian Timur",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -3.39851,
+    "longitude": 130.39167,
+    "areaKm2": 5725.513,
+    "population": 140972
+  },
+  {
+    "districtCode": "81.06",
+    "districtName": "Kabupaten Seram Bagian Barat",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -3.1027,
+    "longitude": 128.42996,
+    "areaKm2": 5014.238,
+    "population": 217389
+  },
+  {
+    "districtCode": "81.07",
+    "districtName": "Kabupaten Kepulauan Aru",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -6.17059,
+    "longitude": 134.46991,
+    "areaKm2": 8090.792,
+    "population": 112531
+  },
+  {
+    "districtCode": "81.08",
+    "districtName": "Kabupaten Maluku Barat Daya",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -7.8296,
+    "longitude": 126.17386,
+    "areaKm2": 4542.633,
+    "population": 97020
+  },
+  {
+    "districtCode": "81.09",
+    "districtName": "Kabupaten Buru Selatan",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -3.52187,
+    "longitude": 126.59271,
+    "areaKm2": 3677.854,
+    "population": 81329
+  },
+  {
+    "districtCode": "81.71",
+    "districtName": "Kota Ambon",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -3.7,
+    "longitude": 128.18333,
+    "areaKm2": 236.713,
+    "population": 359661
+  },
+  {
+    "districtCode": "81.72",
+    "districtName": "Kota Tual",
+    "provinceCode": "81",
+    "provinceName": "Maluku",
+    "latitude": -5.64301,
+    "longitude": 132.74935,
+    "areaKm2": 234.709,
+    "population": 90470
+  },
+  {
+    "districtCode": "82.01",
+    "districtName": "Kabupaten Halmahera Barat",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": 1.41709,
+    "longitude": 127.55264,
+    "areaKm2": 2237.391,
+    "population": 139764
+  },
+  {
+    "districtCode": "82.02",
+    "districtName": "Kabupaten Halmahera Tengah",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": 0.55,
+    "longitude": 127.91667,
+    "areaKm2": 2272.261,
+    "population": 106500
+  },
+  {
+    "districtCode": "82.03",
+    "districtName": "Kabupaten Halmahera Utara",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": 1.73194,
+    "longitude": 128.00778,
+    "areaKm2": 3402.937,
+    "population": 206233
+  },
+  {
+    "districtCode": "82.04",
+    "districtName": "Kabupaten Halmahera Selatan",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": -0.3955,
+    "longitude": 127.90833,
+    "areaKm2": 8102.0,
+    "population": 258564
+  },
+  {
+    "districtCode": "82.05",
+    "districtName": "Kabupaten Kepulauan Sula",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": -1.8646,
+    "longitude": 125.69046,
+    "areaKm2": 1777.021,
+    "population": 100635
+  },
+  {
+    "districtCode": "82.06",
+    "districtName": "Kabupaten Halmahera Timur",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": 1.33517,
+    "longitude": 128.48627,
+    "areaKm2": 6487.633,
+    "population": 100473
+  },
+  {
+    "districtCode": "82.07",
+    "districtName": "Kabupaten Pulau Morotai",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": 2.19924,
+    "longitude": 128.40546,
+    "areaKm2": 2337.256,
+    "population": 82913
+  },
+  {
+    "districtCode": "82.08",
+    "districtName": "Kabupaten Pulau Taliabu",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": -1.84578,
+    "longitude": 124.78992,
+    "areaKm2": 2984.011,
+    "population": 66361
+  },
+  {
+    "districtCode": "82.71",
+    "districtName": "Kota Ternate",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": 0.89618,
+    "longitude": 127.31016,
+    "areaKm2": 162.04,
+    "population": 210836
+  },
+  {
+    "districtCode": "82.72",
+    "districtName": "Kota Tidore Kepulauan",
+    "provinceCode": "82",
+    "provinceName": "Maluku Utara",
+    "latitude": 0.60962,
+    "longitude": 127.56981,
+    "areaKm2": 1703.427,
+    "population": 121952
+  },
+  {
+    "districtCode": "91.03",
+    "districtName": "Kabupaten Jayapura",
+    "provinceCode": "91",
+    "provinceName": "Papua",
+    "latitude": -2.98333,
+    "longitude": 139.98333,
+    "areaKm2": 14081.935,
+    "population": 203772
+  },
+  {
+    "districtCode": "91.05",
+    "districtName": "Kabupaten Kepulauan Yapen",
+    "provinceCode": "91",
+    "provinceName": "Papua",
+    "latitude": -1.78773,
+    "longitude": 136.27716,
+    "areaKm2": 2425.374,
+    "population": 116214
+  },
+  {
+    "districtCode": "91.06",
+    "districtName": "Kabupaten Biak Numfor",
+    "provinceCode": "91",
+    "provinceName": "Papua",
+    "latitude": -0.98333,
+    "longitude": 136.0,
+    "areaKm2": 2258.863,
+    "population": 150318
+  },
+  {
+    "districtCode": "91.10",
+    "districtName": "Kabupaten Sarmi",
+    "provinceCode": "91",
+    "provinceName": "Papua",
+    "latitude": -2.31667,
+    "longitude": 139.1,
+    "areaKm2": 14068.312,
+    "population": 45084
+  },
+  {
+    "districtCode": "91.11",
+    "districtName": "Kabupaten Keerom",
+    "provinceCode": "91",
+    "provinceName": "Papua",
+    "latitude": -3.33333,
+    "longitude": 140.68333,
+    "areaKm2": 9526.315,
+    "population": 74332
+  },
+  {
+    "districtCode": "91.15",
+    "districtName": "Kabupaten Waropen",
+    "provinceCode": "91",
+    "provinceName": "Papua",
+    "latitude": -2.73008,
+    "longitude": 136.64568,
+    "areaKm2": 10781.037,
+    "population": 38840
+  },
+  {
+    "districtCode": "91.19",
+    "districtName": "Kabupaten Supiori",
+    "provinceCode": "91",
+    "provinceName": "Papua",
+    "latitude": -0.73881,
+    "longitude": 135.61111,
+    "areaKm2": 660.681,
+    "population": 27965
+  },
+  {
+    "districtCode": "91.20",
+    "districtName": "Kabupaten Mamberamo Raya",
+    "provinceCode": "91",
+    "provinceName": "Papua",
+    "latitude": -2.23561,
+    "longitude": 137.78229,
+    "areaKm2": 26745.359,
+    "population": 41036
+  },
+  {
+    "districtCode": "91.71",
+    "districtName": "Kota Jayapura",
+    "provinceCode": "91",
+    "provinceName": "Papua",
+    "latitude": -2.98333,
+    "longitude": 139.98333,
+    "areaKm2": 835.439,
+    "population": 404799
+  },
+  {
+    "districtCode": "92.02",
+    "districtName": "Kabupaten Manokwari",
+    "provinceCode": "92",
+    "provinceName": "Papua Barat",
+    "latitude": -0.9,
+    "longitude": 133.73333,
+    "areaKm2": 2764.187,
+    "population": 205212
+  },
+  {
+    "districtCode": "92.03",
+    "districtName": "Kabupaten Fak Fak",
+    "provinceCode": "92",
+    "provinceName": "Papua Barat",
+    "latitude": -2.92641,
+    "longitude": 132.29608,
+    "areaKm2": 9735.003,
+    "population": 93997
+  },
+  {
+    "districtCode": "92.06",
+    "districtName": "Kabupaten Teluk Bintuni",
+    "provinceCode": "92",
+    "provinceName": "Papua Barat",
+    "latitude": -1.88037,
+    "longitude": 133.33105,
+    "areaKm2": 19946.579,
+    "population": 84205
+  },
+  {
+    "districtCode": "92.07",
+    "districtName": "Kabupaten Teluk Wondama",
+    "provinceCode": "92",
+    "provinceName": "Papua Barat",
+    "latitude": -2.7,
+    "longitude": 134.5,
+    "areaKm2": 4847.951,
+    "population": 47494
+  },
+  {
+    "districtCode": "92.08",
+    "districtName": "Kabupaten Kaimana",
+    "provinceCode": "92",
+    "provinceName": "Papua Barat",
+    "latitude": -3.66093,
+    "longitude": 133.77451,
+    "areaKm2": 17878.913,
+    "population": 64938
+  },
+  {
+    "districtCode": "92.11",
+    "districtName": "Kabupaten Manokwari Selatan",
+    "provinceCode": "92",
+    "provinceName": "Papua Barat",
+    "latitude": -1.60532,
+    "longitude": 134.00313,
+    "areaKm2": 1837.146,
+    "population": 39026
+  },
+  {
+    "districtCode": "92.12",
+    "districtName": "Kabupaten Pegunungan Arfak",
+    "provinceCode": "92",
+    "provinceName": "Papua Barat",
+    "latitude": -1.20256,
+    "longitude": 133.70651,
+    "areaKm2": 3298.811,
+    "population": 41383
+  },
+  {
+    "districtCode": "93.01",
+    "districtName": "Kabupaten Merauke",
+    "provinceCode": "93",
+    "provinceName": "Papua Selatan",
+    "latitude": -7.69611,
+    "longitude": 139.68194,
+    "areaKm2": 45016.452,
+    "population": 255168
+  },
+  {
+    "districtCode": "93.02",
+    "districtName": "Kabupaten Boven Digoel",
+    "provinceCode": "93",
+    "provinceName": "Papua Selatan",
+    "latitude": -5.70519,
+    "longitude": 140.36349,
+    "areaKm2": 23558.272,
+    "population": 71997
+  },
+  {
+    "districtCode": "93.03",
+    "districtName": "Kabupaten Mappi",
+    "provinceCode": "93",
+    "provinceName": "Papua Selatan",
+    "latitude": -6.49971,
+    "longitude": 139.34441,
+    "areaKm2": 24265.584,
+    "population": 114153
+  },
+  {
+    "districtCode": "93.04",
+    "districtName": "Kabupaten Asmat",
+    "provinceCode": "93",
+    "provinceName": "Papua Selatan",
+    "latitude": -5.3795,
+    "longitude": 138.46344,
+    "areaKm2": 25018.661,
+    "population": 120902
+  },
+  {
+    "districtCode": "94.01",
+    "districtName": "Kabupaten Nabire",
+    "provinceCode": "94",
+    "provinceName": "Papua Tengah",
+    "latitude": -3.54016,
+    "longitude": 135.55511,
+    "areaKm2": 11801.987,
+    "population": 179174
+  },
+  {
+    "districtCode": "94.02",
+    "districtName": "Kabupaten Puncak Jaya",
+    "provinceCode": "94",
+    "provinceName": "Papua Tengah",
+    "latitude": -3.48821,
+    "longitude": 137.77029,
+    "areaKm2": 5986.19,
+    "population": 220393
+  },
+  {
+    "districtCode": "94.03",
+    "districtName": "Kabupaten Paniai",
+    "provinceCode": "94",
+    "provinceName": "Papua Tengah",
+    "latitude": -3.83333,
+    "longitude": 136.41667,
+    "areaKm2": 5306.871,
+    "population": 125763
+  },
+  {
+    "districtCode": "94.04",
+    "districtName": "Kabupaten Mimika",
+    "provinceCode": "94",
+    "provinceName": "Papua Tengah",
+    "latitude": -4.54357,
+    "longitude": 136.56555,
+    "areaKm2": 18309.723,
+    "population": 318679
+  },
+  {
+    "districtCode": "94.05",
+    "districtName": "Kabupaten Puncak",
+    "provinceCode": "94",
+    "provinceName": "Papua Tengah",
+    "latitude": -3.56104,
+    "longitude": 137.31934,
+    "areaKm2": 7701.031,
+    "population": 178072
+  },
+  {
+    "districtCode": "94.06",
+    "districtName": "Kabupaten Dogiyai",
+    "provinceCode": "94",
+    "provinceName": "Papua Tengah",
+    "latitude": -4.03186,
+    "longitude": 135.43945,
+    "areaKm2": 3792.928,
+    "population": 116706
+  },
+  {
+    "districtCode": "94.07",
+    "districtName": "Kabupaten Intan Jaya",
+    "provinceCode": "94",
+    "provinceName": "Papua Tengah",
+    "latitude": -3.41016,
+    "longitude": 136.70837,
+    "areaKm2": 5334.445,
+    "population": 137696
+  },
+  {
+    "districtCode": "94.08",
+    "districtName": "Kabupaten Deiyai",
+    "provinceCode": "94",
+    "provinceName": "Papua Tengah",
+    "latitude": -4.15287,
+    "longitude": 136.40567,
+    "areaKm2": 2846.412,
+    "population": 92629
+  },
+  {
+    "districtCode": "95.01",
+    "districtName": "Kabupaten Jayawijaya",
+    "provinceCode": "95",
+    "provinceName": "Papua Pegunungan",
+    "latitude": -4.08333,
+    "longitude": 138.91667,
+    "areaKm2": 2629.01,
+    "population": 276288
+  },
+  {
+    "districtCode": "95.02",
+    "districtName": "Kabupaten Pegunungan Bintang",
+    "provinceCode": "95",
+    "provinceName": "Papua Pegunungan",
+    "latitude": -4.52167,
+    "longitude": 140.29541,
+    "areaKm2": 13751.915,
+    "population": 114581
+  },
+  {
+    "districtCode": "95.03",
+    "districtName": "Kabupaten Yahukimo",
+    "provinceCode": "95",
+    "provinceName": "Papua Pegunungan",
+    "latitude": -4.60403,
+    "longitude": 139.58405,
+    "areaKm2": 16365.938,
+    "population": 356021
+  },
+  {
+    "districtCode": "95.04",
+    "districtName": "Kabupaten Tolikara",
+    "provinceCode": "95",
+    "provinceName": "Papua Pegunungan",
+    "latitude": -3.48799,
+    "longitude": 138.40039,
+    "areaKm2": 4285.333,
+    "population": 252031
+  },
+  {
+    "districtCode": "95.05",
+    "districtName": "Kabupaten Mamberamo Tengah",
+    "provinceCode": "95",
+    "provinceName": "Papua Pegunungan",
+    "latitude": -3.62733,
+    "longitude": 139.06483,
+    "areaKm2": 4101.486,
+    "population": 50128
+  },
+  {
+    "districtCode": "95.06",
+    "districtName": "Kabupaten Yalimo",
+    "provinceCode": "95",
+    "provinceName": "Papua Pegunungan",
+    "latitude": -3.78805,
+    "longitude": 139.42183,
+    "areaKm2": 3148.308,
+    "population": 105374
+  },
+  {
+    "districtCode": "95.07",
+    "districtName": "Kabupaten Lanny Jaya",
+    "provinceCode": "95",
+    "provinceName": "Papua Pegunungan",
+    "latitude": -3.91244,
+    "longitude": 138.28766,
+    "areaKm2": 2339.775,
+    "population": 203922
+  },
+  {
+    "districtCode": "95.08",
+    "districtName": "Kabupaten Nduga",
+    "provinceCode": "95",
+    "provinceName": "Papua Pegunungan",
+    "latitude": -4.45093,
+    "longitude": 138.10089,
+    "areaKm2": 5886.891,
+    "population": 112173
+  },
+  {
+    "districtCode": "96.01",
+    "districtName": "Kabupaten Sorong",
+    "provinceCode": "96",
+    "provinceName": "Papua Barat Daya",
+    "latitude": -1.1,
+    "longitude": 131.51667,
+    "areaKm2": 7565.039,
+    "population": 129669
+  },
+  {
+    "districtCode": "96.02",
+    "districtName": "Kabupaten Sorong Selatan",
+    "provinceCode": "96",
+    "provinceName": "Papua Barat Daya",
+    "latitude": -1.50495,
+    "longitude": 132.28638,
+    "areaKm2": 6559.597,
+    "population": 56979
+  },
+  {
+    "districtCode": "96.03",
+    "districtName": "Kabupaten Raja Ampat",
+    "provinceCode": "96",
+    "provinceName": "Papua Barat Daya",
+    "latitude": -1.86521,
+    "longitude": 130.06648,
+    "areaKm2": 7425.239,
+    "population": 72865
+  },
+  {
+    "districtCode": "96.04",
+    "districtName": "Kabupaten Tambrauw",
+    "provinceCode": "96",
+    "provinceName": "Papua Barat Daya",
+    "latitude": -0.60515,
+    "longitude": 132.48962,
+    "areaKm2": 11961.745,
+    "population": 31041
+  },
+  {
+    "districtCode": "96.05",
+    "districtName": "Kabupaten Maybrat",
+    "provinceCode": "96",
+    "provinceName": "Papua Barat Daya",
+    "latitude": -1.2155,
+    "longitude": 132.35092,
+    "areaKm2": 5385.679,
+    "population": 46604
+  },
+  {
+    "districtCode": "96.71",
+    "districtName": "Kota Sorong",
+    "provinceCode": "96",
+    "provinceName": "Papua Barat Daya",
+    "latitude": -1.1,
+    "longitude": 131.51667,
+    "areaKm2": 205.759,
+    "population": 286028
+  }
+]

@@ -1,7 +1,6 @@
 'use client';
 
 import { use } from 'react';
-import Link from 'next/link';
 import { format } from 'date-fns';
 import {
   AlertTriangle,
@@ -12,7 +11,6 @@ import {
   Flame,
   Gauge,
   Info,
-  Lock,
   MapPin,
   Mountain,
   Thermometer,
@@ -29,8 +27,8 @@ import { RiskLevelBadge } from '@/components/shared/risk-level-badge';
 import { useAffectedRegions, useHazardEvent, useHazardEventRelationships } from '@/hooks/use-hazard-events';
 import { useRiskAssessments } from '@/hooks/use-risk-assessments';
 import { useDecisionRecommendations } from '@/hooks/use-decision-recommendations';
-import { useAuthStore } from '@/stores/auth-store';
 import { RISK_ASSESSMENT_STATUS_LABELS } from '@/lib/labels';
+import { formatHazardEventLocation } from '@/lib/hazard-severity';
 import type { EarthquakeDetails, FloodDetails, LandslideDetails, WildfireDetails } from '@/types/domain';
 
 interface MetricCardProps {
@@ -97,16 +95,12 @@ function hazardDetailMetrics(hazardType: string, details: unknown) {
 
 export default function HazardEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const isAuthed = !!useAuthStore((state) => state.accessToken);
 
   const { data: event, isLoading } = useHazardEvent(id);
   const { data: affectedRegions = [], isLoading: regionsLoading } = useAffectedRegions(id);
   const { data: relationships = [] } = useHazardEventRelationships(id);
-  // /risk-assessments and /decision-recommendations require auth — gated so
-  // anonymous visitors to this public page don't 401 and get hard-redirected
-  // to /admin/login by the apiClient's global 401 handler.
-  const { data: riskAssessmentsPage } = useRiskAssessments({ limit: 50 }, isAuthed);
-  const { data: recommendationsPage } = useDecisionRecommendations({}, isAuthed);
+  const { data: riskAssessmentsPage } = useRiskAssessments({ hazardEventId: id, limit: 50 });
+  const { data: recommendationsPage } = useDecisionRecommendations({ hazardEventId: id });
 
   if (isLoading || !event) {
     return (
@@ -117,12 +111,8 @@ export default function HazardEventDetailPage({ params }: { params: Promise<{ id
     );
   }
 
-  const riskAssessments = (riskAssessmentsPage?.data ?? []).filter(
-    (ra) => ra.hazardEvent?.id === event.id,
-  );
-  const recommendations = (recommendationsPage?.data ?? []).filter(
-    (rec) => rec.riskAssessment.hazardEvent?.id === event.id,
-  );
+  const riskAssessments = riskAssessmentsPage?.data ?? [];
+  const recommendations = recommendationsPage?.data ?? [];
 
   const totalAffectedPopulation = riskAssessments.reduce(
     (sum, ra) => sum + (ra.estimatedAffectedPopulation ?? 0),
@@ -142,7 +132,7 @@ export default function HazardEventDetailPage({ params }: { params: Promise<{ id
       <Card>
         <CardContent className="flex flex-wrap items-center justify-between gap-4 py-2">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{event.locationLabel}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{formatHazardEventLocation(event)}</h1>
             <HazardTypeBadge hazardType={event.hazardType} />
             {event.hazardType === 'earthquake' &&
               (event.details as EarthquakeDetails).potentialTsunami && (
@@ -181,28 +171,34 @@ export default function HazardEventDetailPage({ params }: { params: Promise<{ id
           <CardHeader>
             <CardTitle className="text-base">Estimated Impact</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <MetricCard
-              icon={Users}
-              label="Estimated affected population"
-              value={totalAffectedPopulation.toLocaleString()}
-            />
-            <div className="rounded-lg border border-border/60 p-4">
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                </span>
-                Exposure level
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <MetricCard
+                icon={Users}
+                label="Estimated affected population"
+                value={totalAffectedPopulation.toLocaleString()}
+              />
+              <div className="rounded-lg border border-border/60 p-4">
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                  </span>
+                  Exposure level
+                </div>
+                <div className="mt-2">
+                  {worstExposure ? (
+                    <RiskLevelBadge level={worstExposure} />
+                  ) : (
+                    <span className="text-sm">—</span>
+                  )}
+                </div>
               </div>
-              <div className="mt-2">
-                {worstExposure ? <RiskLevelBadge level={worstExposure} /> : <span className="text-sm">—</span>}
-              </div>
+              <MetricCard
+                icon={Compass}
+                label="Affected radius"
+                value={affectedRadiusKm > 0 ? `${affectedRadiusKm.toFixed(1)} km` : '—'}
+              />
             </div>
-            <MetricCard
-              icon={Compass}
-              label="Affected radius"
-              value={affectedRadiusKm > 0 ? `${affectedRadiusKm.toFixed(1)} km` : '—'}
-            />
           </CardContent>
         </Card>
       </div>
@@ -283,15 +279,7 @@ export default function HazardEventDetailPage({ params }: { params: Promise<{ id
           <CardTitle className="text-base">Decision Recommendations</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {!isAuthed && (
-            <Link
-              href="/admin/login"
-              className="flex items-center gap-2 rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground transition-colors hover:bg-muted"
-            >
-              <Lock className="h-3.5 w-3.5 shrink-0" /> Sign in to view decision recommendations
-            </Link>
-          )}
-          {isAuthed && recommendations.length === 0 && (
+          {recommendations.length === 0 && (
             <Alert variant="info">
               <Info />
               <AlertDescription>

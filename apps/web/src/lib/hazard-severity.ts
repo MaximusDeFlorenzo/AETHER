@@ -16,6 +16,17 @@ const HIGH_SOIL_SATURATION_PCT = 80;
 const HIGH_WATER_LEVEL_M = 3.0;
 const HIGH_FRP_CONFIDENCE = 0.75;
 
+// Adapters that only have raw coordinates (NASA FIRMS hotspots, a weather
+// station with no riverBasin set) can leave `locationLabel`/`region` null.
+// Older events ingested before the ingestion-side fallback existed also
+// still have null locationLabel/region in the DB. Rendering that null
+// directly leaves list rows with a blank, unclickable link and detail pages
+// with a blank title — fall back to formatted coordinates so every event
+// always has a visible, clickable label.
+export function formatHazardEventLocation(event: HazardEvent): string {
+  return event.locationLabel ?? `${event.latitude.toFixed(3)}, ${event.longitude.toFixed(3)}`;
+}
+
 export function isHighSeverityHazardEvent(event: HazardEvent): boolean {
   if (event.hazardType === 'earthquake') {
     return ((event.details as EarthquakeDetails).magnitude ?? 0) >= HIGH_MAGNITUDE;

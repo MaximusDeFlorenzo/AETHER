@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFieldReport, useLinkFieldReport } from '@/hooks/use-field-reports';
 import { CV_DETECTION_TYPE_LABELS } from '@/lib/labels';
+import { formatHazardEventLocation } from '@/lib/hazard-severity';
 
 // Review detail for a single CV detection — shows the submitted image with
 // its bounding boxes and lets a reviewer promote it to a real hazard event
@@ -87,7 +88,7 @@ export default function FieldReportDetailPage({ params }: { params: Promise<{ id
               <p className="text-sm">
                 Linked to{' '}
                 <Link href={`/hazards/${report.hazardEvent.id}`} className="font-medium hover:underline">
-                  {report.hazardEvent.locationLabel ?? report.hazardEvent.id}
+                  {formatHazardEventLocation(report.hazardEvent)}
                 </Link>
               </p>
             </div>

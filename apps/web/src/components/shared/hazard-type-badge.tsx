@@ -6,7 +6,7 @@ import type { HazardType } from '@/types/domain';
 // Generalizes ORION's MagnitudeBadge into an icon+color badge keyed by
 // HazardType instead of a single hazard's magnitude — per
 // docs/MIGRATION_FROM_ORION.md's badge-refactor row.
-const HAZARD_TYPE_ICONS: Record<HazardType, typeof Zap> = {
+export const HAZARD_TYPE_ICONS: Record<HazardType, typeof Zap> = {
   earthquake: Zap,
   landslide: Mountain,
   flood: Waves,

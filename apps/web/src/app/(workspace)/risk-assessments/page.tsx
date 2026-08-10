@@ -22,6 +22,7 @@ import { useRiskAssessments } from '@/hooks/use-risk-assessments';
 import { usePagination } from '@/hooks/use-pagination';
 import { useSortableData } from '@/hooks/use-sortable-data';
 import { RISK_ASSESSMENT_STATUS_LABELS } from '@/lib/labels';
+import { formatHazardEventLocation } from '@/lib/hazard-severity';
 import type { HazardType, RiskAssessment } from '@/types/domain';
 
 type RiskAssessmentSortKey = 'district' | 'riskScore' | 'population' | 'confidence';
@@ -156,7 +157,7 @@ export default function RiskAssessmentsPage() {
                       <HazardTypeBadge hazardType={ra.hazardType} />
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {ra.hazardEvent ? ra.hazardEvent.locationLabel : 'Baseline (no event)'}
+                      {ra.hazardEvent ? formatHazardEventLocation(ra.hazardEvent) : 'Baseline (no event)'}
                     </TableCell>
                     <TableCell>{ra.riskScore?.toFixed(1) ?? '—'}</TableCell>
                     <TableCell>{ra.exposureLevel ? <RiskLevelBadge level={ra.exposureLevel} /> : '—'}</TableCell>

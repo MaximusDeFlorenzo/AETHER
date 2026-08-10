@@ -14,6 +14,7 @@ export class DecisionIntelligenceService {
   async findAll(filters: {
     priorityLevel?: PriorityLevel;
     hazardType?: HazardType;
+    hazardEventId?: string;
     page: number;
     limit: number;
   }) {
@@ -32,6 +33,11 @@ export class DecisionIntelligenceService {
     if (filters.hazardType) {
       qb.andWhere('riskAssessment.hazardType = :hazardType', {
         hazardType: filters.hazardType,
+      });
+    }
+    if (filters.hazardEventId) {
+      qb.andWhere('hazardEvent.id = :hazardEventId', {
+        hazardEventId: filters.hazardEventId,
       });
     }
 

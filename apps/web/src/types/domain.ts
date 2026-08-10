@@ -51,6 +51,7 @@ export interface FloodDetails {
   rainfallMm: number | null;
   waterLevelM: number | null;
   riverBasin: string | null;
+  floodHazardIndex: number | null;
 }
 
 export interface WildfireDetails {

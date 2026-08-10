@@ -101,6 +101,7 @@ export class ResourceOptimizationService {
     const qb = this.planRepository
       .createQueryBuilder('plan')
       .leftJoinAndSelect('plan.district', 'district')
+      .leftJoinAndSelect('plan.hazardEvent', 'hazardEvent')
       .orderBy('plan.createdAt', 'DESC');
 
     if (filters.district) {
@@ -157,7 +158,7 @@ export class ResourceOptimizationService {
   async findOnePlan(id: string): Promise<ResourceOptimizationPlan> {
     const plan = await this.planRepository.findOne({
       where: { id },
-      relations: { district: true },
+      relations: { district: true, hazardEvent: true },
     });
     if (!plan) {
       throw new NotFoundException('Resource optimization plan not found');

@@ -7,7 +7,12 @@ column."""
 from pydantic import confloat
 
 from app.schemas.base import CamelModel
-from app.schemas.common import DistrictInput, Reason, RelatedHazardEventContext
+from app.schemas.common import (
+    DistrictInput,
+    HistoricalDisasterInput,
+    Reason,
+    RelatedHazardEventContext,
+)
 from app.schemas.predict import HazardEventInput, PredictRiskResponse
 from app.schemas.priority import CalculatePriorityResponse
 
@@ -17,7 +22,7 @@ class GenerateRecommendationRequest(CamelModel):
     district: DistrictInput
     prediction: PredictRiskResponse
     priority: CalculatePriorityResponse
-    historical_disasters: list = []
+    historical_disasters: list[HistoricalDisasterInput] = []
     related_events: list[RelatedHazardEventContext] = []
 
 

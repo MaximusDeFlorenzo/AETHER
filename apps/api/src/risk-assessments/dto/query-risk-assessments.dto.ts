@@ -19,6 +19,10 @@ export class QueryRiskAssessmentsDto extends PaginationDto {
   district?: string;
 
   @IsOptional()
+  @IsUUID()
+  hazardEventId?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   minRiskScore?: number;

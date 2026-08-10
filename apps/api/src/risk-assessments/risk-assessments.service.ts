@@ -14,6 +14,7 @@ export class RiskAssessmentsService {
   async findAll(filters: {
     hazardType?: HazardType;
     district?: string;
+    hazardEventId?: string;
     minRiskScore?: number;
     baseline?: boolean;
     page: number;
@@ -32,6 +33,11 @@ export class RiskAssessmentsService {
     }
     if (filters.district) {
       qb.andWhere('district.id = :district', { district: filters.district });
+    }
+    if (filters.hazardEventId) {
+      qb.andWhere('hazardEvent.id = :hazardEventId', {
+        hazardEventId: filters.hazardEventId,
+      });
     }
     if (filters.minRiskScore !== undefined) {
       qb.andWhere('ra.riskScore >= :minRiskScore', {

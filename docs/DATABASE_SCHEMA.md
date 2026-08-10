@@ -261,10 +261,11 @@ CREATE TABLE landslide_details (
 
 ```sql
 CREATE TABLE flood_details (
-    hazard_event_id   UUID PRIMARY KEY REFERENCES hazard_events(id) ON DELETE CASCADE,
-    rainfall_mm       NUMERIC(7,2),
-    water_level_m     NUMERIC(6,2),
-    river_basin       VARCHAR(120)
+    hazard_event_id     UUID PRIMARY KEY REFERENCES hazard_events(id) ON DELETE CASCADE,
+    rainfall_mm         NUMERIC(7,2),
+    water_level_m       NUMERIC(6,2),
+    river_basin         VARCHAR(120),
+    flood_hazard_index  NUMERIC(4,3)  -- BNPB InaRISK INDEKS_BAHAYA_BANJIR, 0-1, per-coordinate lookup
 );
 ```
 

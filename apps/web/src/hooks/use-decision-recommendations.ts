@@ -5,14 +5,15 @@ import type { DecisionRecommendation, HazardType, PaginatedResponse, PriorityLev
 export interface DecisionRecommendationFilters {
   priorityLevel?: PriorityLevel;
   hazardType?: HazardType;
+  hazardEventId?: string;
   page?: number;
   limit?: number;
 }
 
-// `enabled` defaults true for (workspace) callers (always behind AuthGuard);
-// the public dashboard passes `enabled: !!accessToken` since this endpoint
-// 401s for anonymous requests and the global 401 handler would otherwise
-// hard-redirect every signed-out visitor to /admin/login.
+// GET /decision-recommendations is a public, unauthenticated endpoint
+// (docs/API_SPEC.md's guard posture) — `enabled` exists only for callers
+// that need to defer the fetch for unrelated reasons (e.g. waiting on
+// another query), not for auth gating.
 export function useDecisionRecommendations(filters: DecisionRecommendationFilters = {}, enabled = true) {
   return useQuery({
     queryKey: ['decision-recommendations', filters],

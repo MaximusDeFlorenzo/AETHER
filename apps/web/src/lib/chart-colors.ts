@@ -9,17 +9,19 @@ import type { ExposureLevel, HazardType, PriorityLevel } from '@/types/domain';
  * needs a literal value here instead of a Tailwind/CSS-var class. Keeping
  * every chart- and map-marker color in this one module (instead of each
  * component hardcoding its own) is what keeps them in sync with the tokens
- * and with each other. Values mirror the BMKG-inspired palette in
+ * and with each other. Values mirror the navy/blue/cyan palette in
  * globals.css: --primary/--info/--success/--warning/--danger.
  */
 
-export const CHART_PRIMARY = '#c2410c';
-export const CHART_INFO = '#4f46e5';
+export const CHART_PRIMARY = '#1976d2';
+export const CHART_INFO = '#0891b2';
 export const CHART_SUCCESS = '#16a34a';
 export const CHART_WARNING = '#f59e0b';
 export const CHART_DANGER = '#dc2626';
+export const CHART_NAVY = '#102a56';
+export const CHART_CYAN = '#43c6d5';
 
-export const CHART_GRID = '#e5e7eb';
+export const CHART_GRID = '#e2e8f0';
 export const CHART_AXIS = '#64748b';
 
 /** Current-event vs. historical-comparison series (hazard detail page). */
@@ -67,14 +69,13 @@ export function priorityLevelToColor(level: PriorityLevel): string {
 // one distinct hue per hazard so markers stay legible when types are mixed
 // on the same map). Chosen to be visually distinct from the severity ramp
 // above wherever both appear together (e.g. a HazardTypeBadge next to a
-// RiskLevelBadge) — deliberately NOT tied to --primary (now a burnt orange),
-// since landslide/wildfire already sit in the red-orange region and a 4th
-// orange-ish hue would collapse the map legend's distinguishability. --------
+// RiskLevelBadge) and from --primary (brand blue), since flood would
+// otherwise collapse into the same hue as the interactive/active accent. ---
 
 export const HAZARD_TYPE_COLORS: Record<HazardType, string> = {
-  earthquake: '#2563eb', // blue — kept distinct from the orange brand primary
+  earthquake: '#4f46e5', // indigo — kept distinct from brand blue
   landslide: '#b45309', // warm brown/amber — earth movement
-  flood: '#4f46e5', // info blue-violet
+  flood: '#0891b2', // cyan-teal — water, ties to the brand's cyan accent
   wildfire: '#dc2626', // danger red-orange
 };
 

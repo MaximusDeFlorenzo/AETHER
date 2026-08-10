@@ -5,6 +5,7 @@ import type { HazardType, PaginatedResponse, RiskAssessment } from '@/types/doma
 export interface RiskAssessmentFilters {
   hazardType?: HazardType;
   district?: string;
+  hazardEventId?: string;
   minRiskScore?: number;
   /** Filter to `hazardEventId IS NULL` standing/baseline assessments — the
    * event-independent prediction/prevention scoring ORION never had
@@ -14,11 +15,10 @@ export interface RiskAssessmentFilters {
   limit?: number;
 }
 
-// `enabled` defaults true for the (workspace) risk-assessments page (always
-// behind AuthGuard); the public dashboard passes `enabled: !!accessToken`
-// since this endpoint 401s for anonymous requests (docs/API_SPEC.md's guard
-// posture) and the global 401 handler would otherwise hard-redirect every
-// signed-out visitor to /admin/login.
+// GET /risk-assessments is a public, unauthenticated endpoint
+// (docs/API_SPEC.md's guard posture) — `enabled` exists only for callers
+// that need to defer the fetch for unrelated reasons (e.g. waiting on
+// another query), not for auth gating.
 export function useRiskAssessments(filters: RiskAssessmentFilters = {}, enabled = true) {
   return useQuery({
     queryKey: ['risk-assessments', filters],

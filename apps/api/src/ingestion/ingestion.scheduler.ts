@@ -13,6 +13,7 @@ const POLL_INTERVAL_ENV_BY_SOURCE: Record<string, string> = {
   bmkg: 'BMKG_POLL_INTERVAL_MS',
   nasa_firms: 'NASA_FIRMS_POLL_INTERVAL_MS',
   weather_api: 'WEATHER_POLL_INTERVAL_MS',
+  petabencana: 'PETABENCANA_POLL_INTERVAL_MS',
   landslide_rainfall_trigger: 'LANDSLIDE_TRIGGER_POLL_INTERVAL_MS',
   sentinel: 'SENTINEL_POLL_INTERVAL_MS',
 };

@@ -66,11 +66,16 @@ def _hazard_severity_indicator_reason(hazard_event: HazardEventInput) -> Reason 
         water_level = hazard_event.flood.water_level_m
         rainfall = hazard_event.flood.rainfall_mm
         if water_level >= HIGH_WATER_LEVEL_M:
+            rainfall_note = (
+                f"{rainfall:.0f}mm of contributing rainfall"
+                if rainfall is not None
+                else "no rainfall reading available"
+            )
             return Reason(
                 factor="water_level",
                 detail=(
                     f"Water level of {water_level:.1f}m exceeds the {HIGH_WATER_LEVEL_M:.1f}m "
-                    f"threshold, with {rainfall:.0f}mm of contributing rainfall"
+                    f"threshold, with {rainfall_note}"
                 ),
                 weight=0.25,
             )

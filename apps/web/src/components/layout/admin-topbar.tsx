@@ -46,9 +46,10 @@ export function AdminTopbar() {
     <header className="flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 sm:px-6">
       <div className="flex items-center gap-2">
         <MobileNav
-          items={ADMIN_NAV_ITEMS}
+          sections={[{ items: ADMIN_NAV_ITEMS }]}
           brandIcon={ShieldCheck}
           brandLabel="Admin AETHER"
+          triggerClassName="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           footer={
             <div className="border-t border-sidebar-border px-5 py-3">
               <Link href="/risk-map" className="text-xs text-sidebar-foreground/50 hover:underline">
@@ -60,7 +61,7 @@ export function AdminTopbar() {
         <span className="text-sm font-semibold text-sidebar-foreground/70">Admin AETHER</span>
       </div>
       <div className="flex items-center gap-2">
-        <ThemeToggle />
+        <ThemeToggle className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
         <DropdownMenu>
           <DropdownMenuTrigger
             render={

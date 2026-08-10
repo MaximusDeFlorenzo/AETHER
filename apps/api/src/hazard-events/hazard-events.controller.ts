@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -13,6 +14,7 @@ import { HazardEventsService } from './hazard-events.service';
 import { IngestionRegistryService } from '../ingestion/ingestion-registry.service';
 import { QueryHazardEventsDto } from './dto/query-hazard-events.dto';
 import { ManualHazardEventDto } from './dto/manual-hazard-event.dto';
+import { SimulateEarthquakeEventDto } from './dto/simulate-earthquake-event.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RoleName } from '../common/enums/roles.enum';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -28,7 +30,7 @@ export class HazardEventsController {
     private readonly hazardEventsService: HazardEventsService,
     private readonly ingestionRegistryService: IngestionRegistryService,
     private readonly auditService: AuditService,
-  ) {}
+  ) { }
 
   // No guard — public risk-intelligence surface (docs/API_SPEC.md §3, §8).
   @Get()
@@ -54,6 +56,11 @@ export class HazardEventsController {
     return this.hazardEventsService.findRelationships(id);
   }
 
+  @Get(':id/affected-regions')
+  findAffectedRegions(@Param('id', ParseUUIDPipe) id: string) {
+    return this.hazardEventsService.findAffectedRegions(id);
+  }
+
   @Post(':source/sync')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -72,9 +79,6 @@ export class HazardEventsController {
     return { message: 'Sync triggered', source, ...result };
   }
 
-  // Ground-truth reporting path (field_reporter role) — Phase 1's ingestion
-  // route for hazard types with no live external adapter (landslide), and a
-  // manual-override path for earthquake. See ManualHazardEventDto.
   @Post('manual')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -91,5 +95,38 @@ export class HazardEventsController {
       targetId: event.id,
     });
     return event;
+  }
+
+  @Post('simulate/earthquake')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN, RoleName.AGENCY_OPERATOR)
+  async simulateEarthquake(
+    @Body() dto: SimulateEarthquakeEventDto,
+    @CurrentUser() actor: AuthenticatedUser,
+  ) {
+    const event = await this.hazardEventsService.simulateEarthquake(dto);
+    await this.auditService.log({
+      actorUserId: actor.id,
+      action: 'hazard_events.simulate.earthquake',
+      targetType: 'hazard_event',
+      targetId: event.id,
+    });
+    return event;
+  }
+
+  @Delete('simulated')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleName.ADMIN, RoleName.AGENCY_OPERATOR)
+  async deleteAllSimulated(@CurrentUser() actor: AuthenticatedUser) {
+    const result = await this.hazardEventsService.deleteAllSimulated();
+    await this.auditService.log({
+      actorUserId: actor.id,
+      action: 'hazard_events.simulated.delete_all',
+      targetType: 'hazard_event',
+      metadata: { deletedCount: result.deletedCount },
+    });
+    return result;
   }
 }

@@ -1,17 +1,12 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { AuditService } from './audit.service';
 import { QueryAuditLogsDto } from './dto/query-audit-logs.dto';
-import { Roles } from '../common/decorators/roles.decorator';
-import { RoleName } from '../common/enums/roles.enum';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
 
+// No guard — public read-only risk-intelligence surface (docs/API_SPEC.md
+// §"Auth guard posture").
 @ApiTags('audit-logs')
-@ApiBearerAuth()
 @Controller('audit-logs')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(RoleName.ADMIN)
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 

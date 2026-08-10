@@ -9,6 +9,7 @@ build/
 .env.local
 .DS_Store
 coverage/
+CLAUDE.md
 
 # Intermediate OpenAPI doc for packages/contracts codegen (apps/api
 # generate:openapi) — regenerated on demand; packages/contracts/src/

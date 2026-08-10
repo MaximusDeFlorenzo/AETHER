@@ -7,23 +7,18 @@ import { Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { HazardMap } from '@/components/map/map-loader';
-import { HazardTypeBadge } from '@/components/shared/hazard-type-badge';
+import { HazardTypeBadge, HAZARD_TYPE_ICONS } from '@/components/shared/hazard-type-badge';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import { TablePagination } from '@/components/shared/table-pagination';
 import { useHazardEvents } from '@/hooks/use-hazard-events';
 import { usePagination } from '@/hooks/use-pagination';
 import { useSortableData } from '@/hooks/use-sortable-data';
-import { HAZARD_TYPE_LABELS } from '@/lib/labels';
+import { ALL_HAZARD_TYPES, HAZARD_TYPE_LABELS } from '@/lib/labels';
+import { formatHazardEventLocation } from '@/lib/hazard-severity';
+import { cn } from '@/lib/utils';
 import type { EarthquakeDetails, FloodDetails, HazardEvent, HazardType, WildfireDetails } from '@/types/domain';
 
 type HazardSortKey = 'location' | 'severity' | 'time' | 'affected';
@@ -44,7 +39,7 @@ function hazardSeverityValue(event: HazardEvent): number {
 function getHazardSortValue(event: HazardEvent, key: HazardSortKey) {
   switch (key) {
     case 'location':
-      return event.locationLabel;
+      return formatHazardEventLocation(event);
     case 'severity':
       return hazardSeverityValue(event);
     case 'time':
@@ -69,14 +64,6 @@ function hazardSeverityLabel(event: HazardEvent): string {
   return '—';
 }
 
-const HAZARD_TYPE_OPTIONS: { value: HazardType | 'all'; label: string }[] = [
-  { value: 'all', label: 'All hazard types' },
-  { value: 'earthquake', label: HAZARD_TYPE_LABELS.earthquake },
-  { value: 'landslide', label: HAZARD_TYPE_LABELS.landslide },
-  { value: 'flood', label: HAZARD_TYPE_LABELS.flood },
-  { value: 'wildfire', label: HAZARD_TYPE_LABELS.wildfire },
-];
-
 export default function HazardEventsPage() {
   const [hazardType, setHazardType] = useState<HazardType | 'all'>('all');
   const [search, setSearch] = useState('');
@@ -86,11 +73,28 @@ export default function HazardEventsPage() {
     limit: 100,
   });
 
+  // Lightweight (limit: 1) count-only queries per hazard type, so the quick
+  // filter row below can show e.g. "Earthquake 12" without capping on the
+  // main list's 100-row page and without an extra backend aggregate route —
+  // docs/API_SPEC.md's /hazard-events already returns an accurate meta.total
+  // per filtered query.
+  const totalCount = useHazardEvents({ limit: 1 });
+  const earthquakeCount = useHazardEvents({ hazardType: 'earthquake', limit: 1 });
+  const landslideCount = useHazardEvents({ hazardType: 'landslide', limit: 1 });
+  const floodCount = useHazardEvents({ hazardType: 'flood', limit: 1 });
+  const wildfireCount = useHazardEvents({ hazardType: 'wildfire', limit: 1 });
+  const hazardTypeCounts: Record<HazardType, number | undefined> = {
+    earthquake: earthquakeCount.data?.meta.total,
+    landslide: landslideCount.data?.meta.total,
+    flood: floodCount.data?.meta.total,
+    wildfire: wildfireCount.data?.meta.total,
+  };
+
   const filtered = useMemo(() => {
     const events = data?.data ?? [];
     if (!search.trim()) return events;
     const term = search.toLowerCase();
-    return events.filter((e) => e.locationLabel?.toLowerCase().includes(term));
+    return events.filter((e) => formatHazardEventLocation(e).toLowerCase().includes(term));
   }, [data, search]);
 
   const { sorted, sortKey, sortDirection, toggleSort } = useSortableData<HazardEvent, HazardSortKey>(
@@ -109,35 +113,74 @@ export default function HazardEventsPage() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="min-w-56 flex-1 space-y-1.5">
-          <Label htmlFor="search">Search location</Label>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="search"
-              placeholder="e.g. Bantul, Palu, Sumatra"
-              className="pl-8"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="search">Search location</Label>
+        <div className="relative max-w-md">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="search"
+            placeholder="e.g. Bantul, Palu, Sumatra"
+            className="pl-8"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-        <div className="w-56 space-y-1.5">
-          <Label>Hazard type</Label>
-          <Select value={hazardType} onValueChange={(v) => setHazardType((v as HazardType | 'all') ?? 'all')}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {HAZARD_TYPE_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      </div>
+
+      {/* Quick hazard-type filters — one tap straight to "how many
+          earthquake/flood/wildfire/landslide events right now" instead of
+          opening a dropdown first. */}
+      <div className="grid grid-cols-5 gap-2">
+        <Card
+          role="button"
+          tabIndex={0}
+          onClick={() => setHazardType('all')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') setHazardType('all');
+          }}
+          className={cn(
+            'cursor-pointer border-primary/40 py-0 transition-colors hover:border-primary/70',
+            hazardType === 'all' && 'border-primary bg-primary/5',
+          )}
+        >
+          <CardContent className="px-3 py-2.5">
+            <p className="truncate text-[10px] font-medium tracking-wide text-muted-foreground uppercase">All</p>
+            <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
+              {totalCount.data?.meta.total ?? '—'}
+            </p>
+          </CardContent>
+        </Card>
+        {ALL_HAZARD_TYPES.map((type) => {
+          const Icon = HAZARD_TYPE_ICONS[type];
+          const active = hazardType === type;
+          return (
+            <Card
+              key={type}
+              role="button"
+              tabIndex={0}
+              onClick={() => setHazardType(type)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') setHazardType(type);
+              }}
+              className={cn(
+                'cursor-pointer border-primary/40 py-0 transition-colors hover:border-primary/70',
+                active && 'border-primary bg-primary/5',
+              )}
+            >
+              <CardContent className="flex items-start justify-between gap-1.5 px-3 py-2.5">
+                <div className="min-w-0">
+                  <p className="truncate text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                    {HAZARD_TYPE_LABELS[type]}
+                  </p>
+                  <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
+                    {hazardTypeCounts[type] ?? '—'}
+                  </p>
+                </div>
+                <Icon className="h-3.5 w-3.5 shrink-0 text-primary" />
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <Card>
@@ -201,7 +244,7 @@ export default function HazardEventsPage() {
                     <TableRow key={event.id}>
                       <TableCell>
                         <Link href={`/hazards/${event.id}`} className="hover:underline">
-                          {event.locationLabel}
+                          {formatHazardEventLocation(event)}
                         </Link>
                         <HazardTypeBadge hazardType={event.hazardType} className="ml-2" />
                       </TableCell>

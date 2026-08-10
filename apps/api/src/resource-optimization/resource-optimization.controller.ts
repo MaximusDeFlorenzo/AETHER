@@ -19,10 +19,10 @@ import { RoleName } from '../common/enums/roles.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 
+// GET routes are public read-only risk-intelligence surface (docs/API_SPEC.md
+// §"Auth guard posture") — only the mutating routes require auth.
 @ApiTags('resource-optimization')
-@ApiBearerAuth()
 @Controller()
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class ResourceOptimizationController {
   constructor(
     private readonly resourceOptimizationService: ResourceOptimizationService,
@@ -43,6 +43,8 @@ export class ResourceOptimizationController {
   }
 
   @Post('resource-optimization-plans')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.ADMIN, RoleName.AGENCY_OPERATOR)
   createPlan(@Body() dto: CreateResourceOptimizationPlanDto) {
     return this.resourceOptimizationService.createPlan(dto);
@@ -56,6 +58,8 @@ export class ResourceOptimizationController {
   }
 
   @Post('shelters')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleName.ADMIN)
   createShelter(@Body() dto: CreateShelterDto) {
     return this.resourceOptimizationService.createShelter(dto);

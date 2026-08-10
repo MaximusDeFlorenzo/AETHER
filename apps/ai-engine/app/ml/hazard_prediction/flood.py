@@ -12,14 +12,25 @@ Drivers, both standard flood-risk factors:
   upstream of water-level rise. Normalized against a threshold in line with
   commonly-cited 24h heavy-rainfall flood-trigger figures (same order of
   magnitude as `landslide.py`'s `triggering_rainfall_mm` threshold, since both
-  represent "intense short-window rain" as a hazard trigger).
+  represent "intense short-window rain" as a hazard trigger). Optional: a
+  water-level-only source (e.g. PetaBencana.id's flood gauge feed) has no
+  rainfall reading to report, so `None` contributes 0 to the score rather
+  than blocking scoring outright — `water_level_m` is the heavier-weighted,
+  directly-observed signal and still drives the result.
+- `flood_hazard_index` (0-1) — BNPB InaRISK's `INDEKS_BAHAYA_BANJIR` national
+  susceptibility layer, looked up per event coordinate at ingestion time
+  (`apps/api/src/ingestion/adapters/bnpb-inarisk.client.ts`). A static,
+  government-published regional factor rather than a live reading — weighted
+  below the two live/observed signals above for that reason. Optional, same
+  None-safe posture as `rainfall_mm`: only PetaBencana-sourced events
+  populate it today, so a missing value contributes 0 rather than blocking
+  scoring.
 - `population_density` — same exposure-side role it plays in every other
   hazard module (higher density in the inundation zone -> larger
   affected-population estimate), not a physical trigger of flooding itself.
 
 `river_basin` is descriptive/narrative only (feeds XAI reason text via
-`explainability.py`) — there is no per-basin susceptibility data source yet,
-so it is not a scoring input.
+`explainability.py`), not a scoring input.
 
 Per docs/SRS.md §1, flood is a Phase 2 hazard type sourced from a live
 Weather/Rainfall API adapter once wired (`apps/api/src/ingestion/adapters/
@@ -54,11 +65,23 @@ def predict_risk(
     historical_disasters: list[HistoricalDisasterInput],
 ) -> PredictRiskResponse:
     water_level_component = clamp(flood.water_level_m / MAX_RELEVANT_WATER_LEVEL_M) * 100
-    rainfall_component = clamp(flood.rainfall_mm / MAX_RELEVANT_RAINFALL_MM) * 100
+    rainfall_component = (
+        clamp(flood.rainfall_mm / MAX_RELEVANT_RAINFALL_MM) * 100
+        if flood.rainfall_mm is not None
+        else 0.0
+    )
+    hazard_index_component = (
+        clamp(flood.flood_hazard_index) * 100
+        if flood.flood_hazard_index is not None
+        else 0.0
+    )
     density_component = clamp(district.population_density / MAX_RELEVANT_DENSITY) * 100
 
     risk_score = round(
-        0.5 * water_level_component + 0.3 * rainfall_component + 0.2 * density_component,
+        0.40 * water_level_component
+        + 0.25 * rainfall_component
+        + 0.20 * hazard_index_component
+        + 0.15 * density_component,
         2,
     )
 

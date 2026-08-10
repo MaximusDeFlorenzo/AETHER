@@ -1,10 +1,15 @@
 from fastapi.testclient import TestClient
 
+from app.core.config import get_settings
 from app.main import app
 
 client = TestClient(app)
 
-HEADERS = {"X-Internal-Token": "dev-internal-token"}
+# Read the actual configured secret rather than hardcoding the pre-fix
+# fallback value — config.py now correctly loads the shared root `.env`
+# (previously env-loading silently no-op'd under pytest's CWD too, so this
+# always happened to match the `dev-internal-token` default by accident).
+HEADERS = {"X-Internal-Token": get_settings().internal_service_token}
 
 EARTHQUAKE_HAZARD_EVENT = {
     "hazardType": "earthquake",
@@ -141,6 +146,49 @@ def test_full_pipeline_earthquake():
     recommendation = recommendation_response.json()
     assert len(recommendation["reasons"]) > 0
     assert "summaryText" in recommendation
+
+
+def test_generate_recommendation_with_historical_disasters_surfaces_a_historical_severity_reason():
+    # Regression test: `historicalDisasters` must deserialize into
+    # HistoricalDisasterInput objects (not raw dicts) so explainability.py's
+    # attribute access (`h.casualties_dead`) doesn't blow up with an
+    # AttributeError.
+    predict_response = client.post(
+        "/predict-risk",
+        json={"hazardEvent": EARTHQUAKE_HAZARD_EVENT, "district": DISTRICT, "historicalDisasters": []},
+        headers=HEADERS,
+    )
+    assert predict_response.status_code == 200
+    prediction = predict_response.json()
+
+    priority_response = client.post(
+        "/calculate-priority",
+        json={"hazardType": "earthquake", "prediction": prediction, "district": DISTRICT},
+        headers=HEADERS,
+    )
+    assert priority_response.status_code == 200
+
+    recommendation_response = client.post(
+        "/generate-recommendation",
+        json={
+            "hazardEvent": EARTHQUAKE_HAZARD_EVENT,
+            "district": DISTRICT,
+            "prediction": prediction,
+            "priority": priority_response.json(),
+            "historicalDisasters": [
+                {
+                    "eventDate": "2018-09-28",
+                    "magnitude": 7.4,
+                    "casualtiesDead": 4340,
+                    "damagedBuildingsCount": 68451,
+                }
+            ],
+        },
+        headers=HEADERS,
+    )
+    assert recommendation_response.status_code == 200
+    reasons = recommendation_response.json()["reasons"]
+    assert any(r["factor"] == "historical_severity" for r in reasons)
 
 
 def test_full_pipeline_flood():

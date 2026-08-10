@@ -2,16 +2,17 @@
 
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/providers/theme-provider';
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+      className={cn('hover:bg-accent hover:text-accent-foreground', className)}
       aria-label={resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
       onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
     >

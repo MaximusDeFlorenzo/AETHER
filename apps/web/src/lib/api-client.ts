@@ -61,10 +61,15 @@ apiClient.interceptors.response.use(
         return apiClient(config);
       }
 
+      // Clear the stale session and let the route own the consequence:
+      // AuthGuard (workspace/admin routes) reacts to accessToken becoming
+      // null with its own client-side router.replace('/admin/login'), while
+      // public pages like /risk-map just fall back to isAuthed=false and
+      // their existing "Sign in to view" placeholders. A hard
+      // window.location.href redirect here would tear down the whole
+      // document — including the hazard-events WebSocket — every time a
+      // public-page visitor's leftover token happened to be stale.
       useAuthStore.getState().clearSession();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/admin/login';
-      }
     }
 
     return Promise.reject(error);

@@ -1,22 +1,12 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseUUIDPipe,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { DecisionIntelligenceService } from './decision-intelligence.service';
 import { QueryDecisionRecommendationsDto } from './dto/query-decision-recommendations.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
-// JwtAuthGuard only — any authenticated analyst/agency user
-// (docs/API_SPEC.md's guard posture table).
+// No guard — public read-only risk-intelligence surface (docs/API_SPEC.md
+// §"Auth guard posture").
 @ApiTags('decision-intelligence')
-@ApiBearerAuth()
 @Controller('decision-recommendations')
-@UseGuards(JwtAuthGuard)
 export class DecisionIntelligenceController {
   constructor(
     private readonly decisionIntelligenceService: DecisionIntelligenceService,
@@ -27,6 +17,7 @@ export class DecisionIntelligenceController {
     return this.decisionIntelligenceService.findAll({
       priorityLevel: query.priorityLevel,
       hazardType: query.hazardType,
+      hazardEventId: query.hazardEventId,
       page: query.page,
       limit: query.limit,
     });

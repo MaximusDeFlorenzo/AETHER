@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { playAlertSound } from '@/lib/alert-sound';
@@ -19,6 +20,7 @@ import type { DecisionRecommendation, HazardEvent, HazardRelationship, Notificat
  * notifications stream). */
 export function useRealtimeSync() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   useEffect(() => {
     const hazardEventsSocket = getNamespaceSocket('/ws/hazard-events');
@@ -32,7 +34,13 @@ export function useRealtimeSync() {
       if (severe) playAlertSound();
       toast[severe ? 'warning' : 'info'](
         `New ${HAZARD_TYPE_LABELS[hazardEvent.hazardType].toLowerCase()} detected`,
-        { description: hazardEvent.locationLabel ?? undefined },
+        {
+          description: hazardEvent.locationLabel ?? undefined,
+          action: {
+            label: 'View details',
+            onClick: () => router.push(`/hazards/${hazardEvent.id}`),
+          },
+        },
       );
     };
 
@@ -54,6 +62,10 @@ export function useRealtimeSync() {
       if (isHighSeverityHazardEvent(relationship.relatedHazardEvent)) playAlertSound();
       toast.info('Cascading hazard relationship detected', {
         description: relationship.detail,
+        action: {
+          label: 'View details',
+          onClick: () => router.push(`/hazards/${relationship.relatedHazardEvent.id}`),
+        },
       });
     };
 
@@ -80,5 +92,5 @@ export function useRealtimeSync() {
       dashboardSocket.disconnect();
       notificationsSocket.disconnect();
     };
-  }, [queryClient]);
+  }, [queryClient, router]);
 }

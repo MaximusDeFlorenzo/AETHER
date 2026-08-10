@@ -91,6 +91,12 @@ class EnvironmentVariables {
   @Type(() => Number)
   @IsInt()
   @Min(1000)
+  PETABENCANA_POLL_INTERVAL_MS = 900_000;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1000)
   SENTINEL_POLL_INTERVAL_MS = 3_600_000;
 
   // Standing/baseline risk-score threshold (0-100) above which a
@@ -110,6 +116,33 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   WEATHER_API_KEY?: string;
+
+  // PetaBencana.id flood-gauge feed (petabencana.adapter.ts) — unlike the
+  // other Phase 2 adapters, no API key is needed; both fields are optional
+  // purely to allow overriding the adapter's built-in defaults (public base
+  // URL, Jakarta + West/Central/East Java admin codes).
+  @IsOptional()
+  @IsString()
+  PETABENCANA_BASE_URL?: string;
+
+  @IsOptional()
+  @IsString()
+  PETABENCANA_ADMIN_CODES?: string;
+
+  // BNPB InaRISK hazard-index lookup client (bnpb-inarisk.client.ts) — real,
+  // free, no API key. Used to enrich PetaBencana flood events and
+  // rainfall-triggered landslide candidates with a per-coordinate hazard
+  // index instead of a hardcoded constant.
+  @IsOptional()
+  @IsString()
+  BNPB_INARISK_BASE_URL = 'https://gis.bnpb.go.id/server/rest/services/inarisk';
+
+  // Open-Meteo rainfall lookup (open-meteo.client.ts) — real, free, no API
+  // key. Landslide's independent rainfall-trigger source, queried directly
+  // by district centroid lat/lon (no administrative-code crosswalk needed).
+  @IsOptional()
+  @IsString()
+  OPEN_METEO_BASE_URL = 'https://api.open-meteo.com/v1';
 
   @IsOptional()
   @IsString()

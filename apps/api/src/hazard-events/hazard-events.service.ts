@@ -17,6 +17,7 @@ import {
 } from '../database/entities';
 import { HazardType } from '../common/enums/domain.enum';
 import { SpatialIntelligenceService } from '../spatial-intelligence/spatial-intelligence.service';
+import { GeoService } from '../geo/geo.service';
 import { DomainEvents } from '../common/events/domain-events';
 import type { HazardEventCreatedEvent } from '../common/events/domain-events';
 import type { NormalizedHazardEvent } from './hazard-event-normalized.interface';
@@ -37,6 +38,46 @@ import {
   validateWildfireDetails,
 } from './wildfire/wildfire-details.shape';
 
+// Real Indonesian seismic zones covered by database/seeds/reference-data.seed.ts
+// districts, so a simulated epicenter reliably resolves affected districts
+// (spatial-intelligence.service.ts's resolveAffectedRegions) instead of
+// landing somewhere the seed data doesn't cover.
+const SIMULATED_EARTHQUAKE_EPICENTERS: Array<{
+  label: string;
+  region: string;
+  latitude: number;
+  longitude: number;
+}> = [
+    {
+      label: 'Yogyakarta',
+      region: 'D.I. Yogyakarta',
+      latitude: -7.8,
+      longitude: 110.36,
+    },
+    {
+      label: 'Padang',
+      region: 'Sumatera Barat',
+      latitude: -0.95,
+      longitude: 100.42,
+    },
+    {
+      label: 'Lombok',
+      region: 'Nusa Tenggara Barat',
+      latitude: -8.62,
+      longitude: 116.3,
+    },
+    {
+      label: 'Palu',
+      region: 'Sulawesi Tengah',
+      latitude: -0.89,
+      longitude: 119.87,
+    },
+  ];
+
+function randomInRange(min: number, max: number): number {
+  return min + Math.random() * (max - min);
+}
+
 @Injectable()
 export class HazardEventsService {
   private readonly logger = new Logger(HazardEventsService.name);
@@ -53,8 +94,9 @@ export class HazardEventsService {
     @InjectRepository(WildfireDetails)
     private readonly wildfireDetailsRepository: Repository<WildfireDetails>,
     private readonly spatialIntelligenceService: SpatialIntelligenceService,
+    private readonly geoService: GeoService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async findAll(filters: {
     hazardType?: HazardType;
@@ -129,9 +171,12 @@ export class HazardEventsService {
     };
   }
 
-  async findOne(
-    id: string,
-  ): Promise<HazardEvent & { details: Record<string, unknown> | null }> {
+  async findOne(id: string): Promise<
+    HazardEvent & {
+      details: Record<string, unknown> | null;
+      affectedRegionCount: number;
+    }
+  > {
     const event = await this.hazardEventRepository.findOne({ where: { id } });
     if (!event) {
       throw new NotFoundException('Hazard event not found');
@@ -142,6 +187,18 @@ export class HazardEventsService {
 
   findRelationships(hazardEventId: string) {
     return this.spatialIntelligenceService.findRelationshipsForEvent(
+      hazardEventId,
+    );
+  }
+
+  async findAffectedRegions(hazardEventId: string) {
+    const event = await this.hazardEventRepository.findOne({
+      where: { id: hazardEventId },
+    });
+    if (!event) {
+      throw new NotFoundException('Hazard event not found');
+    }
+    return this.spatialIntelligenceService.findAffectedRegionsForEvent(
       hazardEventId,
     );
   }
@@ -178,6 +235,70 @@ export class HazardEventsService {
       );
     }
     return event;
+  }
+
+  async simulateEarthquake(
+    overrides: {
+      magnitude?: number;
+      depthKm?: number;
+      potentialTsunami?: boolean;
+      latitude?: number;
+      longitude?: number;
+      locationLabel?: string;
+      region?: string;
+    } = {},
+  ): Promise<HazardEvent> {
+    const epicenter =
+      SIMULATED_EARTHQUAKE_EPICENTERS[
+      Math.floor(Math.random() * SIMULATED_EARTHQUAKE_EPICENTERS.length)
+      ];
+
+    const magnitude = overrides.magnitude ?? randomInRange(6.0, 7.5);
+    const depthKm = overrides.depthKm ?? randomInRange(10, 60);
+    const latitude =
+      overrides.latitude ?? epicenter.latitude + randomInRange(-0.05, 0.05);
+    const longitude =
+      overrides.longitude ?? epicenter.longitude + randomInRange(-0.05, 0.05);
+
+    const normalized: NormalizedHazardEvent = {
+      hazardType: HazardType.EARTHQUAKE,
+      externalId: `simulation-${randomUUID()}`,
+      latitude,
+      longitude,
+      locationLabel: overrides.locationLabel ?? epicenter.label,
+      region: overrides.region ?? epicenter.region,
+      eventTime: new Date(),
+      source: 'simulation',
+      rawPayload: { simulated: true, epicenter: epicenter.label, ...overrides },
+      details: {
+        magnitude,
+        depthKm,
+        potentialTsunami:
+          overrides.potentialTsunami ?? (magnitude >= 7 && depthKm < 70),
+      },
+    };
+
+    const event = await this.ingestEvent(normalized);
+    if (!event) {
+      throw new BadRequestException(
+        'Simulated earthquake was rejected by validation — this indicates a bug in the simulator defaults',
+      );
+    }
+    return event;
+  }
+
+  /**
+   * Deletes every hazard event created via the simulate/* endpoints
+   * (source: 'simulation'). *_details, hazard_affected_regions,
+   * hazard_relationships, risk_assessments, resource_optimization_plans,
+   * notifications, and cv_detections rows referencing them are removed
+   * automatically via ON DELETE CASCADE (see InitialSchema migration).
+   */
+  async deleteAllSimulated(): Promise<{ deletedCount: number }> {
+    const result = await this.hazardEventRepository.delete({
+      source: 'simulation',
+    });
+    return { deletedCount: result.affected ?? 0 };
   }
 
   /**
@@ -222,6 +343,13 @@ export class HazardEventsService {
       return null;
     }
 
+    const locationLabel =
+      event.locationLabel ??
+      (await this.resolveFallbackLocationLabel(
+        event.latitude,
+        event.longitude,
+      ));
+
     const hazardEvent = this.hazardEventRepository.create({
       hazardType: event.hazardType,
       externalId: event.externalId,
@@ -231,7 +359,7 @@ export class HazardEventsService {
         type: 'Point',
         coordinates: [event.longitude, event.latitude],
       } as unknown as object,
-      locationLabel: event.locationLabel,
+      locationLabel,
       region: event.region,
       eventTime: event.eventTime,
       source: event.source,
@@ -274,6 +402,28 @@ export class HazardEventsService {
     this.eventEmitter.emit(DomainEvents.HAZARD_EVENT_CREATED, payload);
 
     return hazardEvent;
+  }
+
+  /**
+   * Adapters that only have raw coordinates (e.g. NASA FIRMS hotspots, or a
+   * weather station with no `riverBasin` set) normalize `locationLabel` to
+   * null. Rather than showing a blank title/location everywhere the event
+   * is rendered, fall back to the nearest district name, then to formatted
+   * coordinates if no district covers this point (e.g. offshore).
+   */
+  private async resolveFallbackLocationLabel(
+    latitude: number,
+    longitude: number,
+  ): Promise<string> {
+    const nearby = await this.geoService.findNearbyDistricts(
+      latitude,
+      longitude,
+      50_000,
+    );
+    if (nearby.length > 0) {
+      return nearby[0].name;
+    }
+    return `${latitude.toFixed(3)}, ${longitude.toFixed(3)}`;
   }
 
   private validateDetails(
@@ -334,9 +484,10 @@ export class HazardEventsService {
       await this.floodDetailsRepository.save(
         this.floodDetailsRepository.create({
           hazardEventId,
-          rainfallMm: shape.rainfallMm,
+          rainfallMm: shape.rainfallMm ?? null,
           waterLevelM: shape.waterLevelM,
           riverBasin: shape.riverBasin ?? null,
+          floodHazardIndex: shape.floodHazardIndex ?? null,
         }),
       );
       return;
@@ -354,9 +505,14 @@ export class HazardEventsService {
     }
   }
 
-  private async attachDetails(
-    events: HazardEvent[],
-  ): Promise<Array<HazardEvent & { details: Record<string, unknown> | null }>> {
+  private async attachDetails(events: HazardEvent[]): Promise<
+    Array<
+      HazardEvent & {
+        details: Record<string, unknown> | null;
+        affectedRegionCount: number;
+      }
+    >
+  > {
     const idsFor = (hazardType: HazardType) =>
       events.filter((e) => e.hazardType === hazardType).map((e) => e.id);
 
@@ -365,31 +521,36 @@ export class HazardEventsService {
     const floodIds = idsFor(HazardType.FLOOD);
     const wildfireIds = idsFor(HazardType.WILDFIRE);
 
+    const affectedRegionCounts =
+      await this.spatialIntelligenceService.countAffectedRegionsForEvents(
+        events.map((e) => e.id),
+      );
+
     const [earthquakeDetails, landslideDetails, floodDetails, wildfireDetails] =
       await Promise.all([
         earthquakeIds.length
           ? this.earthquakeDetailsRepository
-              .createQueryBuilder('d')
-              .where('d.hazardEventId IN (:...ids)', { ids: earthquakeIds })
-              .getMany()
+            .createQueryBuilder('d')
+            .where('d.hazardEventId IN (:...ids)', { ids: earthquakeIds })
+            .getMany()
           : Promise.resolve([] as EarthquakeDetails[]),
         landslideIds.length
           ? this.landslideDetailsRepository
-              .createQueryBuilder('d')
-              .where('d.hazardEventId IN (:...ids)', { ids: landslideIds })
-              .getMany()
+            .createQueryBuilder('d')
+            .where('d.hazardEventId IN (:...ids)', { ids: landslideIds })
+            .getMany()
           : Promise.resolve([] as LandslideDetails[]),
         floodIds.length
           ? this.floodDetailsRepository
-              .createQueryBuilder('d')
-              .where('d.hazardEventId IN (:...ids)', { ids: floodIds })
-              .getMany()
+            .createQueryBuilder('d')
+            .where('d.hazardEventId IN (:...ids)', { ids: floodIds })
+            .getMany()
           : Promise.resolve([] as FloodDetails[]),
         wildfireIds.length
           ? this.wildfireDetailsRepository
-              .createQueryBuilder('d')
-              .where('d.hazardEventId IN (:...ids)', { ids: wildfireIds })
-              .getMany()
+            .createQueryBuilder('d')
+            .where('d.hazardEventId IN (:...ids)', { ids: wildfireIds })
+            .getMany()
           : Promise.resolve([] as WildfireDetails[]),
       ]);
 
@@ -410,40 +571,44 @@ export class HazardEventsService {
         const d = earthquakeMap.get(event.id);
         details = d
           ? {
-              magnitude: d.magnitude,
-              depthKm: d.depthKm,
-              potentialTsunami: d.potentialTsunami,
-            }
+            magnitude: d.magnitude,
+            depthKm: d.depthKm,
+            potentialTsunami: d.potentialTsunami,
+          }
           : null;
       } else if (event.hazardType === HazardType.LANDSLIDE) {
         const d = landslideMap.get(event.id);
         details = d
           ? {
-              slopeDegrees: d.slopeDegrees,
-              soilSaturation: d.soilSaturation,
-              triggeringRainfallMm: d.triggeringRainfallMm,
-            }
+            slopeDegrees: d.slopeDegrees,
+            soilSaturation: d.soilSaturation,
+            triggeringRainfallMm: d.triggeringRainfallMm,
+          }
           : null;
       } else if (event.hazardType === HazardType.FLOOD) {
         const d = floodMap.get(event.id);
         details = d
           ? {
-              rainfallMm: d.rainfallMm,
-              waterLevelM: d.waterLevelM,
-              riverBasin: d.riverBasin,
-            }
+            rainfallMm: d.rainfallMm,
+            waterLevelM: d.waterLevelM,
+            riverBasin: d.riverBasin,
+            floodHazardIndex: d.floodHazardIndex,
+          }
           : null;
       } else if (event.hazardType === HazardType.WILDFIRE) {
         const d = wildfireMap.get(event.id);
         details = d
           ? {
-              frpConfidence: d.frpConfidence,
-              hotspotCount: d.hotspotCount,
-              brightnessKelvin: d.brightnessKelvin,
-            }
+            frpConfidence: d.frpConfidence,
+            hotspotCount: d.hotspotCount,
+            brightnessKelvin: d.brightnessKelvin,
+          }
           : null;
       }
-      return Object.assign(event, { details });
+      return Object.assign(event, {
+        details,
+        affectedRegionCount: affectedRegionCounts.get(event.id) ?? 0,
+      });
     });
   }
 }

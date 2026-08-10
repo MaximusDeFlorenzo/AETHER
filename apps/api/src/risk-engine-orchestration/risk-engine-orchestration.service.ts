@@ -58,7 +58,11 @@ const BASELINE_DEFAULTS = {
     soilSaturation: 0.2,
     triggeringRainfallMm: 0,
   },
-  [HazardType.FLOOD]: { rainfallMm: 5, waterLevelM: 0.5 },
+  [HazardType.FLOOD]: {
+    rainfallMm: 5,
+    waterLevelM: 0.5,
+    floodHazardIndex: 0.1,
+  },
   [HazardType.WILDFIRE]: {
     frpConfidence: 0.05,
     hotspotCount: 0,
@@ -216,11 +220,11 @@ export class RiskEngineOrchestrationService {
       const details = await this.floodDetailsRepository.findOne({
         where: { hazardEventId: hazardEvent.id },
       });
-      if (
-        !details ||
-        details.rainfallMm === null ||
-        details.waterLevelM === null
-      ) {
+      // rainfallMm is allowed to be null (e.g. PetaBencana's gauge-only
+      // feed) — ai-engine's flood scoring treats a missing rainfall reading
+      // as "no known contribution" rather than requiring it. waterLevelM is
+      // the one field every real flood source must supply to be scorable.
+      if (!details || details.waterLevelM === null) {
         return null;
       }
       return {
@@ -229,6 +233,7 @@ export class RiskEngineOrchestrationService {
           rainfallMm: details.rainfallMm,
           waterLevelM: details.waterLevelM,
           riverBasin: details.riverBasin,
+          floodHazardIndex: details.floodHazardIndex,
         },
       };
     }
@@ -349,13 +354,20 @@ export class RiskEngineOrchestrationService {
         .where('har.district_id = :districtId', { districtId })
         .select('AVG(d.rainfallMm)', 'rainfallMm')
         .addSelect('AVG(d.waterLevelM)', 'waterLevelM')
-        .getRawOne<{ rainfallMm: string | null; waterLevelM: string | null }>();
+        .addSelect('AVG(d.floodHazardIndex)', 'floodHazardIndex')
+        .getRawOne<{
+          rainfallMm: string | null;
+          waterLevelM: string | null;
+          floodHazardIndex: string | null;
+        }>();
       const defaults = BASELINE_DEFAULTS[HazardType.FLOOD];
       return {
         ...base,
         flood: {
           rainfallMm: parseAvg(avg?.rainfallMm) ?? defaults.rainfallMm,
           waterLevelM: parseAvg(avg?.waterLevelM) ?? defaults.waterLevelM,
+          floodHazardIndex:
+            parseAvg(avg?.floodHazardIndex) ?? defaults.floodHazardIndex,
         },
       };
     }

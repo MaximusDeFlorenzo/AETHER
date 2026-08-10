@@ -2,15 +2,17 @@
 
 import { useMemo, useState } from 'react';
 import { CircleMarker, GeoJSON, MapContainer, Popup, TileLayer, ZoomControl } from 'react-leaflet';
+import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import { hazardTypeToColor, riskLevelToColor } from '@/lib/chart-colors';
-import { isHighSeverityHazardEvent } from '@/lib/hazard-severity';
-import { HAZARD_TYPE_LABELS } from '@/lib/labels';
+import { formatHazardEventLocation, isHighSeverityHazardEvent } from '@/lib/hazard-severity';
+import { EXPOSURE_LEVEL_LABELS, HAZARD_TYPE_LABELS } from '@/lib/labels';
 import { cn } from '@/lib/utils';
 import type {
   EarthquakeDetails,
+  ExposureLevel,
   FloodDetails,
   HazardEvent,
   HazardType,
@@ -18,6 +20,8 @@ import type {
   SpatialOverlayFeatureCollection,
   WildfireDetails,
 } from '@/types/domain';
+
+const EXPOSURE_LEGEND_ORDER: ExposureLevel[] = ['low', 'moderate', 'high', 'severe'];
 
 // Thresholds mirrored from apps/ai-engine (flood.py/wildfire.py's
 // MAX_RELEVANT_*) — governs marker radius only; "high severity" (pulse cue)
@@ -66,6 +70,43 @@ function hazardEventRadius(event: HazardEvent): number {
     default:
       return 6;
   }
+}
+
+/** District rows in the `/spatial/overlay` response are frequently seeded
+ * with only a Point centroid rather than an admin-boundary Polygon — Leaflet
+ * renders GeoJSON Points as its default marker icon unless told otherwise,
+ * and that icon's image assets aren't wired up under Next.js's bundler, so
+ * it shows as a broken-image glyph. `pointToLayer` below swaps that for a
+ * colored circle matching the polygon fill, so a district still reads as a
+ * zone indicator regardless of which geometry shape it was seeded with. */
+function overlayPointToLayer(feature: GeoJSON.Feature, latlng: leaflet.LatLng): leaflet.Layer {
+  const color = riskLevelToColor(feature.properties?.exposureLevel);
+  return leaflet.circleMarker(latlng, {
+    radius: 9,
+    color,
+    fillColor: color,
+    fillOpacity: 0.45,
+    weight: 1.5,
+  });
+}
+
+function overlayFeatureTooltip(properties: Record<string, unknown> | null | undefined): string {
+  if (!properties) return '';
+  const parts: string[] = [];
+  if (typeof properties.districtName === 'string') parts.push(properties.districtName);
+  const exposureLevel = properties.exposureLevel;
+  if (typeof exposureLevel === 'string' && exposureLevel in EXPOSURE_LEVEL_LABELS) {
+    parts.push(EXPOSURE_LEVEL_LABELS[exposureLevel as ExposureLevel]);
+  }
+  if (typeof properties.riskScore === 'number') {
+    parts.push(`Risk ${Math.round(properties.riskScore)}`);
+  }
+  return parts.join(' · ');
+}
+
+function bindOverlayTooltip(feature: GeoJSON.Feature, layer: leaflet.Layer): void {
+  const label = overlayFeatureTooltip(feature.properties);
+  if (label) layer.bindTooltip(label, { sticky: true });
 }
 
 function eventPopupDetail(event: HazardEvent): string | null {
@@ -155,7 +196,7 @@ export function HazardMap({
   return (
     <div className="relative h-full w-full">
       {(showTypeFilter && presentTypes.length > 1) || (showOverlayToggle && overlay) ? (
-        <div className="absolute top-2 left-2 z-[1000] flex flex-wrap gap-1.5">
+        <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-1.5">
           {showTypeFilter &&
             presentTypes.length > 1 &&
             presentTypes.map((type) => {
@@ -195,8 +236,27 @@ export function HazardMap({
       ) : null}
 
       {tilesLoading && (
-        <div className="absolute top-2 right-2 z-[1000] flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground shadow-sm">
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground shadow-sm">
           <Loader2 className="h-3 w-3 animate-spin" /> Loading imagery…
+        </div>
+      )}
+
+      {overlay && overlayVisible && (
+        <div className="absolute bottom-3 left-3 z-20 rounded-lg border border-border bg-card/95 px-2.5 py-2 shadow-sm backdrop-blur-sm">
+          <p className="px-0.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+            {overlayLabel}
+          </p>
+          <div className="mt-1 flex items-center gap-2.5">
+            {EXPOSURE_LEGEND_ORDER.map((level) => (
+              <span key={level} className="flex items-center gap-1 text-[11px] font-medium text-foreground">
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                  style={{ background: riskLevelToColor(level) }}
+                />
+                {EXPOSURE_LEVEL_LABELS[level]}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
@@ -233,6 +293,8 @@ export function HazardMap({
               fillOpacity: 0.25,
               weight: 1,
             })}
+            pointToLayer={overlayPointToLayer}
+            onEachFeature={bindOverlayTooltip}
           />
         )}
 
@@ -253,7 +315,7 @@ export function HazardMap({
             <Popup>
               <div className="space-y-1 text-sm">
                 <p className="font-semibold">{HAZARD_TYPE_LABELS[event.hazardType]}</p>
-                <p>{event.locationLabel}</p>
+                <p>{formatHazardEventLocation(event)}</p>
                 {eventPopupDetail(event) && (
                   <p className="text-xs text-muted-foreground">{eventPopupDetail(event)}</p>
                 )}
