@@ -1,13 +1,38 @@
 let sharedAudioContext: AudioContext | null = null;
+const sharedClips: Partial<Record<AlertSoundKind, HTMLAudioElement>> = {};
+
+export type AlertSoundKind = 'new' | 'ongoing';
+
+// 'new' = first detection of a hazard event (hazard_event.created /
+// hazard_relationship.detected). 'ongoing' = the hazard is still active on a
+// later recheck (useOngoingHazardAlerts) — a distinct, more insistent alarm
+// so an analyst can tell by ear whether this is a fresh event or one that's
+// still unresolved.
+const ALERT_CLIP_SRC: Record<AlertSoundKind, string> = {
+  new: '/sounds/hazard-alert.mp3',
+  ongoing: '/sounds/mixkit-facility-alarm-sound-999.wav',
+};
 
 /**
- * Short two-tone alert chime for high-severity realtime events, synthesized
- * via Web Audio (no audio asset to ship/host). Reused for every "this is
- * urgent" push in use-realtime-sync.ts, kept separate from the toast itself
- * so the visual alert always fires even if audio is blocked/unsupported.
+ * Alert sound for high-severity realtime events. Reused for every
+ * "this is urgent" push in use-realtime-sync.ts and useOngoingHazardAlerts,
+ * kept separate from the toast itself so the visual alert always fires even
+ * if audio is blocked/unsupported. Falls back to a synthesized two-tone
+ * chime (Web Audio, no asset dependency) if the clip fails to load/play.
  */
-export function playAlertSound() {
+export function playAlertSound(kind: AlertSoundKind = 'new') {
   if (typeof window === 'undefined') return;
+  try {
+    sharedClips[kind] ??= new Audio(ALERT_CLIP_SRC[kind]);
+    const clip = sharedClips[kind];
+    clip.currentTime = 0;
+    clip.play().catch(playSynthesizedChime);
+  } catch {
+    playSynthesizedChime();
+  }
+}
+
+function playSynthesizedChime() {
   try {
     const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return;

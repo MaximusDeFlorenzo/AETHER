@@ -16,6 +16,12 @@ const HIGH_SOIL_SATURATION_PCT = 80;
 const HIGH_WATER_LEVEL_M = 3.0;
 const HIGH_FRP_CONFIDENCE = 0.75;
 
+// hazard_events has no active/resolved status (docs/DATABASE_SCHEMA.md §10 —
+// it's an append-only event log), so "ongoing" is a recency heuristic:
+// mirrors dashboard.service.ts's ACTIVE_WINDOW_HOURS so "still active" means
+// the same thing everywhere in the app.
+const ONGOING_WINDOW_HOURS = 24;
+
 // Adapters that only have raw coordinates (NASA FIRMS hotspots, a weather
 // station with no riverBasin set) can leave `locationLabel`/`region` null.
 // Older events ingested before the ingestion-side fallback existed also
@@ -41,4 +47,13 @@ export function isHighSeverityHazardEvent(event: HazardEvent): boolean {
     return ((event.details as WildfireDetails).frpConfidence ?? 0) >= HIGH_FRP_CONFIDENCE;
   }
   return false;
+}
+
+// Used by useOngoingHazardAlerts to keep re-surfacing the evacuation popup
+// for hazards that are still within the active window, not just the instant
+// they're first detected.
+export function isOngoingHighSeverityHazardEvent(event: HazardEvent): boolean {
+  if (!isHighSeverityHazardEvent(event)) return false;
+  const ageMs = Date.now() - new Date(event.eventTime).getTime();
+  return ageMs >= 0 && ageMs <= ONGOING_WINDOW_HOURS * 60 * 60 * 1000;
 }

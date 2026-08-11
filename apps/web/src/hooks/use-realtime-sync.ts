@@ -33,7 +33,6 @@ export function useRealtimeSync() {
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       const severe = isHighSeverityHazardEvent(hazardEvent);
       if (severe) {
-        playAlertSound();
         useHazardAlertStore.getState().pushAlert(hazardEvent);
       }
       toast[severe ? 'warning' : 'info'](
@@ -64,7 +63,6 @@ export function useRealtimeSync() {
       void queryClient.invalidateQueries({ queryKey: ['hazard-events'] });
       void queryClient.invalidateQueries({ queryKey: ['decision-recommendations'] });
       if (isHighSeverityHazardEvent(relationship.relatedHazardEvent)) {
-        playAlertSound();
         useHazardAlertStore.getState().pushAlert(relationship.relatedHazardEvent);
       }
       toast.info('Cascading hazard relationship detected', {

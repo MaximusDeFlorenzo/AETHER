@@ -21,9 +21,13 @@ import { HAZARD_TYPE_LABELS } from '@/lib/labels';
 // Full-screen popup for high-severity hazard events (the same threshold
 // use-realtime-sync uses to decide whether to play the alert chime) — the
 // toast alone is easy to miss, so events severe enough to warrant possible
-// evacuation get an interrupting modal with the key detail fields. Mounted
-// once in WorkspaceShell; state lives in useHazardAlertStore so any socket
-// handler can enqueue an alert without prop-drilling.
+// evacuation get an interrupting modal with the key detail fields. Fires on
+// first detection (use-realtime-sync) AND keeps re-firing periodically while
+// the hazard is still ongoing (useOngoingHazardAlerts), snooze-gated by
+// useHazardAlertStore so dismissing means "not right now" rather than
+// "never show me this again". Mounted once in WorkspaceShell; state lives in
+// useHazardAlertStore so any caller can enqueue an alert without
+// prop-drilling.
 export function EvacuationAlertDialog() {
   const router = useRouter();
   const event = useHazardAlertStore((state) => state.queue[0] ?? null);
@@ -42,7 +46,7 @@ export function EvacuationAlertDialog() {
               <div>
                 <DialogTitle className="text-danger">Evacuation Alert</DialogTitle>
                 <DialogDescription>
-                  High-severity {HAZARD_TYPE_LABELS[event.hazardType].toLowerCase()} detected — review immediately
+                  High-severity {HAZARD_TYPE_LABELS[event.hazardType].toLowerCase()} ongoing — review immediately
                   and follow local evacuation guidance.
                 </DialogDescription>
               </div>

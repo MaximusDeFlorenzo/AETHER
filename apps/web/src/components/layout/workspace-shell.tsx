@@ -1,6 +1,7 @@
 'use client';
 
 import { useRealtimeSync } from '@/hooks/use-realtime-sync';
+import { useOngoingHazardAlerts } from '@/hooks/use-ongoing-hazard-alerts';
 import { EvacuationAlertDialog } from '@/components/shared/evacuation-alert-dialog';
 import { TopNav } from './top-nav';
 
@@ -14,6 +15,7 @@ import { TopNav } from './top-nav';
 // get around the app.
 export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   useRealtimeSync();
+  useOngoingHazardAlerts();
 
   return (
     <div className="flex min-h-svh flex-col">
