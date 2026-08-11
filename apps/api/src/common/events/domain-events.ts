@@ -67,5 +67,7 @@ export interface HazardRelationshipDetectedEvent {
 export interface ResourcePlanGeneratedEvent {
   resourceOptimizationPlanId: string;
   districtId: string;
+  districtName: string;
+  hazardEventId: string | null;
   planType: string;
 }

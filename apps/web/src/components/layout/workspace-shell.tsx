@@ -1,6 +1,7 @@
 'use client';
 
 import { useRealtimeSync } from '@/hooks/use-realtime-sync';
+import { EvacuationAlertDialog } from '@/components/shared/evacuation-alert-dialog';
 import { TopNav } from './top-nav';
 
 // Renamed from ORION's CommandCenterShell (docs/MIGRATION_FROM_ORION.md) and
@@ -18,6 +19,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-svh flex-col">
       <TopNav />
       <main className="flex-1 bg-background">{children}</main>
+      <EvacuationAlertDialog />
     </div>
   );
 }

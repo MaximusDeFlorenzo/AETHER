@@ -6,14 +6,8 @@ import {
   AlertTriangle,
   Clock,
   Compass,
-  CloudRain,
-  Droplets,
-  Flame,
-  Gauge,
   Info,
   MapPin,
-  Mountain,
-  Thermometer,
   Users,
   Waves,
 } from 'lucide-react';
@@ -29,7 +23,8 @@ import { useRiskAssessments } from '@/hooks/use-risk-assessments';
 import { useDecisionRecommendations } from '@/hooks/use-decision-recommendations';
 import { RISK_ASSESSMENT_STATUS_LABELS } from '@/lib/labels';
 import { formatHazardEventLocation } from '@/lib/hazard-severity';
-import type { EarthquakeDetails, FloodDetails, LandslideDetails, WildfireDetails } from '@/types/domain';
+import { getHazardDetailMetrics } from '@/lib/hazard-metrics';
+import type { EarthquakeDetails } from '@/types/domain';
 
 interface MetricCardProps {
   icon: React.ElementType;
@@ -51,46 +46,6 @@ function MetricCard({ icon: Icon, label, value, hint }: MetricCardProps) {
       {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
-}
-
-function hazardDetailMetrics(hazardType: string, details: unknown) {
-  if (hazardType === 'earthquake') {
-    const d = details as EarthquakeDetails;
-    return [
-      { icon: Gauge, label: 'Magnitude', value: `M${d.magnitude?.toFixed(1) ?? '—'}` },
-      { icon: Mountain, label: 'Depth', value: `${d.depthKm ?? '—'} km` },
-    ];
-  }
-  if (hazardType === 'landslide') {
-    const d = details as LandslideDetails;
-    return [
-      { icon: Mountain, label: 'Slope angle', value: d.slopeAngleDeg != null ? `${d.slopeAngleDeg}°` : '—' },
-      {
-        icon: Gauge,
-        label: 'Soil saturation',
-        value: d.soilSaturationPct != null ? `${d.soilSaturationPct}%` : '—',
-      },
-    ];
-  }
-  if (hazardType === 'flood') {
-    const d = details as FloodDetails;
-    return [
-      { icon: Droplets, label: 'Water level', value: d.waterLevelM != null ? `${d.waterLevelM} m` : '—' },
-      { icon: CloudRain, label: 'Rainfall', value: d.rainfallMm != null ? `${d.rainfallMm} mm` : '—' },
-    ];
-  }
-  if (hazardType === 'wildfire') {
-    const d = details as WildfireDetails;
-    return [
-      { icon: Flame, label: 'Hotspots', value: d.hotspotCount != null ? `${d.hotspotCount}` : '—' },
-      {
-        icon: Thermometer,
-        label: 'FIRMS confidence',
-        value: d.frpConfidence != null ? `${Math.round(d.frpConfidence * 100)}%` : '—',
-      },
-    ];
-  }
-  return [];
 }
 
 export default function HazardEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -150,7 +105,7 @@ export default function HazardEventDetailPage({ params }: { params: Promise<{ id
             <CardTitle className="text-base">Event Information</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {hazardDetailMetrics(event.hazardType, event.details).map((m) => (
+            {getHazardDetailMetrics(event.hazardType, event.details).map((m) => (
               <MetricCard key={m.label} icon={m.icon} label={m.label} value={m.value} />
             ))}
             <MetricCard icon={MapPin} label="Region" value={event.region ?? '—'} />

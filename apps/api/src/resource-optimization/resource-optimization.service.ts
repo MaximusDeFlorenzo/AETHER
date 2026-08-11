@@ -83,6 +83,8 @@ export class ResourceOptimizationService {
       const payload: ResourcePlanGeneratedEvent = {
         resourceOptimizationPlanId: plan.id,
         districtId: event.districtId,
+        districtName: event.districtName,
+        hazardEventId: event.hazardEventId,
         planType: plan.planType,
       };
       this.eventEmitter.emit(DomainEvents.RESOURCE_PLAN_GENERATED, payload);
@@ -95,6 +97,7 @@ export class ResourceOptimizationService {
 
   async findAllPlans(filters: {
     district?: string;
+    hazardType?: string;
     page: number;
     limit: number;
   }) {
@@ -106,6 +109,11 @@ export class ResourceOptimizationService {
 
     if (filters.district) {
       qb.andWhere('district.id = :district', { district: filters.district });
+    }
+    if (filters.hazardType) {
+      qb.andWhere('hazardEvent.hazardType = :hazardType', {
+        hazardType: filters.hazardType,
+      });
     }
 
     const [data, total] = await qb

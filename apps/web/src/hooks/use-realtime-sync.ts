@@ -8,6 +8,7 @@ import { playAlertSound } from '@/lib/alert-sound';
 import { isHighSeverityHazardEvent } from '@/lib/hazard-severity';
 import { getNamespaceSocket } from '@/lib/websocket';
 import { HAZARD_TYPE_LABELS } from '@/lib/labels';
+import { useHazardAlertStore } from '@/stores/hazard-alert-store';
 import type { DecisionRecommendation, HazardEvent, HazardRelationship, Notification } from '@/types/domain';
 
 /** Connects the three WebSocket namespaces and turns their pushes into React
@@ -31,7 +32,10 @@ export function useRealtimeSync() {
       void queryClient.invalidateQueries({ queryKey: ['hazard-events'] });
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       const severe = isHighSeverityHazardEvent(hazardEvent);
-      if (severe) playAlertSound();
+      if (severe) {
+        playAlertSound();
+        useHazardAlertStore.getState().pushAlert(hazardEvent);
+      }
       toast[severe ? 'warning' : 'info'](
         `New ${HAZARD_TYPE_LABELS[hazardEvent.hazardType].toLowerCase()} detected`,
         {
@@ -59,7 +63,10 @@ export function useRealtimeSync() {
     const handleHazardRelationshipDetected = (relationship: HazardRelationship) => {
       void queryClient.invalidateQueries({ queryKey: ['hazard-events'] });
       void queryClient.invalidateQueries({ queryKey: ['decision-recommendations'] });
-      if (isHighSeverityHazardEvent(relationship.relatedHazardEvent)) playAlertSound();
+      if (isHighSeverityHazardEvent(relationship.relatedHazardEvent)) {
+        playAlertSound();
+        useHazardAlertStore.getState().pushAlert(relationship.relatedHazardEvent);
+      }
       toast.info('Cascading hazard relationship detected', {
         description: relationship.detail,
         action: {

@@ -200,8 +200,11 @@ export interface ResourceOptimizationPlan {
 
 export interface ResourceOptimizationPlanInput {
   districtId: string;
-  hazardType: HazardType;
   hazardEventId?: string;
+  riskAssessmentId?: string;
+  planType: string;
+  planDetails: Record<string, unknown>;
+  estimatedPersonnelNeeded?: number;
 }
 
 export interface Shelter {

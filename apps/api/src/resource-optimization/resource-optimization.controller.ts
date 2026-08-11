@@ -32,6 +32,7 @@ export class ResourceOptimizationController {
   findAllPlans(@Query() query: QueryResourceOptimizationPlansDto) {
     return this.resourceOptimizationService.findAllPlans({
       district: query.district,
+      hazardType: query.hazardType,
       page: query.page,
       limit: query.limit,
     });

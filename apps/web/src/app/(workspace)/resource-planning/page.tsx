@@ -161,10 +161,10 @@ export default function ResourcePlanningPage() {
       <Card>
         <CardContent className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
           <Package className="h-4 w-4 shrink-0" />
-          Plans are computed by apps/ai-engine&apos;s resource_optimization router from each
-          district&apos;s latest risk assessment, then persisted by apps/api — same
-          heuristic-first, swappable-model discipline as ORION&apos;s resource_estimator.py
-          (docs/MIGRATION_FROM_ORION.md).
+          Plans are computed by apps/ai-engine&apos;s resource_optimization router whenever a
+          decision recommendation&apos;s priority score crosses the risk-notification threshold,
+          then persisted by apps/api as a draft — same heuristic-first, swappable-model
+          discipline as ORION&apos;s resource_estimator.py (docs/MIGRATION_FROM_ORION.md).
         </CardContent>
       </Card>
     </div>

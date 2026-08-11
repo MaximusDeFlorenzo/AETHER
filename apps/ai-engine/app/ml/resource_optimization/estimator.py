@@ -8,11 +8,20 @@ resource categories yet, so nothing here is a trained model.
 Only rename vs. ORION: `DamageLevel` (minor/moderate/severe/catastrophic) is
 replaced by AETHER's hazard-agnostic `ExposureLevel`
 (low/moderate/high/severe) so this module serves every hazard type, not just
-earthquake. Hospital figures remain the one category partially grounded in
-real data — `apps/api` resolves real nearby hospitals and passes their bed
-counts + distance in as `nearby_hospitals`, same as ORION. Ambulance/vehicle
-"available" figures have no equivalent real fleet telemetry, so they stay
-heuristic proxies, not live dispatch data.
+earthquake.
+
+Unlike ORION, `nearby_hospitals` is not currently populated with real data —
+apps/api has no hospitals table/entity yet (see docs/MIGRATION_FROM_ORION.md),
+so every caller sends it empty. `estimate_hospital_requirement` and
+`estimate_ambulance_requirement` therefore always compute from
+population/exposure alone: `recommended_hospitals` is always `[]`,
+`available_capacity_beds` is always `0`, and overflow/`additional_needed`
+always equal the full requirement. Passing real `HospitalInput` data (bed
+counts + distance) through `nearby_hospitals` — once apps/api has a hospitals
+data source to resolve them from — would ground those two estimates the way
+ORION's did. Ambulance/vehicle "available" figures beyond that have no
+equivalent real fleet telemetry, so they stay heuristic proxies, not live
+dispatch data.
 """
 
 import math

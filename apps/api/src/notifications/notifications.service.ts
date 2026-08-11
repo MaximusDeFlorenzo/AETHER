@@ -11,6 +11,7 @@ import type {
   DecisionRecommendationCreatedEvent,
   HazardEventCreatedEvent,
   HazardRelationshipDetectedEvent,
+  ResourcePlanGeneratedEvent,
   RiskAssessmentCompletedEvent,
 } from '../common/events/domain-events';
 import { REDIS_CLIENT } from '../redis/redis.constants';
@@ -93,6 +94,18 @@ export class NotificationsService {
       title: `Cascading hazard detected (${event.relationshipType})`,
       body: `Confidence ${event.confidenceScore.toFixed(2)} — review the linked hazard events.`,
       relatedHazardEventId: event.relatedEventId,
+    });
+  }
+
+  @OnEvent(DomainEvents.RESOURCE_PLAN_GENERATED, { async: true })
+  async handleResourcePlanGenerated(
+    event: ResourcePlanGeneratedEvent,
+  ): Promise<void> {
+    await this.createAndPublish({
+      type: NotificationType.RESOURCE_PLAN_GENERATED,
+      title: `Resource plan drafted — ${event.districtName}`,
+      body: `A ${event.planType} resource optimization plan was auto-generated and is ready for review.`,
+      relatedHazardEventId: event.hazardEventId ?? undefined,
     });
   }
 
