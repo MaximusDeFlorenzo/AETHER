@@ -1,7 +1,13 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSourceSync, District } from '../database/entities';
+import {
+  DataSourceSync,
+  District,
+  DistrictTerrainProfile,
+  HazardEvent,
+  WeatherHourlySample,
+} from '../database/entities';
 import { HazardEventsModule } from '../hazard-events/hazard-events.module';
 import { BmkgAdapter } from './adapters/bmkg.adapter';
 import { NasaFirmsAdapter } from './adapters/nasa-firms.adapter';
@@ -12,6 +18,7 @@ import { OpenMeteoClient } from './adapters/open-meteo.client';
 import { LandslideRainfallTriggerAdapter } from './adapters/landslide-rainfall-trigger.adapter';
 import { SentinelAdapter } from './adapters/sentinel.adapter';
 import { DataSourceSyncService } from './data-source-sync.service';
+import { HotspotRetentionService } from './hotspot-retention.service';
 import { IngestionRegistryService } from './ingestion-registry.service';
 import { IngestionScheduler } from './ingestion.scheduler';
 import { HAZARD_DATA_SOURCE_ADAPTERS } from './ingestion.constants';
@@ -19,7 +26,13 @@ import { HAZARD_DATA_SOURCE_ADAPTERS } from './ingestion.constants';
 @Module({
   imports: [
     HttpModule,
-    TypeOrmModule.forFeature([DataSourceSync, District]),
+    TypeOrmModule.forFeature([
+      DataSourceSync,
+      District,
+      DistrictTerrainProfile,
+      HazardEvent,
+      WeatherHourlySample,
+    ]),
     // Circular: HazardEventsModule triggers ingestion's registry (manual
     // sync), while the registry calls back into HazardEventsService to
     // persist what an adapter fetches.
@@ -35,6 +48,7 @@ import { HAZARD_DATA_SOURCE_ADAPTERS } from './ingestion.constants';
     LandslideRainfallTriggerAdapter,
     SentinelAdapter,
     DataSourceSyncService,
+    HotspotRetentionService,
     IngestionRegistryService,
     IngestionScheduler,
     {

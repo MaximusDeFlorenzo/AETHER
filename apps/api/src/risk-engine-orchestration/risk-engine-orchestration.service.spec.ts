@@ -53,6 +53,9 @@ describe('RiskEngineOrchestrationService', () => {
   };
   let historicalService: { findRelevantForHazardEvent: jest.Mock };
   let eventEmitter: { emit: jest.Mock };
+  let weatherSampleRepository: { query: jest.Mock };
+  let hazardIndexRepository: { findOne: jest.Mock };
+  let terrainRepository: { findOne: jest.Mock };
   let service: RiskEngineOrchestrationService;
 
   beforeEach(() => {
@@ -119,6 +122,9 @@ describe('RiskEngineOrchestrationService', () => {
       findRelevantForHazardEvent: jest.fn().mockResolvedValue([]),
     };
     eventEmitter = { emit: jest.fn() };
+    weatherSampleRepository = { query: jest.fn().mockResolvedValue([]) };
+    hazardIndexRepository = { findOne: jest.fn().mockResolvedValue(null) };
+    terrainRepository = { findOne: jest.fn().mockResolvedValue(null) };
 
     service = new RiskEngineOrchestrationService(
       { findOneOrFail: jest.fn() } as any,
@@ -134,6 +140,10 @@ describe('RiskEngineOrchestrationService', () => {
       geoService as any,
       historicalService as any,
       eventEmitter as unknown as EventEmitter2,
+      weatherSampleRepository as any,
+      hazardIndexRepository as any,
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      terrainRepository as any,
     );
   });
 
@@ -190,6 +200,115 @@ describe('RiskEngineOrchestrationService', () => {
     });
   });
 
+  describe('flood baseline inputs', () => {
+    const floodCall = () =>
+      riskEngineClient.predictRisk.mock.calls.find(
+        ([payload]) => payload.hazardEvent.hazardType === HazardType.FLOOD,
+      );
+    const floodSnapshot = () =>
+      riskAssessmentRepository.create.mock.calls.find(
+        ([input]) => input.hazardType === HazardType.FLOOD,
+      )[0].inputSnapshot;
+
+    it('uses stored live rainfall and the InaRISK index over defaults, and records the sources', async () => {
+      const latest = new Date();
+      latest.setUTCMinutes(0, 0, 0);
+      weatherSampleRepository.query.mockResolvedValue(
+        Array.from({ length: 24 }, (_, i) => ({
+          source: 'gsmap_gauge_now',
+          valid_time: new Date(latest.getTime() - i * 3_600_000),
+          precipitation_mm: 2,
+        })),
+      );
+      hazardIndexRepository.findOne.mockResolvedValue({ valueMean: 0.42 });
+
+      await service.runBaselineScan();
+
+      expect(floodCall()[0].hazardEvent.flood).toEqual({
+        rainfallMm: 48,
+        waterLevelM: 0.5,
+        floodHazardIndex: 0.42,
+      });
+      expect(floodSnapshot().baselineInputSources).toEqual({
+        rainfallMm: expect.stringContaining('gsmap_gauge_now trailing 24 h'),
+        waterLevelM: 'baseline_default',
+        floodHazardIndex: expect.stringContaining('bnpb_inarisk'),
+      });
+    });
+
+    it('falls back to history/defaults when live data is missing or the query fails', async () => {
+      weatherSampleRepository.query.mockRejectedValue(new Error('no table'));
+
+      await service.runBaselineScan();
+
+      expect(floodCall()[0].hazardEvent.flood).toEqual({
+        rainfallMm: 5,
+        waterLevelM: 0.5,
+        floodHazardIndex: 0.1,
+      });
+      expect(floodSnapshot().baselineInputSources.rainfallMm).toBe(
+        'baseline_default',
+      );
+      // Hazard types without live inputs carry no baselineInputSources.
+      const quake = riskAssessmentRepository.create.mock.calls.find(
+        ([input]) => input.hazardType === HazardType.EARTHQUAKE,
+      )[0].inputSnapshot;
+      expect(quake.baselineInputSources).toBeUndefined();
+    });
+  });
+
+  describe('landslide baseline inputs', () => {
+    const landslideCall = () =>
+      riskEngineClient.predictRisk.mock.calls.find(
+        ([payload]) => payload.hazardEvent.hazardType === HazardType.LANDSLIDE,
+      );
+    const landslideSnapshot = () =>
+      riskAssessmentRepository.create.mock.calls.find(
+        ([input]) => input.hazardType === HazardType.LANDSLIDE,
+      )[0].inputSnapshot;
+
+    it('uses stored rainfall and the p90 DEM slope over defaults, and records the sources', async () => {
+      const latest = new Date();
+      latest.setUTCMinutes(0, 0, 0);
+      weatherSampleRepository.query.mockResolvedValue(
+        Array.from({ length: 24 }, (_, i) => ({
+          source: 'gsmap_gauge_now',
+          valid_time: new Date(latest.getTime() - i * 3_600_000),
+          precipitation_mm: 3,
+        })),
+      );
+      terrainRepository.findOne.mockResolvedValue({
+        slopeSamplesDeg: [...new Array(10).fill(5), ...new Array(6).fill(28)],
+      });
+
+      await service.runBaselineScan();
+
+      expect(landslideCall()[0].hazardEvent.landslide).toEqual({
+        slopeDegrees: 28,
+        soilSaturation: 0.2,
+        triggeringRainfallMm: 72,
+      });
+      expect(landslideSnapshot().baselineInputSources).toEqual({
+        slopeDegrees: expect.stringContaining('Copernicus GLO-90 p90'),
+        soilSaturation: 'baseline_default',
+        triggeringRainfallMm: expect.stringContaining(
+          'gsmap_gauge_now trailing 24 h',
+        ),
+      });
+    });
+
+    it('ignores a terrain profile with too few land samples', async () => {
+      terrainRepository.findOne.mockResolvedValue({ slopeSamplesDeg: [40] });
+
+      await service.runBaselineScan();
+
+      expect(landslideCall()[0].hazardEvent.landslide.slopeDegrees).toBe(10);
+      expect(landslideSnapshot().baselineInputSources.slopeDegrees).toBe(
+        'baseline_default',
+      );
+    });
+  });
+
   describe('handleHazardEventCreated (event-triggered path, unaffected by the baseline fix)', () => {
     it('skips a district when the matching *_details row is missing, without touching the baseline path', async () => {
       const hazardEvent = {
@@ -218,6 +337,10 @@ describe('RiskEngineOrchestrationService', () => {
         geoService as any,
         historicalService as any,
         eventEmitter as unknown as EventEmitter2,
+        weatherSampleRepository as any,
+        hazardIndexRepository as any,
+        { get: jest.fn() } as any,
+        terrainRepository as any,
       );
 
       await service.handleHazardEventCreated({

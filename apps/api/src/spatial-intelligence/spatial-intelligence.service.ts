@@ -39,6 +39,33 @@ const FLOOD_FIXED_RADIUS_KM = 10;
 // Wildfires spread with wind well beyond the detected hotspot pixel — the
 // widest fixed radius here, matching apps/ai-engine's wildfire.py.
 const WILDFIRE_FIXED_RADIUS_KM = 25;
+// How many of the closest kelurahan the affected-population summary lists.
+const NEAREST_VILLAGES_LISTED = 8;
+
+// Kelurahan/desa-level population within an event's hazard radius — a SUM
+// of `village_populations` rows for villages whose reference point lies in
+// the radius, never a district figure. Like SubdistrictPopulationAggregate,
+// `villagesWithPopulation < totalVillages` means partial coverage: callers
+// must show `coveragePercentage` and never present `totalPopulation` as
+// complete.
+export interface AffectedPopulationEstimate {
+  hazardEventId: string;
+  radiusKm: number;
+  totalVillages: number;
+  villagesWithPopulation: number;
+  coveragePercentage: number;
+  totalPopulation: number | null;
+  sourceName: string | null;
+  periodYear: number | null;
+  nearestVillages: Array<{
+    villageId: string;
+    name: string;
+    subdistrictName: string;
+    districtName: string;
+    distanceKm: number;
+    population: number | null;
+  }>;
+}
 
 @Injectable()
 export class SpatialIntelligenceService {
@@ -60,7 +87,8 @@ export class SpatialIntelligenceService {
   /**
    * Generalizes ORION's earthquake-only radius formula
    * (docs/DATABASE_SCHEMA.md §15): resolves districts within a
-   * severity-derived (earthquake) or fixed (landslide) radius, persists
+   * severity-derived (earthquake) or fixed (landslide) radius — widened per
+   * district by its size, see `GeoService.findDistrictsReachingPoint` — persists
    * `hazard_affected_regions`, and returns the affected district ids.
    */
   async resolveAffectedRegions(
@@ -72,7 +100,9 @@ export class SpatialIntelligenceService {
       severityMagnitude,
     );
 
-    const nearby = await this.geoService.findNearbyDistricts(
+    // Area-aware: large kabupaten (Kalimantan, Sumatra, Papua) reach well
+    // past the fixed hazard radius from their single reference point.
+    const nearby = await this.geoService.findDistrictsReachingPoint(
       hazardEvent.latitude,
       hazardEvent.longitude,
       radiusKm * 1000,
@@ -95,6 +125,102 @@ export class SpatialIntelligenceService {
     await this.affectedRegionRepository.save(rows);
 
     return nearby.map((d) => d.id);
+  }
+
+  /**
+   * Sums kelurahan/desa population (`village_populations`, latest row per
+   * village) for every village whose reference point is within the same
+   * hazard radius `resolveAffectedRegions` uses. Villages without a
+   * population row are counted in `totalVillages` but never treated as zero.
+   */
+  async estimateAffectedPopulation(
+    hazardEvent: HazardEvent,
+    severityMagnitude?: number | null,
+  ): Promise<AffectedPopulationEstimate> {
+    const radiusKm = this.resolveRadiusKm(
+      hazardEvent.hazardType,
+      severityMagnitude,
+    );
+    const rows: Array<{
+      village_id: string;
+      name: string;
+      subdistrict_name: string;
+      district_name: string;
+      distance_km: number;
+      total_population: number | null;
+      source_name: string | null;
+      period_year: number | null;
+    }> = await this.affectedRegionRepository.query(
+      `
+      WITH nearby AS (
+        SELECT v.id, v.name, s.name AS subdistrict_name, d.name AS district_name,
+          ST_Distance(v.geom::geography, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) / 1000 AS distance_km
+        FROM villages v
+        JOIN subdistricts s ON s.id = v.subdistrict_id
+        JOIN districts d ON d.id = s.district_id
+        WHERE v.geom IS NOT NULL
+          AND ST_DWithin(v.geom::geography, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography, $3)
+      )
+      SELECT n.id AS village_id, n.name, n.subdistrict_name, n.district_name,
+        n.distance_km::float8 AS distance_km, p.total_population, p.source_name, p.period_year
+      FROM nearby n
+      LEFT JOIN LATERAL (
+        SELECT vp.total_population, vp.source_name, vp.period_year
+        FROM village_populations vp
+        WHERE vp.village_id = n.id AND vp.total_population IS NOT NULL
+        ORDER BY vp.period_year DESC NULLS LAST, vp.reported_date DESC NULLS LAST
+        LIMIT 1
+      ) p ON true
+      ORDER BY n.distance_km
+      `,
+      [hazardEvent.latitude, hazardEvent.longitude, radiusKm * 1000],
+    );
+
+    const withPopulation = rows.filter((row) => row.total_population !== null);
+    // Most common source/period among the summed rows, for attribution.
+    const counts = new Map<
+      string,
+      { n: number; source: string; year: number | null }
+    >();
+    for (const row of withPopulation) {
+      const key = `${row.source_name}|${row.period_year}`;
+      const entry = counts.get(key) ?? {
+        n: 0,
+        source: row.source_name ?? '',
+        year: row.period_year,
+      };
+      entry.n += 1;
+      counts.set(key, entry);
+    }
+    const dominant = [...counts.values()].sort((a, b) => b.n - a.n)[0];
+
+    return {
+      hazardEventId: hazardEvent.id,
+      radiusKm: Math.round(radiusKm * 10) / 10,
+      totalVillages: rows.length,
+      villagesWithPopulation: withPopulation.length,
+      coveragePercentage:
+        rows.length === 0
+          ? 0
+          : Math.round((withPopulation.length / rows.length) * 1000) / 10,
+      totalPopulation: withPopulation.length
+        ? withPopulation.reduce(
+            (sum, row) => sum + Number(row.total_population),
+            0,
+          )
+        : null,
+      sourceName: dominant?.source ?? null,
+      periodYear: dominant?.year ?? null,
+      nearestVillages: rows.slice(0, NEAREST_VILLAGES_LISTED).map((row) => ({
+        villageId: row.village_id,
+        name: row.name,
+        subdistrictName: row.subdistrict_name,
+        districtName: row.district_name,
+        distanceKm: Math.round(row.distance_km * 10) / 10,
+        population:
+          row.total_population === null ? null : Number(row.total_population),
+      })),
+    };
   }
 
   private resolveRadiusKm(

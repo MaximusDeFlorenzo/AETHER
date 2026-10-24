@@ -55,9 +55,11 @@ Roles: `admin`, `agency_operator`. Manual ingestion trigger, generalizes ORION's
 Returns linked `hazard_relationships` rows (cascading hazards) for an event.
 
 ### `POST /hazard-events/manual`
-Roles: `admin`, `agency_operator`, `field_reporter`. Ground-truth reporting
-path — same validate/dedupe/persist/resolve-regions/detect-relationships
-pipeline as adapter-sourced events, for any `hazardType`.
+Roles: `admin`, `agency_operator`. Operator-entered event — same
+validate/dedupe/persist/resolve-regions/detect-relationships pipeline as
+adapter-sourced events, for any `hazardType`. The event goes live at once
+(risk scoring, notifications), so `field_reporter` was removed (2026-10-13):
+unverified field observations go through `POST /ground-reports` instead.
 
 ## 3a. Field Reports (Computer Vision)
 
@@ -89,6 +91,57 @@ Roles: `admin`, `agency_operator`, `analyst`. Body: `{ "hazardEventId": "uuid" }
 Promotes a detection to corroborating evidence for a concrete hazard event —
 the human-review step `cv_detections.hazard_event_id`'s nullability was
 designed for.
+
+## 3b. Ground Reports (AETHER Ground Intelligence, M1)
+
+Community flood / fire / smoke observations with an auditable review state
+machine (`apps/api/src/ground-reports`). A report — even a `verified` one —
+never creates a hazard event, sends a notification or changes any model
+input; `trainingEligible` is always `false` and has no write endpoint in M1.
+
+### `POST /ground-reports`
+Any authenticated role. `multipart/form-data`: `images` (1–5 files, max
+10 MB each; type is sniffed from the bytes — JPEG/PNG/WebP only),
+`observationType` (`floodwater` | `fire` | `smoke`), `latitude`, `longitude`
+(must fall inside Indonesia's bounding box), `observedAt` (ISO 8601 with a
+zone offset; at most 10 min in the future and 30 days in the past),
+`description` (10–2000 chars), optional `waterDepthCm` (0–1000, floodwater
+only) and `reporterSeverity` (`low` | `moderate` | `high` | `severe`).
+EXIF/XMP/IPTC metadata is stripped before storage; capture time and GPS
+are kept in `evidence[].exif` for reviewers only. Limit:
+`GROUND_REPORTS_MAX_PER_HOUR` per reporter (default 10) → 429. A resend
+(same reporter and type, ≤ 50 m, ≤ 30 min) is stored with `duplicateOfId`;
+a photo whose SHA-256 was uploaded before (any reporter) gets
+`duplicateOfEvidenceId`. Returns the report detail.
+
+### `GET /ground-reports`, `GET /ground-reports/:id`
+Any authenticated role. Field reporters see only their own reports (others
+→ 404) without reporter identity, reviewer identities, internal notes,
+EXIF, hashes or CV hints. Query: `status`, `observationType`, `page`,
+`limit`.
+
+### `POST /ground-reports/:id/evidence`
+The report's own reporter only, while `submitted` or `needs_more_evidence`
+(else 409); max 10 photos per report. Answering `needs_more_evidence` moves
+the report back to `under_review`.
+
+### `POST /ground-reports/:id/transitions`
+Body: `{ to, reason?, notes? }`. `reason` is shown to the reporter; `notes`
+are reviewer-only.
+
+| From | To | Roles | Reason |
+|---|---|---|---|
+| submitted, needs_more_evidence, corroborated | under_review | analyst, agency_operator, admin | — |
+| under_review | needs_more_evidence, corroborated | analyst, agency_operator, admin | required |
+| under_review, corroborated | verified | agency_operator, admin | — |
+| under_review, corroborated | rejected, unverifiable | agency_operator, admin | required |
+| verified, rejected, unverifiable | under_review (reopen) | agency_operator, admin | required |
+
+Other moves → 409; wrong role → 403; missing reason → 400. Each change is a
+compare-and-swap on the current status (a concurrent change → 409), writes
+one row to the append-only `ground_report_status_changes` (UPDATE/DELETE
+blocked by a trigger) and one `audit_logs` entry
+(`ground_reports.transition` / `ground_reports.reopen`).
 
 ## 4. Risk Assessments (replaces Predictions)
 

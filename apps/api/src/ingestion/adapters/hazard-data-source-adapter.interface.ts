@@ -1,4 +1,8 @@
-import type { NormalizedHazardEvent } from '../../hazard-events/hazard-event-normalized.interface';
+import type { HazardEventCreatedEvent } from '../../common/events/domain-events';
+import type {
+  IngestedHazardEvent,
+  NormalizedHazardEvent,
+} from '../../hazard-events/hazard-event-normalized.interface';
 
 /**
  * Generalizes ORION's `bmkg.client.ts`/`bmkg.mapper.ts` poll -> validate ->
@@ -34,4 +38,15 @@ export interface HazardDataSourceAdapter<TRaw = unknown> {
    * envelope + hazard-specific `details` bag `HazardEventsService.ingestEvent()`
    * expects. Validation of the mapped result happens downstream, not here. */
   normalize(raw: TRaw): NormalizedHazardEvent;
+
+  /** Optional, for high-volume sources (e.g. FIRMS hotspots, thousands a
+   * day): when present, `IngestionRegistryService` persists a poll's events
+   * without emitting HAZARD_EVENT_CREATED for each, then emits only the
+   * announcements this returns — so the risk pipeline, notifications and
+   * live broadcasts fire once per meaningful occurrence (e.g. per new fire
+   * cluster) instead of once per raw record. Omitted, every new event is
+   * announced individually. */
+  selectAnnouncements?(
+    ingested: IngestedHazardEvent[],
+  ): Promise<HazardEventCreatedEvent[]>;
 }

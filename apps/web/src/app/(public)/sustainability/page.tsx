@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { IndicatorGauge } from "@/components/charts/indicator-gauge";
 import { useSustainabilityMetrics } from "@/hooks/use-sustainability";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/shared/page-header";
 
 // New public accountability surface (docs/API_SPEC.md §8) — ORION never had
 // an SDG/sustainability dashboard. Public, no auth required.
@@ -45,20 +46,15 @@ export default function SustainabilityPage() {
   ];
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div>
-        <p className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
-          Public Accountability
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-          Sustainability Dashboard
-          {metrics && (
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              — {metrics.periodStart.slice(0, 10)} to {metrics.periodEnd.slice(0, 10)}
-            </span>
-          )}
-        </h1>
-      </div>
+    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6">
+      <PageHeader
+        icon={Leaf}
+        eyebrow="Public Accountability"
+        title="Sustainability Dashboard"
+        description={
+          metrics ? `Reporting period ${metrics.periodStart.slice(0, 10)} to ${metrics.periodEnd.slice(0, 10)}` : undefined
+        }
+      />
 
       <KpiRow kpis={kpis} />
 

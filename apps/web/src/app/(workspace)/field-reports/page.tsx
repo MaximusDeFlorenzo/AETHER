@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFieldReports } from '@/hooks/use-field-reports';
 import { CV_DETECTION_TYPE_LABELS } from '@/lib/labels';
+import { PageHeader } from '@/components/shared/page-header';
 
 // Review queue for citizen/field-reporter Computer Vision submissions
 // (docs/ARCHITECTURE.md §5) — the application-layer counterpart to the
@@ -22,20 +23,17 @@ export default function FieldReportsPage() {
   const reports = data?.data ?? [];
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <Camera className="h-5 w-5" /> Field Reports
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Computer Vision Engine detections from citizen/field-reporter photo submissions.
-          </p>
-        </div>
-        <Button render={<Link href="/field-reports/new" />}>
-          <Plus className="mr-2 h-4 w-4" /> Submit report
-        </Button>
-      </div>
+    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6">
+      <PageHeader
+        icon={Camera}
+        title="Field Reports"
+        description="Computer Vision Engine detections from citizen/field-reporter photo submissions."
+        actions={
+          <Button render={<Link href="/field-reports/new" />}>
+            <Plus className="mr-2 h-4 w-4" /> Submit report
+          </Button>
+        }
+      />
 
       <Card>
         <CardHeader>

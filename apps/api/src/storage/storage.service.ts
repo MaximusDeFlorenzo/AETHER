@@ -65,4 +65,18 @@ export class StorageService {
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
     );
   }
+
+  /** Streams an object's bytes back rather than buffering the whole thing
+   * into memory first — the download half of village-population-import's
+   * streaming CSV pipeline (see
+   * village-population-import/processors/validation.processor.ts): a
+   * ~100k-row upload must never be fully materialized as one in-memory
+   * Buffer just to hand it to the CSV parser. AWS SDK v3's `GetObjectCommand`
+   * response `Body` is already a Node.js Readable in a Node runtime. */
+  async downloadObjectStream(key: string): Promise<NodeJS.ReadableStream> {
+    const result = await this.client.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
+    return result.Body as NodeJS.ReadableStream;
+  }
 }

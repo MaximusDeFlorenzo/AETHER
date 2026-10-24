@@ -76,6 +76,10 @@ export class DashboardService {
         .leftJoinAndSelect('riskAssessment.district', 'district')
         .leftJoinAndSelect('riskAssessment.hazardEvent', 'hazardEvent')
         .orderBy('rec.priorityScore', 'DESC')
+        // getOne() adds no LIMIT on its own; every join here is to-one, so
+        // limit(1) is safe and keeps this an index scan instead of loading
+        // all ~170k recommendations.
+        .limit(1)
         .getOne(),
       this.notificationRepository.count({ where: { isRead: false } }),
     ]);

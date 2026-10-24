@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Home, Package, Truck, Users } from 'lucide-react';
+import { Building2, Home, Package, Truck, Users, Boxes } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { HazardTypeBadge } from '@/components/shared/hazard-type-badge';
 import { useResourceOptimizationPlans, useShelters } from '@/hooks/use-resource-plans';
 import type { ResourceOptimizationPlan } from '@/types/domain';
+import { PageHeader } from '@/components/shared/page-header';
 
 const PLAN_STATUS_VARIANT = {
   draft: 'outline',
@@ -46,13 +47,10 @@ export default function ResourcePlanningPage() {
   const plans = plansPage?.data ?? [];
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Resource Planning</h1>
-        <p className="text-sm text-muted-foreground">
-          AI-optimized personnel, logistics, and shelter allocation per district.
-        </p>
-      </div>
+    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6">
+      <PageHeader icon={Boxes} title="Resource Planning"
+        description="AI-optimized personnel, logistics, and shelter allocation per district."
+      />
 
       <Card>
         <CardHeader>

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -6,12 +7,15 @@ import { Repository } from 'typeorm';
 import {
   DecisionRecommendation,
   District,
+  DistrictHazardIndex,
+  DistrictTerrainProfile,
   EarthquakeDetails,
   FloodDetails,
   HazardAffectedRegion,
   HazardEvent,
   LandslideDetails,
   RiskAssessment,
+  WeatherHourlySample,
   WildfireDetails,
 } from '../database/entities';
 import {
@@ -34,6 +38,25 @@ import type {
   RiskEngineDistrictInput,
   RiskEngineHazardEventInput,
 } from './risk-engine.types';
+import { BNPB_LAYER_FLOOD_HAZARD_INDEX } from '../ingestion/adapters/bnpb-inarisk.client';
+import { TERRAIN_DEM } from '../rainfall-intelligence/district-terrain.service';
+import {
+  LANDSLIDE_SLOPE_QUANTILE,
+  MIN_TERRAIN_SAMPLES,
+  slopeQuantileDeg,
+} from '../rainfall-intelligence/lib/terrain';
+import {
+  rainfallSourcePriorities,
+  selectTrailing24hRainfall,
+  type RainfallRow,
+} from '../rainfall-intelligence/lib/trailing-rainfall';
+
+// 24 h window + slack for each rainfall source's ingestion cadence.
+const BASELINE_RAINFALL_LOOKBACK_MS = 30 * 60 * 60 * 1000;
+
+/** Where each baseline input value came from — audit-only, stored in
+ * `risk_assessments.input_snapshot.baselineInputSources`. */
+type BaselineInputSources = Record<string, string>;
 
 const BASELINE_HAZARD_TYPES = [
   HazardType.EARTHQUAKE,
@@ -58,6 +81,8 @@ const BASELINE_DEFAULTS = {
     soilSaturation: 0.2,
     triggeringRainfallMm: 0,
   },
+  // Used only when neither stored live data (rainfall-intelligence) nor
+  // district history exists — see buildBaselineHazardEventInput.
   [HazardType.FLOOD]: {
     rainfallMm: 5,
     waterLevelM: 0.5,
@@ -106,6 +131,13 @@ export class RiskEngineOrchestrationService {
     private readonly geoService: GeoService,
     private readonly historicalService: HistoricalService,
     private readonly eventEmitter: EventEmitter2,
+    @InjectRepository(WeatherHourlySample)
+    private readonly weatherSampleRepository: Repository<WeatherHourlySample>,
+    @InjectRepository(DistrictHazardIndex)
+    private readonly hazardIndexRepository: Repository<DistrictHazardIndex>,
+    private readonly config: ConfigService,
+    @InjectRepository(DistrictTerrainProfile)
+    private readonly terrainRepository: Repository<DistrictTerrainProfile>,
   ) {}
 
   @OnEvent(DomainEvents.HAZARD_EVENT_CREATED, { async: true })
@@ -271,6 +303,12 @@ export class RiskEngineOrchestrationService {
    * `hazard_affected_regions`, the same join `SpatialIntelligenceService`
    * uses) — genuine local signal, no new tables. Falls back to
    * `BASELINE_DEFAULTS` when the district has no matching history yet.
+   *
+   * Flood and landslide are the exceptions (docs/RAINFALL_INTELLIGENCE.md,
+   * Milestones 3–4): live stored rainfall, the sampled InaRISK flood index
+   * and the sampled DEM slope take precedence over history, and
+   * `inputSources` records which of live / history / default each value
+   * came from.
    * Never returns `null` for a type in `BASELINE_HAZARD_TYPES` — unlike
    * `buildHazardEventInput`, there's no "incomplete details row" case here
    * since every field is either an average or a documented default.
@@ -278,7 +316,10 @@ export class RiskEngineOrchestrationService {
   private async buildBaselineHazardEventInput(
     districtId: string,
     hazardType: HazardType,
-  ): Promise<RiskEngineHazardEventInput> {
+  ): Promise<{
+    input: RiskEngineHazardEventInput;
+    inputSources?: BaselineInputSources;
+  }> {
     const centroid = await this.geoService.getDistrictCentroid(districtId);
     const base = {
       hazardType,
@@ -302,10 +343,12 @@ export class RiskEngineOrchestrationService {
         .getRawOne<{ magnitude: string | null; depthKm: string | null }>();
       const defaults = BASELINE_DEFAULTS[HazardType.EARTHQUAKE];
       return {
-        ...base,
-        earthquake: {
-          magnitude: parseAvg(avg?.magnitude) ?? defaults.magnitude,
-          depthKm: parseAvg(avg?.depthKm) ?? defaults.depthKm,
+        input: {
+          ...base,
+          earthquake: {
+            magnitude: parseAvg(avg?.magnitude) ?? defaults.magnitude,
+            depthKm: parseAvg(avg?.depthKm) ?? defaults.depthKm,
+          },
         },
       };
     }
@@ -329,15 +372,39 @@ export class RiskEngineOrchestrationService {
           triggeringRainfallMm: string | null;
         }>();
       const defaults = BASELINE_DEFAULTS[HazardType.LANDSLIDE];
+      const rainfall = await this.liveTrailingRainfall(districtId);
+      const slope = await this.liveDemSlopeDegrees(districtId);
+      const historySlope = parseAvg(avg?.slopeDegrees);
+      const historySaturation = parseAvg(avg?.soilSaturation);
+      const historyRainfall = parseAvg(avg?.triggeringRainfallMm);
       return {
-        ...base,
-        landslide: {
-          slopeDegrees: parseAvg(avg?.slopeDegrees) ?? defaults.slopeDegrees,
+        input: {
+          ...base,
+          landslide: {
+            slopeDegrees: slope ?? historySlope ?? defaults.slopeDegrees,
+            soilSaturation: historySaturation ?? defaults.soilSaturation,
+            triggeringRainfallMm:
+              rainfall?.rainfallMm ??
+              historyRainfall ??
+              defaults.triggeringRainfallMm,
+          },
+        },
+        inputSources: {
+          slopeDegrees:
+            slope !== null
+              ? `${TERRAIN_DEM} p${LANDSLIDE_SLOPE_QUANTILE * 100} slope (district_terrain_profiles)`
+              : historySlope !== null
+                ? 'district_history_average'
+                : 'baseline_default',
           soilSaturation:
-            parseAvg(avg?.soilSaturation) ?? defaults.soilSaturation,
-          triggeringRainfallMm:
-            parseAvg(avg?.triggeringRainfallMm) ??
-            defaults.triggeringRainfallMm,
+            historySaturation !== null
+              ? 'district_history_average'
+              : 'baseline_default',
+          triggeringRainfallMm: rainfall
+            ? `${rainfall.source} trailing 24 h to ${rainfall.asOf.toISOString()}`
+            : historyRainfall !== null
+              ? 'district_history_average'
+              : 'baseline_default',
         },
       };
     }
@@ -361,13 +428,41 @@ export class RiskEngineOrchestrationService {
           floodHazardIndex: string | null;
         }>();
       const defaults = BASELINE_DEFAULTS[HazardType.FLOOD];
+      const live = await this.liveFloodBaselineInputs(districtId);
+      const historyRainfall = parseAvg(avg?.rainfallMm);
+      const historyIndex = parseAvg(avg?.floodHazardIndex);
+      const historyWaterLevel = parseAvg(avg?.waterLevelM);
       return {
-        ...base,
-        flood: {
-          rainfallMm: parseAvg(avg?.rainfallMm) ?? defaults.rainfallMm,
-          waterLevelM: parseAvg(avg?.waterLevelM) ?? defaults.waterLevelM,
+        input: {
+          ...base,
+          flood: {
+            rainfallMm:
+              live.rainfall?.rainfallMm ??
+              historyRainfall ??
+              defaults.rainfallMm,
+            waterLevelM: historyWaterLevel ?? defaults.waterLevelM,
+            floodHazardIndex:
+              live.floodHazardIndex ??
+              historyIndex ??
+              defaults.floodHazardIndex,
+          },
+        },
+        inputSources: {
+          rainfallMm: live.rainfall
+            ? `${live.rainfall.source} trailing 24 h to ${live.rainfall.asOf.toISOString()}`
+            : historyRainfall !== null
+              ? 'district_history_average'
+              : 'baseline_default',
+          waterLevelM:
+            historyWaterLevel !== null
+              ? 'district_history_average'
+              : 'baseline_default',
           floodHazardIndex:
-            parseAvg(avg?.floodHazardIndex) ?? defaults.floodHazardIndex,
+            live.floodHazardIndex !== null
+              ? `bnpb_inarisk ${BNPB_LAYER_FLOOD_HAZARD_INDEX} (district_hazard_indices)`
+              : historyIndex !== null
+                ? 'district_history_average'
+                : 'baseline_default',
         },
       };
     }
@@ -389,16 +484,122 @@ export class RiskEngineOrchestrationService {
       }>();
     const defaults = BASELINE_DEFAULTS[HazardType.WILDFIRE];
     return {
-      ...base,
-      wildfire: {
-        frpConfidence: parseAvg(avg?.frpConfidence) ?? defaults.frpConfidence,
-        hotspotCount: Math.round(
-          parseAvg(avg?.hotspotCount) ?? defaults.hotspotCount,
-        ),
-        brightnessKelvin:
-          parseAvg(avg?.brightnessKelvin) ?? defaults.brightnessKelvin,
+      input: {
+        ...base,
+        wildfire: {
+          frpConfidence: parseAvg(avg?.frpConfidence) ?? defaults.frpConfidence,
+          hotspotCount: Math.round(
+            parseAvg(avg?.hotspotCount) ?? defaults.hotspotCount,
+          ),
+          brightnessKelvin:
+            parseAvg(avg?.brightnessKelvin) ?? defaults.brightnessKelvin,
+        },
       },
     };
+  }
+
+  /**
+   * Live flood inputs from rainfall-intelligence's stored data, preferred
+   * over district history and defaults: trailing-24 h rainfall (see
+   * liveTrailingRainfall) and the InaRISK flood hazard index sampled around
+   * the district point. Either is null when unavailable; never throws, so a
+   * missing table or query error degrades to the previous behaviour.
+   */
+  private async liveFloodBaselineInputs(districtId: string): Promise<{
+    rainfall: ReturnType<typeof selectTrailing24hRainfall>;
+    floodHazardIndex: number | null;
+  }> {
+    const rainfall = await this.liveTrailingRainfall(districtId);
+    try {
+      const index = await this.hazardIndexRepository.findOne({
+        where: {
+          district: { id: districtId },
+          layer: BNPB_LAYER_FLOOD_HAZARD_INDEX,
+        },
+      });
+      return { rainfall, floodHazardIndex: index?.valueMean ?? null };
+    } catch (error) {
+      this.logger.warn(
+        `Flood hazard index unavailable for district=${districtId}: ${(error as Error).message}`,
+      );
+      return { rainfall, floodHazardIndex: null };
+    }
+  }
+
+  /**
+   * Trailing-24 h rainfall from stored samples: GSMaP satellite first,
+   * Open-Meteo model second, each only if fresh and complete. Null when
+   * unavailable; never throws.
+   */
+  private async liveTrailingRainfall(
+    districtId: string,
+  ): Promise<ReturnType<typeof selectTrailing24hRainfall>> {
+    const now = new Date();
+    try {
+      const priorities = rainfallSourcePriorities((key) =>
+        this.config.get(key),
+      );
+      const rows = await this.weatherSampleRepository.query<
+        Array<{
+          source: string;
+          valid_time: Date;
+          precipitation_mm: number | null;
+        }>
+      >(
+        `SELECT source, valid_time, precipitation_mm
+         FROM weather_hourly_samples
+         WHERE district_id = $1 AND source = ANY($2) AND valid_time > $3`,
+        [
+          districtId,
+          priorities.map((p) => p.source),
+          new Date(now.getTime() - BASELINE_RAINFALL_LOOKBACK_MS),
+        ],
+      );
+      const bySource = new Map<string, RainfallRow[]>();
+      for (const row of rows) {
+        const list = bySource.get(row.source) ?? [];
+        list.push({
+          validTime: new Date(row.valid_time),
+          precipitationMm: row.precipitation_mm,
+        });
+        bySource.set(row.source, list);
+      }
+      return selectTrailing24hRainfall(bySource, priorities, now);
+    } catch (error) {
+      this.logger.warn(
+        `Live rainfall unavailable for district=${districtId}: ${(error as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * p90 DEM slope (degrees) around the district point from
+   * `district_terrain_profiles` (Rainfall Intelligence Milestone 4) — the
+   * statistic the landslide baseline classes. Null when no profile with
+   * enough land samples exists; never throws.
+   */
+  private async liveDemSlopeDegrees(
+    districtId: string,
+  ): Promise<number | null> {
+    try {
+      const profile = await this.terrainRepository.findOne({
+        where: { district: { id: districtId } },
+      });
+      if (!profile || profile.slopeSamplesDeg.length < MIN_TERRAIN_SAMPLES) {
+        return null;
+      }
+      const slope = slopeQuantileDeg(
+        profile.slopeSamplesDeg,
+        LANDSLIDE_SLOPE_QUANTILE,
+      );
+      return slope === null ? null : Math.round(slope * 10) / 10;
+    } catch (error) {
+      this.logger.warn(
+        `DEM slope unavailable for district=${districtId}: ${(error as Error).message}`,
+      );
+      return null;
+    }
   }
 
   private async processDistrict(
@@ -417,9 +618,12 @@ export class RiskEngineOrchestrationService {
         : null;
       const resolvedHazardType = hazardEvent?.hazardType ?? hazardType;
 
-      const hazardEventInput = hazardEvent
-        ? await this.buildHazardEventInput(hazardEvent)
+      const baseline = hazardEvent
+        ? null
         : await this.buildBaselineHazardEventInput(districtId, hazardType);
+      const hazardEventInput =
+        baseline?.input ??
+        (hazardEvent ? await this.buildHazardEventInput(hazardEvent) : null);
       if (!hazardEventInput) {
         // Only reachable for the event-triggered path — the matching
         // *_details row is missing or incomplete (buildHazardEventInput's
@@ -471,11 +675,35 @@ export class RiskEngineOrchestrationService {
         damagedBuildingsCount: record.damagedBuildingsCount,
       }));
 
+      // Records exactly which population_statistics row and administrative
+      // level fed this assessment (year/source/regionCode/level) —
+      // audit-only metadata, deliberately not added to `districtInput`
+      // itself so the ai-engine wire payload stays exactly what
+      // risk-engine.types.ts documents it mirrors.
+      //
+      // `district.administrativeLevel` is always 'kabupaten_kota' today:
+      // RiskAssessment.district only ever FKs to `districts`
+      // (kabupaten/kota) — subdistricts/villages (kecamatan/kelurahan) have
+      // no linked population_statistics row, so no formula here (or in
+      // apps/ai-engine/app/ml/hazard_prediction/*.py) is valid at those
+      // levels yet. Extending assessment to a finer level requires
+      // re-deriving/re-validating every population-driven parameter for
+      // that level first — never assume a kabupaten/kota-calibrated
+      // constant applies unchanged. See docs/ARCHITECTURE.md §5.
       const inputSnapshot = {
         hazardType: resolvedHazardType,
         hazardEvent: hazardEventInput,
-        district: districtInput,
+        district: {
+          ...districtInput,
+          administrativeLevel: district.administrativeLevel,
+          populationYear: population.year,
+          populationSource: population.source,
+          populationRegionCode: population.regionCode,
+        },
         historicalDisasters: historicalInput,
+        ...(baseline?.inputSources
+          ? { baselineInputSources: baseline.inputSources }
+          : {}),
       };
 
       const riskAssessment = await this.riskAssessmentRepository.save(

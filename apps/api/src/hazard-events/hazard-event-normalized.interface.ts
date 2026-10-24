@@ -1,4 +1,6 @@
 import { HazardType } from '../common/enums/domain.enum';
+import type { HazardEventCreatedEvent } from '../common/events/domain-events';
+import type { HazardEvent } from '../database/entities';
 
 /**
  * Output of an ingestion adapter's `normalize()` step (see
@@ -18,4 +20,11 @@ export interface NormalizedHazardEvent {
   source: string;
   rawPayload: Record<string, unknown>;
   details: Record<string, unknown>;
+}
+
+/** A newly persisted event plus the HAZARD_EVENT_CREATED payload it would
+ * announce — see `HazardEventsService.ingestEventWithoutAnnouncing`. */
+export interface IngestedHazardEvent {
+  hazardEvent: HazardEvent;
+  announcement: HazardEventCreatedEvent;
 }

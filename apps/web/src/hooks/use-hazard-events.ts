@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import type {
+  AffectedPopulationEstimate,
   AffectedRegion,
   HazardEvent,
   HazardEventDetail,
@@ -60,6 +61,19 @@ export function useAffectedRegions(hazardEventId: string | undefined) {
     queryFn: async () => {
       const { data } = await apiClient.get<AffectedRegion[]>(
         `/hazard-events/${hazardEventId}/affected-regions`,
+      );
+      return data;
+    },
+    enabled: !!hazardEventId,
+  });
+}
+
+export function useAffectedPopulation(hazardEventId: string | undefined) {
+  return useQuery({
+    queryKey: ['hazard-events', hazardEventId, 'affected-population'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<AffectedPopulationEstimate>(
+        `/hazard-events/${hazardEventId}/affected-population`,
       );
       return data;
     },

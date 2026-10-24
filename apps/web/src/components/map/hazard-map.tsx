@@ -1,7 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CircleMarker, GeoJSON, MapContainer, Popup, TileLayer, ZoomControl } from 'react-leaflet';
+import { GeoJSON, MapContainer, Marker, Popup, TileLayer, ZoomControl } from 'react-leaflet';
+import { HAZARD_GLYPH_SVG, hazardPinIcon } from './hazard-pin';
+import { MapViewSync } from './map-view-sync';
 import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { format } from 'date-fns';
@@ -52,24 +54,40 @@ const INDONESIA_CENTER: [number, number] = [-2.5, 118];
 function hazardEventRadius(event: HazardEvent): number {
   switch (event.hazardType) {
     case 'earthquake': {
-      const magnitude = (event.details as EarthquakeDetails).magnitude ?? 4;
+      const magnitude = (event.details as EarthquakeDetails | null)?.magnitude ?? 4;
       return 4 + Math.max(0, magnitude - 3) * 3;
     }
     case 'landslide': {
-      const saturation = (event.details as LandslideDetails).soilSaturationPct ?? 40;
+      const saturation = ((event.details as LandslideDetails | null)?.soilSaturation ?? 0.4) * 100;
       return 4 + saturation / 12;
     }
     case 'flood': {
-      const waterLevelM = (event.details as FloodDetails).waterLevelM ?? 0;
+      const waterLevelM = (event.details as FloodDetails | null)?.waterLevelM ?? 0;
       return 4 + Math.min(waterLevelM, MAX_RELEVANT_WATER_LEVEL_M) * 1.6;
     }
     case 'wildfire': {
-      const hotspotCount = (event.details as WildfireDetails).hotspotCount ?? 0;
+      const hotspotCount = (event.details as WildfireDetails | null)?.hotspotCount ?? 0;
       return 4 + (Math.min(hotspotCount, MAX_RELEVANT_HOTSPOT_COUNT) / MAX_RELEVANT_HOTSPOT_COUNT) * 8;
     }
     default:
       return 6;
   }
+}
+
+/** Pin diameter in px: the old circle radius (the magnitude cue) doubled,
+ * plus room for the glyph, kept between 24 and 40. */
+function hazardPinSize(event: HazardEvent): number {
+  return Math.min(40, Math.max(24, Math.round(hazardEventRadius(event) * 2 + 10)));
+}
+
+function HazardGlyph({ type, className }: { type: HazardType; className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cn('inline-block shrink-0 [&>svg]:h-full [&>svg]:w-full', className)}
+      dangerouslySetInnerHTML={{ __html: HAZARD_GLYPH_SVG[type] }}
+    />
+  );
 }
 
 /** District rows in the `/spatial/overlay` response are frequently seeded
@@ -111,23 +129,23 @@ function bindOverlayTooltip(feature: GeoJSON.Feature, layer: leaflet.Layer): voi
 
 function eventPopupDetail(event: HazardEvent): string | null {
   if (event.hazardType === 'earthquake') {
-    const d = event.details as EarthquakeDetails;
-    return `M${d.magnitude?.toFixed(1) ?? '—'} · ${d.depthKm ?? '—'} km depth`;
+    const d = event.details as EarthquakeDetails | null;
+    return `M${d?.magnitude?.toFixed(1) ?? '—'} · ${d?.depthKm ?? '—'} km depth`;
   }
   if (event.hazardType === 'landslide') {
-    const d = event.details as LandslideDetails;
-    return d.soilSaturationPct != null ? `${d.soilSaturationPct}% soil saturation` : null;
+    const d = event.details as LandslideDetails | null;
+    return d?.soilSaturation != null ? `${Math.round(d.soilSaturation * 100)}% soil saturation` : null;
   }
   if (event.hazardType === 'flood') {
-    const d = event.details as FloodDetails;
-    if (d.waterLevelM == null && d.rainfallMm == null) return null;
-    return `${d.waterLevelM ?? '—'}m water level · ${d.rainfallMm ?? '—'}mm rainfall`;
+    const d = event.details as FloodDetails | null;
+    if (d?.waterLevelM == null && d?.rainfallMm == null) return null;
+    return `${d?.waterLevelM ?? '—'}m water level · ${d?.rainfallMm ?? '—'}mm rainfall`;
   }
   if (event.hazardType === 'wildfire') {
-    const d = event.details as WildfireDetails;
-    if (d.hotspotCount == null && d.frpConfidence == null) return null;
-    const confidencePct = d.frpConfidence != null ? `${Math.round(d.frpConfidence * 100)}%` : '—';
-    return `${d.hotspotCount ?? '—'} hotspot(s) · ${confidencePct} confidence`;
+    const d = event.details as WildfireDetails | null;
+    if (d?.hotspotCount == null && d?.frpConfidence == null) return null;
+    const confidencePct = d?.frpConfidence != null ? `${Math.round(d.frpConfidence * 100)}%` : '—';
+    return `${d?.hotspotCount ?? '—'} hotspot(s) · ${confidencePct} confidence`;
   }
   return null;
 }
@@ -207,13 +225,14 @@ export function HazardMap({
                   type="button"
                   onClick={() => toggleType(type)}
                   className={cn(
-                    'rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm transition-colors',
+                    'flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm transition-colors',
                     active
                       ? 'border-transparent text-white'
                       : 'border-border bg-card text-muted-foreground hover:text-foreground',
                   )}
                   style={active ? { background: hazardTypeToColor(type) } : undefined}
                 >
+                  <HazardGlyph type={type} className="h-3 w-3" />
                   {HAZARD_TYPE_LABELS[type]}
                 </button>
               );
@@ -241,27 +260,48 @@ export function HazardMap({
         </div>
       )}
 
-      {overlay && overlayVisible && (
-        <div className="absolute bottom-3 left-3 z-20 rounded-lg border border-border bg-card/95 px-2.5 py-2 shadow-sm backdrop-blur-sm">
-          <p className="px-0.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-            {overlayLabel}
-          </p>
-          <div className="mt-1 flex items-center gap-2.5">
-            {EXPOSURE_LEGEND_ORDER.map((level) => (
-              <span key={level} className="flex items-center gap-1 text-[11px] font-medium text-foreground">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                  style={{ background: riskLevelToColor(level) }}
-                />
-                {EXPOSURE_LEVEL_LABELS[level]}
-              </span>
-            ))}
-          </div>
+      {(presentTypes.length > 0 || (overlay && overlayVisible)) && (
+        <div className="absolute bottom-3 left-3 z-20 space-y-2 rounded-lg border border-border bg-card/95 px-2.5 py-2 shadow-sm backdrop-blur-sm">
+          {presentTypes.length > 0 && (
+            <div>
+              <p className="px-0.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">Hazards</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2.5">
+                {presentTypes.map((type) => (
+                  <span key={type} className="flex items-center gap-1 text-[11px] font-medium text-foreground">
+                    <span
+                      className="grid h-4 w-4 shrink-0 place-items-center rounded-full text-white"
+                      style={{ background: hazardTypeToColor(type) }}
+                    >
+                      <HazardGlyph type={type} className="h-2.5 w-2.5" />
+                    </span>
+                    {HAZARD_TYPE_LABELS[type]}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {overlay && overlayVisible && (
+            <div>
+              <p className="px-0.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                {overlayLabel}
+              </p>
+              <div className="mt-1 flex items-center gap-2.5">
+                {EXPOSURE_LEGEND_ORDER.map((level) => (
+                  <span key={level} className="flex items-center gap-1 text-[11px] font-medium text-foreground">
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                      style={{ background: riskLevelToColor(level) }}
+                    />
+                    {EXPOSURE_LEVEL_LABELS[level]}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       <MapContainer
-        key={isSingleFocus ? events[0].id : 'overview'}
         center={center}
         zoom={zoom}
         scrollWheelZoom
@@ -273,6 +313,7 @@ export function HazardMap({
             overlay filter chips (also top-left) once there's more than one
             hazard type present — moved out of the way rather than fighting
             over the same corner. */}
+        <MapViewSync center={center} zoom={zoom} />
         <ZoomControl position="bottomright" />
         <TileLayer
           url={SATELLITE_TILE_URL}
@@ -299,17 +340,11 @@ export function HazardMap({
         )}
 
         {filteredEvents.map((event) => (
-          <CircleMarker
+          <Marker
             key={event.id}
-            center={[event.latitude, event.longitude]}
-            radius={hazardEventRadius(event)}
-            pathOptions={{
-              color: hazardTypeToColor(event.hazardType),
-              fillColor: hazardTypeToColor(event.hazardType),
-              fillOpacity: 0.55,
-              weight: 1.5,
-              className: isHighSeverityHazardEvent(event) ? 'hazard-marker-pulse' : undefined,
-            }}
+            position={[event.latitude, event.longitude]}
+            icon={hazardPinIcon(event.hazardType, hazardPinSize(event), isHighSeverityHazardEvent(event))}
+            title={`${HAZARD_TYPE_LABELS[event.hazardType]} — ${formatHazardEventLocation(event)}`}
             eventHandlers={onSelect ? { click: () => onSelect(event.id) } : undefined}
           >
             <Popup>
@@ -324,7 +359,7 @@ export function HazardMap({
                 </p>
               </div>
             </Popup>
-          </CircleMarker>
+          </Marker>
         ))}
       </MapContainer>
     </div>

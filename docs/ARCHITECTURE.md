@@ -172,7 +172,17 @@ new infra ORION never needed), `config`, `database` (reused near-verbatim) ·
 `ai`, now includes `CvEngineClient` alongside `RiskEngineClient`) ·
 `risk-assessments` (was `predictions`) · `decision-intelligence` (was
 `recommendations`) · `spatial-intelligence` · `resource-optimization` ·
-`sustainability` · `notifications` · `websocket` · `dashboard`.
+`sustainability` · `notifications` · `websocket` · `dashboard` ·
+`village-population-import` (bulk CSV import of kecamatan/kelurahan
+population, background-job based — see §3.4) · `queue` (global BullMQ Redis
+connection, `@Global`-registered) · `rainfall-intelligence` (hourly
+weather history per kabupaten/kota point + rainfall/wind features, rain
+nowcasts, a gated Stage-2 spatial nowcast model, rule-based flood- and
+landslide-risk baselines and a district outlook with rule-based
+recommendations in English and Bahasa Indonesia, shown on the web workspace
+page `/rainfall`, plus a historical backtest of the flood/landslide rules
+against BNPB DIBI reports over an archived GSMaP_Gauge hourly series — see
+`docs/RAINFALL_INTELLIGENCE.md`).
 
 ### 3.2 `apps/ai-engine` router list
 
@@ -187,6 +197,33 @@ heuristics — fire, smoke, flood, infra_damage — same v0-heuristic posture as
 `infra/docker-compose.yml` (single file, unlike ORION's parent-directory
 compose file, since all apps live in one repo): `postgres` (postgis image),
 `redis`, `ai-engine`, `api`, `web`.
+
+### 3.4 Background jobs (BullMQ)
+
+`apps/api`'s only current background-job consumer is
+`village-population-import` (bulk CSV upload of kecamatan/kelurahan
+population — a 100k-row file parses/matches/writes as two chained BullMQ job
+types, not inline in the HTTP request). Introduced specifically because that
+feature needed to survive files far larger than an HTTP request timeout
+allows; no other module uses this infrastructure yet, but `queue/queue.module.ts`
+registers the BullMQ↔Redis connection globally so a future feature can reuse
+it by just calling `BullModule.registerQueue()` in its own module.
+
+Two processes can run this work: `apps/api/src/main.ts` (the HTTP API,
+`AppModule`) runs job processors in-process by default — the simplest
+local-dev setup, one `pnpm run start:dev` — or `apps/api/src/worker.ts`
+can run them as an independent process (`pnpm run worker`), with the
+API's own copy disabled via `ENABLE_JOB_PROCESSORS=false` so an API
+restart/crash never interrupts an in-flight import and vice versa.
+`worker.ts` boots its own minimal `WorkerModule`
+(`apps/api/src/worker.module.ts`) rather than the full `AppModule` —
+verified live (100k-row e2e test) that booting `AppModule` in the worker
+process also re-runs every unrelated scheduled service (BMKG/weather/
+landslide-trigger polling, risk-engine orchestration, etc.) a second time,
+which contended for the same DB connection pool as the import job and
+stalled it. Full detail — queue names, status machine,
+chunked/checkpointed/resumable processing, configuration —
+in `apps/api/README-worker.md` and `docs/DATABASE_SCHEMA.md` §6c.
 
 ---
 
@@ -224,10 +261,44 @@ change:
   a real adapter, `fetch()` always returns `[]`) — Sentinel Hub's OAuth2 +
   imagery-tile pipeline is disproportionate complexity for a source nothing
   downstream consumes yet.
-- Baseline/standing risk scoring (§2.2) still can't score a district without
-  a concrete event — there's no "typical conditions per hazard type per
-  district" data source to synthesize one from. This predates Phase 2 (it
-  affected earthquake/landslide too) and is now honestly surfaced rather than
-  silently sending a malformed request: `RiskEngineOrchestrationService.
-  buildHazardEventInput()` skips baseline attempts with a debug log instead
-  of erroring.
+- Baseline/standing risk scoring (§2.2) synthesizes a "typical conditions"
+  input per district and hazard type (`RiskEngineOrchestrationService.
+  buildBaselineHazardEventInput()`): the average of the district's own past
+  `*_details` rows, else conservative `BASELINE_DEFAULTS`. Flood and
+  landslide additionally prefer live stored data — trailing-24 h rainfall
+  (GSMaP, then Open-Meteo), the sampled InaRISK flood index and the p90 DEM
+  slope — and record which of live / history / default each value came from
+  in `input_snapshot.baselineInputSources`. Earthquake and wildfire
+  baselines still rest on history/defaults.
+- **Region hierarchy reaches kelurahan/desa; population/area/geometry stop at
+  kabupaten/kota.** `districts` (kabupaten/kota, 514) → `subdistricts`
+  (kecamatan, 7,285) → `villages` (kelurahan/desa, 83,762) is a real,
+  FK-chained hierarchy — codes/names for all four levels (provinces too) come
+  from Kemendagri's administrative-code decree (Kepmendagri No 300.2.2-2138
+  Tahun 2025, via github.com/cahyadsn/wilayah, verified 2026-09-22:
+  zero duplicate codes, zero unmapped parents at any level). **Population,
+  area and coordinates exist ONLY on `districts`** — no verified source
+  (Kemendagri's own population registry included) provides them at
+  kecamatan/kelurahan resolution; a targeted search found one official portal
+  that does (`prodeskel.binapemdes.kemendagri.go.id`) but it has no documented
+  bulk API, so nothing was imported from it (docs/DATABASE_SCHEMA.md §6b).
+  `administrative_level` on every region row (docs/DATABASE_SCHEMA.md §5-6b)
+  makes this a stored fact, not an assumption.
+
+  Concretely: every risk-engine input, resource optimization estimate, and
+  Sustainability Dashboard aggregate stays scoped to kabupaten/kota — nothing
+  was extended to kecamatan/kelurahan, because population-driven formulas
+  calibrated for a kabupaten/kota cannot be assumed valid at a finer scale
+  without re-deriving them, and there is no population data to re-derive them
+  against yet. `RiskAssessment.estimatedAffectedPopulation` is a per-event
+  heuristic estimate off the kabupaten/kota total (not a finer measurement —
+  `hazard_prediction/common.py::estimate_affected_population`), and no code
+  duplicates or splits a kabupaten/kota total across sub-regions.
+  `apps/web`'s Regions page (`/regions`) supports browsing/searching the full
+  hierarchy down to kelurahan/desa, but its detail panel says explicitly, per
+  selection, that population is unavailable and assessment is unsupported
+  below kabupaten/kota — never silently substitutes the parent's population.
+  If a finer-resolution population source is integrated later, the parent
+  kabupaten/kota population may only ever be shown as context next to a
+  kecamatan/kelurahan assessment, never substituted as if it were that
+  assessment's own population.

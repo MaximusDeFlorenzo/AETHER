@@ -82,3 +82,43 @@ export const HAZARD_TYPE_COLORS: Record<HazardType, string> = {
 export function hazardTypeToColor(hazardType: HazardType): string {
   return HAZARD_TYPE_COLORS[hazardType];
 }
+
+// --- Citizen portal map (components/citizen/citizen-map.tsx) -------------
+// Mid-tone literals that read on both the light (Carto Voyager) and dark
+// (Carto Dark Matter) basemaps; mirror the --lv-* status tokens in
+// globals.css.
+export const CITIZEN_HAZARD_COLORS: Record<HazardType, string> = {
+  earthquake: '#2f7de1',
+  flood: '#e0701a',
+  wildfire: '#d93030',
+  landslide: '#b88600',
+};
+export const CITIZEN_USER_COLOR = CHART_PRIMARY;
+export const CITIZEN_SHELTER_COLOR = '#1c8a4c';
+export const CITIZEN_ALARM_COLOR = '#c1121f';
+// Smoke plume fill per basemap theme — a warm grey-brown that reads as haze
+// on both the light Voyager and dark Dark Matter tiles.
+export const CITIZEN_SMOKE_COLORS = { light: '#6f6356', dark: '#d2c6b2' } as const;
+export const CITIZEN_FIRE_COLOR = '#e8590c';
+
+// --- Rainfall outlook severity (flood/landslide rule levels). LOW is grey,
+// not green: no trigger detected is not an all-clear. ----------------------
+
+export const RAINFALL_SEVERITY_COLORS = {
+  NONE: '#cbd5e1',
+  LOW: '#94a3b8',
+  MEDIUM: CHART_WARNING,
+  HIGH: '#ea580c',
+  EXTREME: CHART_DANGER,
+} as const;
+
+// --- Earthquake magnitude classes (BMKG-style M bands). Minor quakes stay
+// grey so the map's attention goes to the felt / damaging ones. ------------
+
+export const EARTHQUAKE_MAGNITUDE_COLORS = {
+  MINOR: '#94a3b8',
+  LIGHT: CHART_INFO,
+  MODERATE: CHART_WARNING,
+  STRONG: '#ea580c',
+  MAJOR: CHART_DANGER,
+} as const;

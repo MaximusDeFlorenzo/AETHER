@@ -1,0 +1,20 @@
+# Used by infra/docker-compose.prod.yml. Caddy fetches and renews Let's
+# Encrypt certificates automatically once both DNS records point at the VPS.
+{
+	email {$ACME_EMAIL}
+}
+
+# REST (/api/v1/*), Swagger (/docs), /health and socket.io websockets —
+# reverse_proxy upgrades websocket connections on its own.
+{$API_DOMAIN} {
+	encode gzip
+	reverse_proxy api:4000
+}
+
+# Signed GETs for field/ground-report images. The S3 signature covers the
+# Host header, so it must reach MinIO unchanged.
+{$MEDIA_DOMAIN} {
+	reverse_proxy minio:9000 {
+		header_up Host {host}
+	}
+}

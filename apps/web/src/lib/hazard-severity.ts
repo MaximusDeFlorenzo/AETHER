@@ -35,16 +35,16 @@ export function formatHazardEventLocation(event: HazardEvent): string {
 
 export function isHighSeverityHazardEvent(event: HazardEvent): boolean {
   if (event.hazardType === 'earthquake') {
-    return ((event.details as EarthquakeDetails).magnitude ?? 0) >= HIGH_MAGNITUDE;
+    return ((event.details as EarthquakeDetails | null)?.magnitude ?? 0) >= HIGH_MAGNITUDE;
   }
   if (event.hazardType === 'landslide') {
-    return ((event.details as LandslideDetails).soilSaturationPct ?? 0) >= HIGH_SOIL_SATURATION_PCT;
+    return ((event.details as LandslideDetails | null)?.soilSaturation ?? 0) * 100 >= HIGH_SOIL_SATURATION_PCT;
   }
   if (event.hazardType === 'flood') {
-    return ((event.details as FloodDetails).waterLevelM ?? 0) >= HIGH_WATER_LEVEL_M;
+    return ((event.details as FloodDetails | null)?.waterLevelM ?? 0) >= HIGH_WATER_LEVEL_M;
   }
   if (event.hazardType === 'wildfire') {
-    return ((event.details as WildfireDetails).frpConfidence ?? 0) >= HIGH_FRP_CONFIDENCE;
+    return ((event.details as WildfireDetails | null)?.frpConfidence ?? 0) >= HIGH_FRP_CONFIDENCE;
   }
   return false;
 }

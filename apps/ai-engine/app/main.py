@@ -5,8 +5,10 @@ from fastapi import FastAPI
 from app.api.routes import (
     computer_vision,
     health,
+    karhutla,
     predict,
     priority,
+    rainfall,
     recommendation,
     relationships,
     resource,
@@ -35,3 +37,5 @@ app.include_router(recommendation.router)
 app.include_router(relationships.router)
 app.include_router(resource.router)
 app.include_router(computer_vision.router)
+app.include_router(karhutla.router)
+app.include_router(rainfall.router)

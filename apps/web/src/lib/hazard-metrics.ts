@@ -11,38 +11,38 @@ export interface HazardDetailMetric {
 // evacuation alert dialog so the two never drift on which fields matter most.
 export function getHazardDetailMetrics(hazardType: HazardType, details: unknown): HazardDetailMetric[] {
   if (hazardType === 'earthquake') {
-    const d = details as EarthquakeDetails;
+    const d = details as EarthquakeDetails | null;
     return [
-      { icon: Gauge, label: 'Magnitude', value: `M${d.magnitude?.toFixed(1) ?? '—'}` },
-      { icon: Mountain, label: 'Depth', value: `${d.depthKm ?? '—'} km` },
+      { icon: Gauge, label: 'Magnitude', value: `M${d?.magnitude?.toFixed(1) ?? '—'}` },
+      { icon: Mountain, label: 'Depth', value: `${d?.depthKm ?? '—'} km` },
     ];
   }
   if (hazardType === 'landslide') {
-    const d = details as LandslideDetails;
+    const d = details as LandslideDetails | null;
     return [
-      { icon: Mountain, label: 'Slope angle', value: d.slopeAngleDeg != null ? `${d.slopeAngleDeg}°` : '—' },
+      { icon: Mountain, label: 'Slope angle', value: d?.slopeDegrees != null ? `${d.slopeDegrees}°` : '—' },
       {
         icon: Gauge,
         label: 'Soil saturation',
-        value: d.soilSaturationPct != null ? `${d.soilSaturationPct}%` : '—',
+        value: d?.soilSaturation != null ? `${Math.round(d.soilSaturation * 100)}%` : '—',
       },
     ];
   }
   if (hazardType === 'flood') {
-    const d = details as FloodDetails;
+    const d = details as FloodDetails | null;
     return [
-      { icon: Droplets, label: 'Water level', value: d.waterLevelM != null ? `${d.waterLevelM} m` : '—' },
-      { icon: CloudRain, label: 'Rainfall', value: d.rainfallMm != null ? `${d.rainfallMm} mm` : '—' },
+      { icon: Droplets, label: 'Water level', value: d?.waterLevelM != null ? `${d.waterLevelM} m` : '—' },
+      { icon: CloudRain, label: 'Rainfall', value: d?.rainfallMm != null ? `${d.rainfallMm} mm` : '—' },
     ];
   }
   if (hazardType === 'wildfire') {
-    const d = details as WildfireDetails;
+    const d = details as WildfireDetails | null;
     return [
-      { icon: Flame, label: 'Hotspots', value: d.hotspotCount != null ? `${d.hotspotCount}` : '—' },
+      { icon: Flame, label: 'Hotspots', value: d?.hotspotCount != null ? `${d.hotspotCount}` : '—' },
       {
         icon: Thermometer,
         label: 'FIRMS confidence',
-        value: d.frpConfidence != null ? `${Math.round(d.frpConfidence * 100)}%` : '—',
+        value: d?.frpConfidence != null ? `${Math.round(d.frpConfidence * 100)}%` : '—',
       },
     ];
   }

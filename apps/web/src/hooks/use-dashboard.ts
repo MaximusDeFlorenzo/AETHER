@@ -21,7 +21,7 @@ export interface AnalyticsFilters {
 }
 
 export interface AnalyticsResponse {
-  hazardEventCountsByDay: { date: string; count: number }[];
+  hazardEventCountsByDay: { date: string; hazardType: HazardType; count: number }[];
   hazardTypeDistribution: { hazardType: HazardType; count: number }[];
   historicalCasualtiesByYear: { year: string; totalDeaths: number; totalDamagedBuildings: number }[];
 }

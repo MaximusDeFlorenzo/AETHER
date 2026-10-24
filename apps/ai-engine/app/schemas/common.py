@@ -20,7 +20,19 @@ class DistrictInput(CamelModel):
     """Generalizes `EarthquakeInput`'s district shape: `distance_from_event_km`
     replaces ORION's `distance_from_epicenter_km` since not every hazard has an
     epicenter (a landslide's "event" is a point/area of occurrence, not a
-    seismic epicenter)."""
+    seismic epicenter).
+
+    `total_population`/`population_density` are always kabupaten/kota
+    (regency/city)-level figures — apps/api sends the same numbers it stores
+    in `population_statistics`, one row per district per year, nothing finer
+    (docs/DATABASE_SCHEMA.md §6). Every `hazard_prediction/*.py` module must
+    keep treating them as such: never divide them further to synthesize a
+    kecamatan/kelurahan figure (no validated method or source data exists
+    for that), and any `estimated_affected_population` derived from them is
+    a per-event heuristic estimate off this same kabupaten/kota total, not a
+    finer-resolution population measurement — see
+    `hazard_prediction/common.py::estimate_affected_population`.
+    """
 
     id: str
     name: str

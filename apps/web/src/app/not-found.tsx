@@ -9,13 +9,15 @@ export default function NotFound() {
         <Compass className="h-6 w-6" />
       </div>
       <div className="space-y-1">
-        <h1 className="text-lg font-semibold">Page not found</h1>
+        <h1 className="text-lg font-semibold">Halaman tidak ditemukan</h1>
         <p className="max-w-sm text-sm text-muted-foreground">
-          The page you are looking for does not exist or has moved.
+          Halaman yang Anda cari tidak ada atau sudah dipindahkan.
         </p>
       </div>
-      <Link href="/risk-map" className={buttonVariants({ variant: 'outline' })}>
-        Back to Risk Map
+      {/* The public 404 — citizens outnumber analysts, so send them home to
+          the portal rather than to the login-only risk map. */}
+      <Link href="/" className={buttonVariants({ variant: 'outline' })}>
+        Ke beranda
       </Link>
     </div>
   );

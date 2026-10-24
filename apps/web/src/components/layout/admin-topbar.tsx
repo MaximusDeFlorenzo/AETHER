@@ -1,100 +1,32 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { usePathname } from 'next/navigation';
+import { ChevronRight } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { useLogout } from '@/hooks/use-auth';
-import { useAuthStore } from '@/stores/auth-store';
-import { MobileNav } from './mobile-nav';
+import { isActiveHref, TopbarBrand, type ShellBrand } from './app-sidebar';
 import { ADMIN_NAV_ITEMS } from './nav-items';
 
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
-
-// Admin-only header (user management area) — the public/workspace shell's
-// header is `Topbar`, which carries no user/session context at all.
-export function AdminTopbar() {
-  const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const logout = useLogout();
-
-  const handleLogout = () => {
-    logout.mutate(undefined, {
-      onSuccess: () => router.replace('/admin/login'),
-    });
-  };
+// Admin-only header (user management area): the brand + sidebar toggle when
+// the sidebar is collapsed, the current page, and the theme switch. The account menu lives in the sidebar footer.
+export function AdminTopbar({ brand }: { brand: ShellBrand }) {
+  const pathname = usePathname();
+  const current = ADMIN_NAV_ITEMS.find((item) => isActiveHref(pathname, item.href));
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 sm:px-6">
-      <div className="flex items-center gap-2">
-        <MobileNav
-          sections={[{ items: ADMIN_NAV_ITEMS }]}
-          brandIcon={ShieldCheck}
-          brandLabel="Admin AETHER"
-          triggerClassName="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          footer={
-            <div className="border-t border-sidebar-border px-5 py-3">
-              <Link href="/risk-map" className="text-xs text-sidebar-foreground/50 hover:underline">
-                ← Back to public dashboard
-              </Link>
-            </div>
-          }
-        />
-        <span className="text-sm font-semibold text-sidebar-foreground/70">Admin AETHER</span>
+    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-card/95 px-4 backdrop-blur-sm">
+      <div className="flex min-w-0 items-center gap-2">
+        <TopbarBrand brand={brand} />
+        <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
+          <span className="hidden text-muted-foreground sm:inline">Admin</span>
+          {current && (
+            <>
+              <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground/60 sm:block" />
+              <span className="truncate font-medium text-foreground">{current.label}</span>
+            </>
+          )}
+        </nav>
       </div>
-      <div className="flex items-center gap-2">
-        <ThemeToggle className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="ghost"
-                className="flex items-center gap-2 px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                data-testid="user-menu-trigger"
-              />
-            }
-          >
-            <Avatar className="h-7 w-7">
-              <AvatarFallback className="bg-sidebar-accent text-xs text-sidebar-accent-foreground">
-                {user ? initials(user.fullName) : <UserIcon className="h-4 w-4" />}
-              </AvatarFallback>
-            </Avatar>
-            <span className="hidden text-sm font-medium sm:inline">{user?.fullName}</span>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                {user?.email} · {user?.role.replace('_', ' ')}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/admin/profile')}>
-                <UserIcon className="mr-2 h-4 w-4" /> Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
-                <LogOut className="mr-2 h-4 w-4" /> Log out
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <ThemeToggle />
     </header>
   );
 }

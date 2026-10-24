@@ -20,7 +20,10 @@ import { SpatialIntelligenceService } from '../spatial-intelligence/spatial-inte
 import { GeoService } from '../geo/geo.service';
 import { DomainEvents } from '../common/events/domain-events';
 import type { HazardEventCreatedEvent } from '../common/events/domain-events';
-import type { NormalizedHazardEvent } from './hazard-event-normalized.interface';
+import type {
+  IngestedHazardEvent,
+  NormalizedHazardEvent,
+} from './hazard-event-normalized.interface';
 import {
   EarthquakeDetailsShape,
   validateEarthquakeDetails,
@@ -48,31 +51,31 @@ const SIMULATED_EARTHQUAKE_EPICENTERS: Array<{
   latitude: number;
   longitude: number;
 }> = [
-    {
-      label: 'Yogyakarta',
-      region: 'D.I. Yogyakarta',
-      latitude: -7.8,
-      longitude: 110.36,
-    },
-    {
-      label: 'Padang',
-      region: 'Sumatera Barat',
-      latitude: -0.95,
-      longitude: 100.42,
-    },
-    {
-      label: 'Lombok',
-      region: 'Nusa Tenggara Barat',
-      latitude: -8.62,
-      longitude: 116.3,
-    },
-    {
-      label: 'Palu',
-      region: 'Sulawesi Tengah',
-      latitude: -0.89,
-      longitude: 119.87,
-    },
-  ];
+  {
+    label: 'Yogyakarta',
+    region: 'D.I. Yogyakarta',
+    latitude: -7.8,
+    longitude: 110.36,
+  },
+  {
+    label: 'Padang',
+    region: 'Sumatera Barat',
+    latitude: -0.95,
+    longitude: 100.42,
+  },
+  {
+    label: 'Lombok',
+    region: 'Nusa Tenggara Barat',
+    latitude: -8.62,
+    longitude: 116.3,
+  },
+  {
+    label: 'Palu',
+    region: 'Sulawesi Tengah',
+    latitude: -0.89,
+    longitude: 119.87,
+  },
+];
 
 function randomInRange(min: number, max: number): number {
   return min + Math.random() * (max - min);
@@ -96,7 +99,7 @@ export class HazardEventsService {
     private readonly spatialIntelligenceService: SpatialIntelligenceService,
     private readonly geoService: GeoService,
     private readonly eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   async findAll(filters: {
     hazardType?: HazardType;
@@ -203,6 +206,25 @@ export class HazardEventsService {
     );
   }
 
+  async findAffectedPopulation(hazardEventId: string) {
+    const event = await this.hazardEventRepository.findOne({
+      where: { id: hazardEventId },
+    });
+    if (!event) {
+      throw new NotFoundException('Hazard event not found');
+    }
+    // Same radius as the event's affected districts: magnitude-derived for
+    // earthquakes, fixed per hazard type otherwise.
+    const quake =
+      event.hazardType === HazardType.EARTHQUAKE
+        ? await this.earthquakeDetailsRepository.findOneBy({ hazardEventId })
+        : null;
+    return this.spatialIntelligenceService.estimateAffectedPopulation(
+      event,
+      quake?.magnitude ?? null,
+    );
+  }
+
   /** Manual/ground-truth ingestion path (field_reporter role, or an
    * admin/agency_operator override) — reuses the same validate -> dedupe ->
    * persist -> resolve-regions -> detect-relationships -> emit pipeline as
@@ -250,7 +272,7 @@ export class HazardEventsService {
   ): Promise<HazardEvent> {
     const epicenter =
       SIMULATED_EARTHQUAKE_EPICENTERS[
-      Math.floor(Math.random() * SIMULATED_EARTHQUAKE_EPICENTERS.length)
+        Math.floor(Math.random() * SIMULATED_EARTHQUAKE_EPICENTERS.length)
       ];
 
     const magnitude = overrides.magnitude ?? randomInRange(6.0, 7.5);
@@ -309,6 +331,22 @@ export class HazardEventsService {
    * polling an external feed.
    */
   async ingestEvent(event: NormalizedHazardEvent): Promise<HazardEvent | null> {
+    const ingested = await this.ingestEventWithoutAnnouncing(event);
+    if (!ingested) return null;
+    this.announce(ingested.announcement);
+    return ingested.hazardEvent;
+  }
+
+  /**
+   * `ingestEvent` minus the HAZARD_EVENT_CREATED emit, for high-volume
+   * sources whose adapter decides which of a poll's new events are worth
+   * announcing (risk pipeline, notifications, live broadcast) — see
+   * `HazardDataSourceAdapter.selectAnnouncements`. The returned
+   * `announcement` is what `ingestEvent` would have emitted.
+   */
+  async ingestEventWithoutAnnouncing(
+    event: NormalizedHazardEvent,
+  ): Promise<IngestedHazardEvent | null> {
     const detailsError = this.validateDetails(event.hazardType, event.details);
     if (detailsError) {
       this.logger.warn(
@@ -394,14 +432,18 @@ export class HazardEventsService {
       );
     }
 
-    const payload: HazardEventCreatedEvent = {
-      hazardEventId: hazardEvent.id,
-      hazardType: hazardEvent.hazardType,
-      affectedDistrictIds,
+    return {
+      hazardEvent,
+      announcement: {
+        hazardEventId: hazardEvent.id,
+        hazardType: hazardEvent.hazardType,
+        affectedDistrictIds,
+      },
     };
-    this.eventEmitter.emit(DomainEvents.HAZARD_EVENT_CREATED, payload);
+  }
 
-    return hazardEvent;
+  announce(payload: HazardEventCreatedEvent): void {
+    this.eventEmitter.emit(DomainEvents.HAZARD_EVENT_CREATED, payload);
   }
 
   /**
@@ -530,27 +572,27 @@ export class HazardEventsService {
       await Promise.all([
         earthquakeIds.length
           ? this.earthquakeDetailsRepository
-            .createQueryBuilder('d')
-            .where('d.hazardEventId IN (:...ids)', { ids: earthquakeIds })
-            .getMany()
+              .createQueryBuilder('d')
+              .where('d.hazardEventId IN (:...ids)', { ids: earthquakeIds })
+              .getMany()
           : Promise.resolve([] as EarthquakeDetails[]),
         landslideIds.length
           ? this.landslideDetailsRepository
-            .createQueryBuilder('d')
-            .where('d.hazardEventId IN (:...ids)', { ids: landslideIds })
-            .getMany()
+              .createQueryBuilder('d')
+              .where('d.hazardEventId IN (:...ids)', { ids: landslideIds })
+              .getMany()
           : Promise.resolve([] as LandslideDetails[]),
         floodIds.length
           ? this.floodDetailsRepository
-            .createQueryBuilder('d')
-            .where('d.hazardEventId IN (:...ids)', { ids: floodIds })
-            .getMany()
+              .createQueryBuilder('d')
+              .where('d.hazardEventId IN (:...ids)', { ids: floodIds })
+              .getMany()
           : Promise.resolve([] as FloodDetails[]),
         wildfireIds.length
           ? this.wildfireDetailsRepository
-            .createQueryBuilder('d')
-            .where('d.hazardEventId IN (:...ids)', { ids: wildfireIds })
-            .getMany()
+              .createQueryBuilder('d')
+              .where('d.hazardEventId IN (:...ids)', { ids: wildfireIds })
+              .getMany()
           : Promise.resolve([] as WildfireDetails[]),
       ]);
 
@@ -571,38 +613,38 @@ export class HazardEventsService {
         const d = earthquakeMap.get(event.id);
         details = d
           ? {
-            magnitude: d.magnitude,
-            depthKm: d.depthKm,
-            potentialTsunami: d.potentialTsunami,
-          }
+              magnitude: d.magnitude,
+              depthKm: d.depthKm,
+              potentialTsunami: d.potentialTsunami,
+            }
           : null;
       } else if (event.hazardType === HazardType.LANDSLIDE) {
         const d = landslideMap.get(event.id);
         details = d
           ? {
-            slopeDegrees: d.slopeDegrees,
-            soilSaturation: d.soilSaturation,
-            triggeringRainfallMm: d.triggeringRainfallMm,
-          }
+              slopeDegrees: d.slopeDegrees,
+              soilSaturation: d.soilSaturation,
+              triggeringRainfallMm: d.triggeringRainfallMm,
+            }
           : null;
       } else if (event.hazardType === HazardType.FLOOD) {
         const d = floodMap.get(event.id);
         details = d
           ? {
-            rainfallMm: d.rainfallMm,
-            waterLevelM: d.waterLevelM,
-            riverBasin: d.riverBasin,
-            floodHazardIndex: d.floodHazardIndex,
-          }
+              rainfallMm: d.rainfallMm,
+              waterLevelM: d.waterLevelM,
+              riverBasin: d.riverBasin,
+              floodHazardIndex: d.floodHazardIndex,
+            }
           : null;
       } else if (event.hazardType === HazardType.WILDFIRE) {
         const d = wildfireMap.get(event.id);
         details = d
           ? {
-            frpConfidence: d.frpConfidence,
-            hotspotCount: d.hotspotCount,
-            brightnessKelvin: d.brightnessKelvin,
-          }
+              frpConfidence: d.frpConfidence,
+              hotspotCount: d.hotspotCount,
+              brightnessKelvin: d.brightnessKelvin,
+            }
           : null;
       }
       return Object.assign(event, {

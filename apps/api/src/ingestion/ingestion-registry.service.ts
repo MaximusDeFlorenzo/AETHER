@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { HazardEventsService } from '../hazard-events/hazard-events.service';
 import { DataSourceSyncService } from './data-source-sync.service';
+import type { IngestedHazardEvent } from '../hazard-events/hazard-event-normalized.interface';
 import type { HazardDataSourceAdapter } from './adapters/hazard-data-source-adapter.interface';
 import { HAZARD_DATA_SOURCE_ADAPTERS } from './ingestion.constants';
 
@@ -51,10 +52,33 @@ export class IngestionRegistryService {
       const rawEvents = await adapter.fetch();
       let ingested = 0;
       if (adapter.producesHazardEvents ?? true) {
-        for (const raw of rawEvents) {
-          const normalized = adapter.normalize(raw);
-          const result = await this.hazardEventsService.ingestEvent(normalized);
-          if (result) ingested += 1;
+        if (adapter.selectAnnouncements) {
+          const newEvents: IngestedHazardEvent[] = [];
+          for (const raw of rawEvents) {
+            const result =
+              await this.hazardEventsService.ingestEventWithoutAnnouncing(
+                adapter.normalize(raw),
+              );
+            if (result) newEvents.push(result);
+          }
+          ingested = newEvents.length;
+          if (newEvents.length > 0) {
+            const announcements = await adapter.selectAnnouncements(newEvents);
+            for (const announcement of announcements) {
+              this.hazardEventsService.announce(announcement);
+            }
+            this.logger.log(
+              `Source=${sourceId} ingested ${newEvents.length} new event(s), ` +
+                `announced ${announcements.length}`,
+            );
+          }
+        } else {
+          for (const raw of rawEvents) {
+            const normalized = adapter.normalize(raw);
+            const result =
+              await this.hazardEventsService.ingestEvent(normalized);
+            if (result) ingested += 1;
+          }
         }
       } else if (rawEvents.length > 0) {
         this.logger.debug(

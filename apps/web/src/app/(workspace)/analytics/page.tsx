@@ -1,5 +1,6 @@
 'use client';
 
+import { BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
@@ -18,6 +19,7 @@ import { HazardTypeBadge } from '@/components/shared/hazard-type-badge';
 import { useAnalytics } from '@/hooks/use-dashboard';
 import { useHistoricalDisasters } from '@/hooks/use-historical';
 import { useProvinces } from '@/hooks/use-geo';
+import { PageHeader } from '@/components/shared/page-header';
 
 const AnalyticsCharts = dynamic(() => import('@/components/charts/analytics-charts'), {
   ssr: false,
@@ -59,31 +61,30 @@ export default function AnalyticsPage() {
   );
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
-          <p className="text-sm text-muted-foreground">
-            Trends from live hazard-event ingestion and BNPB historical disaster data.
-          </p>
-        </div>
-        <div className="w-56 space-y-1.5">
-          <Label>Province</Label>
-          <Select value={province} onValueChange={(v) => setProvince(v ?? 'all')}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All provinces</SelectItem>
-              {provinces.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6">
+      <PageHeader
+        icon={BarChart3}
+        title="Analytics"
+        description="Trends from live hazard-event ingestion and BNPB historical disaster data."
+        actions={
+      <div className="w-56 space-y-1.5">
+        <Label>Province</Label>
+        <Select value={province} onValueChange={(v) => setProvince(v ?? 'all')}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All provinces</SelectItem>
+            {provinces.map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
+        }
+      />
 
       <AnalyticsCharts analytics={analytics} isLoading={analyticsLoading} />
 

@@ -41,7 +41,11 @@ newly-wired live feed, not an unproven data source.
 """
 
 from app.core.config import get_settings
-from app.ml.hazard_prediction.common import clamp, exposure_level_from_score
+from app.ml.hazard_prediction.common import (
+    clamp,
+    estimate_affected_population,
+    exposure_level_from_score,
+)
 from app.schemas.common import DistrictInput, HistoricalDisasterInput
 from app.schemas.predict import FloodDetails, PredictRiskResponse
 
@@ -89,7 +93,9 @@ def predict_risk(
         1 - district.distance_from_event_km / MAX_RELEVANT_RADIUS_KM, 0.1, 1.0
     )
     affected_fraction = clamp((risk_score / 100) * proximity_factor)
-    estimated_affected_population = round(district.total_population * affected_fraction)
+    estimated_affected_population = estimate_affected_population(
+        district.total_population, affected_fraction
+    )
 
     flood_history = [h for h in historical_disasters if h.hazard_type in (None, "flood")]
     confidence_score = clamp(

@@ -30,7 +30,7 @@ export class HazardEventsController {
     private readonly hazardEventsService: HazardEventsService,
     private readonly ingestionRegistryService: IngestionRegistryService,
     private readonly auditService: AuditService,
-  ) { }
+  ) {}
 
   // No guard — public risk-intelligence surface (docs/API_SPEC.md §3, §8).
   @Get()
@@ -61,6 +61,11 @@ export class HazardEventsController {
     return this.hazardEventsService.findAffectedRegions(id);
   }
 
+  @Get(':id/affected-population')
+  findAffectedPopulation(@Param('id', ParseUUIDPipe) id: string) {
+    return this.hazardEventsService.findAffectedPopulation(id);
+  }
+
   @Post(':source/sync')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -82,7 +87,10 @@ export class HazardEventsController {
   @Post('manual')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleName.ADMIN, RoleName.AGENCY_OPERATOR, RoleName.FIELD_REPORTER)
+  // A manual event goes live immediately (risk scoring, notifications), so
+  // only operators may create one. Field reporters submit unverified
+  // observations through /ground-reports instead.
+  @Roles(RoleName.ADMIN, RoleName.AGENCY_OPERATOR)
   async createManual(
     @Body() dto: ManualHazardEventDto,
     @CurrentUser() actor: AuthenticatedUser,

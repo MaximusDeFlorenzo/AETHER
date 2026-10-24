@@ -1,5 +1,6 @@
 'use client';
 
+import { Gauge } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +25,7 @@ import { useSortableData } from '@/hooks/use-sortable-data';
 import { RISK_ASSESSMENT_STATUS_LABELS } from '@/lib/labels';
 import { formatHazardEventLocation } from '@/lib/hazard-severity';
 import type { HazardType, RiskAssessment } from '@/types/domain';
+import { PageHeader } from '@/components/shared/page-header';
 
 type RiskAssessmentSortKey = 'district' | 'riskScore' | 'population' | 'confidence';
 
@@ -69,13 +71,10 @@ export default function RiskAssessmentsPage() {
   const { pageData, page, pageCount, setPage, canPrev, canNext, total } = usePagination(sorted, 10);
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Risk Assessments</h1>
-        <p className="text-sm text-muted-foreground">
-          AI-computed risk score and exposure level per district, per hazard type.
-        </p>
-      </div>
+    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6">
+      <PageHeader icon={Gauge} title="Risk Assessments"
+        description="AI-computed risk score and exposure level per district, per hazard type."
+      />
 
       <div className="flex flex-wrap items-end gap-4">
         <div className="w-56 space-y-1.5">

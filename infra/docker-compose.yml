@@ -5,6 +5,10 @@ services:
     image: postgis/postgis:16-3.4
     container_name: aether-postgres
     restart: unless-stopped
+    # Docker's default 64 MB /dev/shm is too small for Postgres parallel
+    # query workers ("could not resize shared memory segment … No space
+    # left on device"). It is only used on demand, so it costs no RAM idle.
+    shm_size: 256mb
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-aether}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aether}
@@ -145,6 +149,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
         NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:4000}
+        NEXT_PUBLIC_CARTO_BASEMAP_KEY: ${NEXT_PUBLIC_CARTO_BASEMAP_KEY:-}
     container_name: aether-web
     restart: unless-stopped
     depends_on:

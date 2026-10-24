@@ -3,16 +3,35 @@
  * and BNPB-style historical earthquake/landslide records.
  *
  * `data/indonesia-districts.json` is all 514 of Indonesia's kabupaten/kota
- * (regencies/cities) — a real, sourced dataset, not illustrative: codes and
- * names from Kemendagri's official administrative code decree (Kepmendagri
- * No 300.2.2-2138 Tahun 2025), area from BIG (Badan Informasi Geospasial,
- * the national geospatial agency)'s official area calculation, population
- * from Kemendagri's population registry — all three merged from
- * github.com/cahyadsn/wilayah (MIT-licensed, actively maintained). Point
- * coordinates are from GeoNames' Indonesia ADM2 dump, name-matched against
- * the Kemendagri names (a handful of naming-variant/newly-split regencies
- * needed a manual real-coordinate fallback — see the merge script's
- * MANUAL_COORDS comments for per-district sourcing).
+ * (regencies/cities). Provenance re-verified 2026-09-22 by diffing every one
+ * of this file's 514 rows against github.com/cahyadsn/wilayah (MIT-licensed,
+ * actively maintained; github.com/cahyadsn/wilayah/tree/master/db) at the
+ * field level — not just the administrative-code list this comment used to
+ * cite alone:
+ *   - `districtCode`/`districtName`: `db/wilayah.sql`, Kepmendagri No
+ *     300.2.2-2138 Tahun 2025 (ditetapkan 25 April 2025; later amended by No
+ *     300.2.2-2430 Tahun 2025 — this seed has not been re-diffed against the
+ *     amendment).
+ *   - `population`: `db/wilayah_penduduk.sql` — 514/514 rows match exactly.
+ *     That file's own header cites the same Kepmendagri No 300.2.2-2138
+ *     Tahun 2025, and the upstream README (§"Data Kepmendagri...") states
+ *     the population figures themselves originate from Ditjen Kependudukan
+ *     dan Pencatatan Sipil (Dukcapil) Kemendagri, **Data Kependudukan
+ *     Semester II Bulan Desember Tahun 2024** — i.e. the count is as of
+ *     December 2024, one calendar year before the decree that republished
+ *     it. `POPULATION_YEAR` below reflects the count date, not the decree
+ *     date.
+ *   - `areaKm2`: `db/wilayah_luas.sql` — 514/514 rows match exactly (unit:
+ *     km²), sourced from Badan Informasi Geospasial (BIG) per Surat Deputi
+ *     Bidang Informasi Geospasial Dasar No B-16.10/DIGD-BIG/IGD.04.04/12/2024,
+ *     16 Desember 2024.
+ * Point coordinates are from GeoNames' Indonesia ADM2 dump, name-matched
+ * against the Kemendagri names (a handful of naming-variant/newly-split
+ * regencies needed a manual real-coordinate fallback). No merge/import
+ * script for any of this is currently committed to this repository — the
+ * JSON file was committed as a finished artifact — so this file itself is
+ * the reproducibility record until one is added; re-verify by re-diffing
+ * against the upstream SQL files above if the data is ever refreshed.
  *
  * Without this seed, hazard-event ingestion has no districts to resolve
  * affected regions against, so this is functionally required, not just
@@ -32,7 +51,10 @@ import {
   Province,
   VulnerabilityIndicator,
 } from '../entities';
-import { HazardType } from '../../common/enums/domain.enum';
+import {
+  AdministrativeLevel,
+  HazardType,
+} from '../../common/enums/domain.enum';
 
 // Illustrative baseline vulnerability_indicators (docs/DATABASE_SCHEMA.md
 // §19) so GET /spatial/overlay?layer=vulnerability returns real rows out of
@@ -43,13 +65,19 @@ import { HazardType } from '../../common/enums/domain.enum';
 // construction stock, worse poverty rate) — real operators overwrite these
 // via VulnerabilityIndicatorsService.upsert() (POST /vulnerability-indicators).
 const VULNERABILITY_INDICATOR_YEAR = 2025;
-const POPULATION_YEAR = 2025;
+// The count date (Semester II/December 2024), not the 2025 decree date that
+// republished it — see this file's top comment. Stored in
+// `population_statistics.year` so `GeoService.getLatestPopulation()`'s
+// `ORDER BY year DESC` reflects when the population was actually enumerated.
+const POPULATION_YEAR = 2024;
+const POPULATION_SOURCE_LABEL =
+  'Kemendagri (Ditjen Dukcapil) - Semester II Des 2024';
 
 function clampIndex(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
-interface DistrictRecord {
+export interface DistrictRecord {
   districtCode: string;
   districtName: string;
   provinceCode: string;
@@ -60,7 +88,10 @@ interface DistrictRecord {
   population: number;
 }
 
-function loadDistricts(): DistrictRecord[] {
+// Exported so reference-data.seed.spec.ts exercises the same load path the
+// seed itself runs, instead of re-parsing the JSON in a parallel test-only
+// code path that could silently drift from what actually gets imported.
+export function loadDistricts(): DistrictRecord[] {
   const path = join(__dirname, 'data', 'indonesia-districts.json');
   return JSON.parse(readFileSync(path, 'utf-8')) as DistrictRecord[];
 }
@@ -181,6 +212,7 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
     if (!district) {
       district = districtRepo.create({
         bpsCode: record.districtCode,
+        administrativeLevel: AdministrativeLevel.KABUPATEN_KOTA,
         name: record.districtName,
         province,
         areaKm2: record.areaKm2,
@@ -193,6 +225,12 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
     }
     districtByBpsCode.set(record.districtCode, district);
 
+    // Not sourced pre-computed: `population_density` = this row's own
+    // `population` (Kemendagri/Dukcapil, Semester II Des 2024) divided by
+    // its own `areaKm2` (BIG, see this file's top comment) — people per km²,
+    // rounded to 2dp. Both operands are real, matched to the same district
+    // and the same snapshot; upstream does not publish a pre-computed
+    // density figure to compare against.
     const density = record.population / record.areaKm2;
 
     const existingStat = await populationRepo.findOne({
@@ -202,10 +240,12 @@ export async function seedReferenceData(dataSource: DataSource): Promise<void> {
       await populationRepo.save(
         populationRepo.create({
           district,
+          regionCode: district.bpsCode,
+          administrativeLevel: AdministrativeLevel.KABUPATEN_KOTA,
           year: POPULATION_YEAR,
           totalPopulation: record.population,
           populationDensity: Math.round(density * 100) / 100,
-          source: 'Kemendagri',
+          source: POPULATION_SOURCE_LABEL,
         }),
       );
     }

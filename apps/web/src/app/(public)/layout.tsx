@@ -1,3 +1,4 @@
+import { sidebarDefaultOpen } from '@/components/layout/sidebar-state';
 import { WorkspaceShell } from '@/components/layout/workspace-shell';
 
 // Public route group — no auth. Hosts the risk map, hazard event feed, and
@@ -5,6 +6,6 @@ import { WorkspaceShell } from '@/components/layout/workspace-shell';
 // agencies; only the isolated `/admin` area and the `(workspace)` analyst
 // routes require a login (docs/MIGRATION_FROM_ORION.md's public/protected
 // split).
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  return <WorkspaceShell>{children}</WorkspaceShell>;
+export default async function PublicLayout({ children }: { children: React.ReactNode }) {
+  return <WorkspaceShell defaultOpen={await sidebarDefaultOpen()}>{children}</WorkspaceShell>;
 }

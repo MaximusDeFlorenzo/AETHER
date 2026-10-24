@@ -85,18 +85,41 @@ CREATE INDEX idx_provinces_geom ON provinces USING GIST (geom);
 
 ## 5. `districts`
 
-Renamed conceptually to "regions" in product copy, kept as `districts` in schema
-(same BPS administrative-code granularity ORION already validated).
+Renamed conceptually to "regions" in product copy, kept as `districts` in schema.
+**This table is kabupaten/kota (regency/city) level only** — the seed source
+(Kemendagri's official administrative-code decree, 514 rows, see
+`reference-data.seed.ts`) has exactly one row per kabupaten/kota, nothing
+finer. `administrative_level` makes that explicit and self-describing rather
+than relying on convention. Finer administrative levels are real but live in
+their own tables — `subdistricts` (kecamatan, §6a) and `villages`
+(kelurahan/desa, §6b) — never as additional `districts` rows, because every
+consumer that reads this table (risk-engine-orchestration's
+`processDistrict`, resource optimization, the Sustainability Dashboard)
+assumes "one `districts` row = one kabupaten/kota with a linked
+`population_statistics` row"; `subdistricts`/`villages` have no linked
+population data (see §6a-6b) so they must never be confused with this table.
+
+`bps_code` is a **misnomer kept for backward compatibility** — every value in
+it actually comes from Kemendagri's administrative-code decree (verified
+2026-09-22 against github.com/cahyadsn/wilayah), never independently
+cross-checked against a BPS statistical-area code table. `code_system`
+records the true system explicitly; renaming `bps_code` itself would break
+the existing `bpsCode` API/frontend contract, so it stays as-is.
 
 ```sql
+CREATE TYPE administrative_level AS ENUM ('kabupaten_kota', 'kecamatan', 'kelurahan_desa');
+CREATE TYPE region_code_system AS ENUM ('kemendagri');
+
 CREATE TABLE districts (
-    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    province_id  UUID NOT NULL REFERENCES provinces(id),
-    bps_code     VARCHAR(10) NOT NULL UNIQUE,
-    name         VARCHAR(120) NOT NULL,
-    geom         GEOMETRY(Geometry, 4326) NOT NULL,
-    area_km2     NUMERIC(12,2),
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    province_id          UUID NOT NULL REFERENCES provinces(id),
+    bps_code             VARCHAR(10) NOT NULL UNIQUE,
+    code_system          region_code_system NOT NULL DEFAULT 'kemendagri',
+    administrative_level administrative_level NOT NULL DEFAULT 'kabupaten_kota',
+    name                 VARCHAR(120) NOT NULL,
+    geom                 GEOMETRY(Geometry, 4326) NOT NULL,
+    area_km2             NUMERIC(12,2),
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_districts_geom ON districts USING GIST (geom);
@@ -105,20 +128,229 @@ CREATE INDEX idx_districts_province ON districts(province_id);
 
 ## 6. `population_statistics`
 
+One row = one kabupaten/kota's population for one year (Kemendagri, see
+`reference-data.seed.ts`). `region_code` and `administrative_level` are
+denormalized off `districts` — not just derivable through the FK — so a row
+read on its own (a report query, a future export) is still self-describing
+about exactly which region/level `total_population`/`population_density`
+apply to, and can never be silently reinterpreted as a kecamatan/kelurahan
+figure.
+
+**Resolution rule (see ARCHITECTURE.md §5, "Population data is
+kabupaten/kota-resolution only", for the full rationale):** no code path may duplicate a
+kabupaten/kota's `total_population` across finer sub-regions and sum them,
+divide it evenly or by area proportion to synthesize a sub-region figure, or
+feed it into a formula that expects population scoped to something smaller
+than a kabupaten/kota without adjusting what that formula actually measures.
+`RiskAssessment.estimatedAffectedPopulation` is the one sanctioned per-event
+estimate derived from this table — see
+`apps/ai-engine/app/ml/hazard_prediction/common.py::estimate_affected_population`
+for its documented (heuristic, unvalidated) method, and it must stay
+distinct from `total_population` in every API response and UI surface.
+
 ```sql
 CREATE TABLE population_statistics (
-    id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    district_id        UUID NOT NULL REFERENCES districts(id) ON DELETE CASCADE,
-    year               SMALLINT NOT NULL,
-    total_population   BIGINT NOT NULL,
-    population_density NUMERIC(10,2) NOT NULL,
-    source             VARCHAR(60) NOT NULL DEFAULT 'BPS',
-    created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    district_id          UUID NOT NULL REFERENCES districts(id) ON DELETE CASCADE,
+    region_code          VARCHAR(10) NOT NULL,
+    administrative_level administrative_level NOT NULL DEFAULT 'kabupaten_kota',
+    year                 SMALLINT NOT NULL,
+    total_population     BIGINT NOT NULL,
+    population_density   NUMERIC(10,2) NOT NULL,
+    source               VARCHAR(60) NOT NULL DEFAULT 'BPS',
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (district_id, year)
 );
 
 CREATE INDEX idx_population_district ON population_statistics(district_id);
 ```
+
+## 6a. `subdistricts` (kecamatan)
+
+One level below `districts`. Real code/name data — 7,285 rows nationwide,
+Kepmendagri No 300.2.2-2138 Tahun 2025 via github.com/cahyadsn/wilayah's
+`db/wilayah.sql`, verified 2026-09-22 (parsed with a SQL-string-escape-aware
+parser after a naive first pass silently dropped 437 apostrophe-containing
+names, e.g. "Ma'u" in Nias — see `seed-subdistricts-and-villages.ts`'s top
+comment). Zero duplicate codes, zero unmapped parent districts.
+
+**No population/area/geometry column** — no verified source provides them at
+this level (see `AdministrativeLevel`'s comment in `domain.enum.ts`).
+`code_system` is `'kemendagri'` for the same reason `districts.code_system`
+is: every code here is Kemendagri's, never independently cross-checked
+against a BPS table.
+
+```sql
+CREATE TABLE subdistricts (
+    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    district_id          UUID NOT NULL REFERENCES districts(id) ON DELETE CASCADE,
+    code                 VARCHAR(20) NOT NULL UNIQUE,
+    code_system          region_code_system NOT NULL DEFAULT 'kemendagri',
+    administrative_level administrative_level NOT NULL DEFAULT 'kecamatan',
+    name                 VARCHAR(120) NOT NULL,
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_subdistricts_district ON subdistricts(district_id);
+CREATE INDEX idx_subdistricts_name ON subdistricts(name);
+```
+
+## 6b. `villages` (kelurahan/desa)
+
+One level below `subdistricts`. Real code/name data — 83,762 rows
+nationwide, same source/verification as `subdistricts` above. Zero duplicate
+codes, zero unmapped parent subdistricts.
+
+**No population/area/geometry column**, same rationale as `subdistricts`. A
+targeted search for an official village-level population source found one —
+`prodeskel.binapemdes.kemendagri.go.id` (Kemendagri's Direktorat Jenderal
+Bina Pemerintahan Desa, "Profil Desa dan Kelurahan"), showing ~66,782 rows
+with male/female/total population, households (KK) and density per
+desa/kelurahan — but it exposes only a paginated UI with CSV/XLS export
+buttons, no documented bulk API endpoint. No importer was built against it
+(building one would mean guessing at an undocumented endpoint, which was
+explicitly ruled out). Revisit if that portal publishes a documented export
+API, or if BPS's "Potensi Desa" (PODES) dataset becomes available in a
+machine-readable form.
+
+```sql
+CREATE TABLE villages (
+    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    subdistrict_id       UUID NOT NULL REFERENCES subdistricts(id) ON DELETE CASCADE,
+    code                 VARCHAR(20) NOT NULL UNIQUE,
+    code_system          region_code_system NOT NULL DEFAULT 'kemendagri',
+    administrative_level administrative_level NOT NULL DEFAULT 'kelurahan_desa',
+    name                 VARCHAR(120) NOT NULL,
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_villages_subdistrict ON villages(subdistrict_id);
+CREATE INDEX idx_villages_name ON villages(name);
+```
+
+## 6c. `village_population_import_batches` / `village_population_import_rows` / `village_populations`
+
+Bulk CSV upload of kecamatan/kelurahan population data (`villages`/`subdistricts`
+have code/name only — no population column, see §6b). A batch's file lives in
+object storage (`StorageService`); these tables hold the reopenable
+status/summary row, the per-row parse/match/validate result, and — once
+confirmed — the actual imported figures. Processing runs as two BullMQ
+background jobs (not inline in the HTTP request — a 100k-row file must never
+risk an HTTP timeout), documented in `apps/api/README-worker.md` and
+`docs/ARCHITECTURE.md`'s "Background jobs" section.
+
+```sql
+CREATE TYPE population_import_batch_status AS ENUM (
+    'uploaded', 'validating', 'ready', 'queued', 'importing',
+    'completed', 'completed_with_errors', 'failed'
+);
+
+CREATE TABLE village_population_import_batches (
+    id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    file_name                 VARCHAR(255) NOT NULL,
+    file_checksum_sha256      VARCHAR(64) NOT NULL,      -- re-upload-of-identical-file detection
+    file_size_bytes           BIGINT NOT NULL,
+    storage_key               VARCHAR(500) NOT NULL,     -- the CSV itself, in object storage
+    uploaded_by_user_id       UUID NOT NULL REFERENCES users(id),
+    has_header_row            BOOLEAN NOT NULL,
+    number_format             population_number_format NOT NULL,
+    source_name               VARCHAR(200) NOT NULL,
+    source_reference          TEXT,
+    period_status             population_period_status NOT NULL,
+    period_year               SMALLINT,
+    status                    population_import_batch_status NOT NULL DEFAULT 'uploaded',
+    validation_job_id         VARCHAR(100),              -- BullMQ job id, e.g. validate-<batchId>
+    import_job_id             VARCHAR(100),              -- e.g. import-<batchId>, or ...-retry-<ts>
+    last_validated_row_number INT,                       -- validation resume checkpoint
+    last_imported_row_number  INT,                       -- import resume checkpoint
+    processed_rows            INT,                       -- rows the streaming parser has read so far
+    total_rows                INT,                       -- known only once validation finishes reading the file
+    valid_row_count           INT,
+    duplicate_in_file_count   INT,
+    unchanged_count           INT,
+    conflict_count            INT,
+    invalid_count             INT,
+    imported_count            INT,
+    skipped_count             INT,
+    error_message             TEXT,
+    created_at                TIMESTAMPTZ NOT NULL DEFAULT now(),
+    validating_started_at     TIMESTAMPTZ,
+    ready_at                  TIMESTAMPTZ,
+    confirmed_at              TIMESTAMPTZ,
+    importing_started_at      TIMESTAMPTZ,
+    completed_at              TIMESTAMPTZ
+);
+
+CREATE INDEX idx_vpib_checksum ON village_population_import_batches(file_checksum_sha256);
+CREATE INDEX idx_vpib_uploaded_by ON village_population_import_batches(uploaded_by_user_id);
+```
+
+**Status machine**: `uploaded` (file stored, validation job enqueued) →
+`validating` (worker streaming/parsing/matching) → `ready` (preview
+available, confirm allowed) → `queued` (confirm's atomic
+`UPDATE ... WHERE status='ready'` compare-and-swap succeeded — the guard
+against a double-click or two concurrent confirms enqueuing two import jobs)
+→ `importing` (worker writing chunks) → `completed` / `completed_with_errors`.
+`failed` can be reached from `validating` or `importing` — either a permanent
+parse error, or every BullMQ retry attempt exhausted (see the
+`@OnWorkerEvent('failed')` handler in each processor) — and is the only
+non-terminal-status a human `POST :id/retry` can act on, resuming from
+whichever checkpoint column applies.
+
+```sql
+CREATE TYPE population_import_row_status AS ENUM (
+    'valid', 'duplicate_in_file', 'unchanged', 'conflict', 'invalid',
+    'region_not_found', 'hierarchy_mismatch', 'needs_review', 'imported', 'skipped'
+);
+
+CREATE TABLE village_population_import_rows (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    batch_id          UUID NOT NULL REFERENCES village_population_import_batches(id) ON DELETE CASCADE,
+    row_number        INT NOT NULL,
+    raw_line          TEXT NOT NULL,
+    raw_fields        JSONB NOT NULL,
+    kode_pum          VARCHAR(20),
+    normalized_code   VARCHAR(20),
+    matched_village_id UUID REFERENCES villages(id),
+    parsed_date_raw   VARCHAR(20),
+    parsed_date       DATE,
+    male              INT, female INT, total_population INT, households INT,
+    density_raw       VARCHAR(20), density_converted NUMERIC(12, 3),
+    status            population_import_row_status NOT NULL,
+    messages          JSONB NOT NULL DEFAULT '[]',
+    dedupe_key        VARCHAR(100) NOT NULL,   -- village_id + source + period, explicit (never inferred from a nullable column)
+    UNIQUE (batch_id, row_number)              -- idempotency backstop for a doubly-delivered validation job
+);
+
+CREATE INDEX idx_vpir_batch ON village_population_import_rows(batch_id);
+CREATE INDEX idx_vpir_batch_status ON village_population_import_rows(batch_id, status);
+
+CREATE TABLE village_populations (
+    id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    village_id         UUID NOT NULL REFERENCES villages(id),
+    male INT, female INT, total_population INT, households INT,
+    density_raw        VARCHAR(20), density_converted NUMERIC(12, 3),
+    number_format      population_number_format NOT NULL,
+    reported_date       DATE,
+    period_status       population_period_status NOT NULL,
+    period_year         SMALLINT,
+    dedupe_key           VARCHAR(100) NOT NULL,
+    source_name          VARCHAR(200) NOT NULL,
+    source_reference      TEXT,
+    import_batch_id       UUID NOT NULL REFERENCES village_population_import_batches(id),
+    created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX uq_village_populations_dedupe ON village_populations(village_id, dedupe_key);
+CREATE INDEX idx_village_populations_village ON village_populations(village_id);
+```
+
+A village with no row here simply has no imported population yet — not an
+error (`GET /villages/:id/population` returns `[]`). Never derived by
+splitting/dividing the parent kabupaten/kota's `population_statistics` row —
+see §6, and §6b's note on why no bulk official village-population source has
+been imported (this feature imports whatever file an operator has actually
+obtained and examined; it does not fabricate coverage).
 
 ## 7. `audit_logs`
 

@@ -28,3 +28,23 @@ def exposure_level_from_score(score: float) -> ExposureLevel:
     if score < 75:
         return "high"
     return "severe"
+
+
+def estimate_affected_population(total_population: int, affected_fraction: float) -> int:
+    """`total_population` is a kabupaten/kota (regency/city)-level figure —
+    apps/api's `population_statistics` has exactly one row per district per
+    year, sourced from Kemendagri (see docs/DATABASE_SCHEMA.md §6), with no
+    kecamatan/kelurahan breakdown available anywhere in AETHER today.
+
+    `affected_fraction` (0-1) is each hazard module's own heuristic estimate
+    of what share of that kabupaten/kota's population this specific event
+    plausibly affects, from `risk_score` and event proximity — an explicit,
+    documented v0 formula, NOT a calibrated/validated model and NOT a
+    measurement of population actually inside the hazard's physical extent
+    (no watershed/burn-scar/shake-intensity polygon exists to measure that
+    against). The result is scoped estimation off a real kabupaten/kota
+    total, never an even/area-proportional split of it, and every caller
+    must keep treating it as a per-event *estimate* distinct from
+    `total_population` — never as a finer-resolution population figure.
+    """
+    return round(total_population * clamp(affected_fraction))

@@ -18,8 +18,10 @@ COPY packages/contracts ./packages/contracts
 # silently have no effect on the built image. Same requirement ORION documented.
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
 ARG NEXT_PUBLIC_WS_URL=ws://localhost:4000
+ARG NEXT_PUBLIC_CARTO_BASEMAP_KEY=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_CARTO_BASEMAP_KEY=$NEXT_PUBLIC_CARTO_BASEMAP_KEY
 RUN pnpm --filter @aether/web run build
 
 FROM node:22-slim AS runtime

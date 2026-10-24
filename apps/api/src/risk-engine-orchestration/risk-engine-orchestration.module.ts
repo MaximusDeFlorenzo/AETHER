@@ -4,12 +4,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   DecisionRecommendation,
   District,
+  DistrictHazardIndex,
+  DistrictTerrainProfile,
   EarthquakeDetails,
   FloodDetails,
   HazardAffectedRegion,
   HazardEvent,
   LandslideDetails,
   RiskAssessment,
+  WeatherHourlySample,
   WildfireDetails,
 } from '../database/entities';
 import { RiskEngineClient } from './risk-engine.client';
@@ -31,6 +34,9 @@ import { HistoricalModule } from '../historical/historical.module';
       LandslideDetails,
       FloodDetails,
       WildfireDetails,
+      WeatherHourlySample,
+      DistrictHazardIndex,
+      DistrictTerrainProfile,
     ]),
     GeoModule,
     HistoricalModule,

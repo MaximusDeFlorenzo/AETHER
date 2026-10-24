@@ -27,3 +27,6 @@ venv/
 # ML artifacts (kept out of git; provisioned at deploy time)
 apps/ai-engine/app/ml/artifacts/*.joblib
 apps/ai-engine/app/ml/artifacts/*.txt
+
+# Production secrets (infra/.env.production.example is the template)
+infra/.env.production

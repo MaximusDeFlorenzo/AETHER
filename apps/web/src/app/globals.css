@@ -45,6 +45,21 @@
   --color-navy: var(--navy);
   --color-navy-dark: var(--navy-dark);
   --color-cyan: var(--cyan);
+  /* Citizen portal status scale (Normal / Waspada / Siaga / Awas) and the
+     emergency-alarm red. Kept separate from --success/--warning/--danger so
+     the public "level" colors can be tuned for plain-language readability
+     without shifting the analyst UI's status palette. */
+  --color-lv-normal: var(--lv-normal);
+  --color-lv-normal-soft: var(--lv-normal-soft);
+  --color-lv-waspada: var(--lv-waspada);
+  --color-lv-waspada-soft: var(--lv-waspada-soft);
+  --color-lv-siaga: var(--lv-siaga);
+  --color-lv-siaga-soft: var(--lv-siaga-soft);
+  --color-lv-awas: var(--lv-awas);
+  --color-lv-awas-soft: var(--lv-awas-soft);
+  --color-alarm: var(--alarm);
+  --color-alarm-strong: var(--alarm-strong);
+  --font-citizen: var(--font-nunito), var(--font-inter), system-ui, sans-serif;
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -105,6 +120,16 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: #43c6d5;
+  --lv-normal: #1c8a4c;
+  --lv-normal-soft: #e2f6ea;
+  --lv-waspada: #8f6800;
+  --lv-waspada-soft: #fff3c9;
+  --lv-siaga: #c2570c;
+  --lv-siaga-soft: #ffe9d8;
+  --lv-awas: #c62828;
+  --lv-awas-soft: #fde3e3;
+  --alarm: #c1121f;
+  --alarm-strong: #e5383b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -145,10 +170,23 @@
     --sidebar-accent-foreground: oklch(0.97 0.01 255);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.78 0.1 200);
+    --lv-normal: #66d69a;
+    --lv-normal-soft: rgba(102, 214, 154, 0.14);
+    --lv-waspada: #f1cb5c;
+    --lv-waspada-soft: rgba(241, 203, 92, 0.14);
+    --lv-siaga: #ffa066;
+    --lv-siaga-soft: rgba(255, 160, 102, 0.15);
+    --lv-awas: #ff8080;
+    --lv-awas-soft: rgba(255, 128, 128, 0.15);
+    --alarm: #a3101a;
+    --alarm-strong: #c9252d;
   }
 }
 
-:root[data-theme="dark"] {
+/* `.theme-dark` re-themes one subtree (e.g. the citizen intro) as dark
+   regardless of the app theme. */
+:root[data-theme="dark"],
+.theme-dark {
   --background: oklch(0.17 0.03 255);
   --foreground: oklch(0.94 0.012 255);
   --card: oklch(0.22 0.032 255);
@@ -185,6 +223,16 @@
   --sidebar-accent-foreground: oklch(0.97 0.01 255);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.78 0.1 200);
+  --lv-normal: #66d69a;
+  --lv-normal-soft: rgba(102, 214, 154, 0.14);
+  --lv-waspada: #f1cb5c;
+  --lv-waspada-soft: rgba(241, 203, 92, 0.14);
+  --lv-siaga: #ffa066;
+  --lv-siaga-soft: rgba(255, 160, 102, 0.15);
+  --lv-awas: #ff8080;
+  --lv-awas-soft: rgba(255, 128, 128, 0.15);
+  --alarm: #a3101a;
+  --alarm-strong: #c9252d;
 }
 
 @layer base {
@@ -217,17 +265,259 @@
   background: #3f5c6b;
 }
 
-/* Hazard map markers, high-severity — a slow radar-style pulse on the ones
-   that actually warrant a second look. Leaflet renders these as real SVG
-   paths, so a plain CSS animation on the className works. Generalized from
+/* Analyst hazard map pins (components/map/hazard-pin.ts): a colored disc
+   per hazard type with its glyph, white rim so it reads on satellite
+   imagery. High-severity pins get a slow radar ring — generalized from
    ORION's eq-marker-pulse (magnitude-only) to any hazard's "severe"
    ExposureLevel. */
+.hazard-pin {
+  background: none;
+  border: none;
+}
+.hazard-pin > span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: 9999px;
+  background: var(--pin);
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+.hazard-pin > span > svg {
+  width: 58%;
+  height: 58%;
+}
+.hazard-pin.is-severe > span {
+  box-shadow: 0 0 0 3px var(--pin), 0 1px 5px rgba(0, 0, 0, 0.45);
+}
 @media (prefers-reduced-motion: no-preference) {
-  .hazard-marker-pulse {
-    animation: hazard-pulse 2.4s ease-in-out infinite;
+  .hazard-pin.is-severe > span::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    border: 2px solid var(--pin);
+    animation: hazard-pin-ring 2.4s ease-out infinite;
+    pointer-events: none;
   }
 }
-@keyframes hazard-pulse {
-  0%, 100% { filter: drop-shadow(0 0 0 transparent); opacity: 1; }
-  50% { filter: drop-shadow(0 0 6px currentColor); opacity: 0.85; }
+@keyframes hazard-pin-ring {
+  from { transform: scale(0.9); opacity: 0.9; }
+  to { transform: scale(1.8); opacity: 0; }
+}
+
+/* Posko / titik kumpul pins on the officer management map
+   (components/shelters/shelter-manager-map.tsx). */
+.shelter-pin {
+  background: none;
+  border: none;
+}
+.shelter-pin > span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: 9999px;
+  background: var(--pin);
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+.shelter-pin > span > svg {
+  width: 55%;
+  height: 55%;
+}
+.shelter-pin.is-inactive > span {
+  background: #64748b;
+  opacity: 0.75;
+}
+.shelter-pin.is-draft > span {
+  border-width: 3px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.45), 0 2px 8px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+}
+
+/* Citizen emergency alarm ("layar merah"): a slow two-tone flash so the
+   screen reads as urgent from across a room. Disabled entirely under
+   reduced-motion — the solid red + siren still carry the urgency. */
+@media (prefers-reduced-motion: no-preference) {
+  .alarm-flash {
+    animation: alarm-flash 1s steps(2, jump-none) infinite;
+  }
+  .alarm-ring {
+    animation: alarm-ring 1.2s ease-out infinite;
+  }
+}
+@keyframes alarm-flash {
+  0% { background-color: var(--alarm); }
+  100% { background-color: var(--alarm-strong); }
+}
+@keyframes alarm-ring {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55); }
+  100% { box-shadow: 0 0 0 18px rgba(255, 255, 255, 0); }
+}
+
+/* Citizen smoke map: drifting smoke puffs along each plume, a gently
+   pulsing fire marker, and wind arrows. Leaflet divIcons, so plain CSS.
+   All motion is decorative and stops under reduced-motion. */
+.smoke-puff,
+.fire-marker,
+.wind-arrow {
+  background: none;
+  border: none;
+}
+.smoke-puff svg {
+  width: 100%;
+  height: 100%;
+  opacity: 0.55;
+}
+.fire-marker > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  background: #e8590c;
+  color: #fff;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+.fire-marker.is-selected > span {
+  background: #c1121f;
+  transform: scale(1.18);
+}
+.wind-arrow > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1b2640;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .smoke-puff svg {
+    animation: smoke-drift 6s ease-in-out infinite;
+  }
+  .fire-marker > span {
+    animation: fire-pulse 1.8s ease-in-out infinite;
+  }
+}
+@keyframes smoke-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.45; }
+  50% { transform: translate(4px, -4px) scale(1.12); opacity: 0.7; }
+}
+@keyframes fire-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 89, 12, 0.55); }
+  50% { box-shadow: 0 0 0 10px rgba(232, 89, 12, 0); }
+}
+
+/* Citizen first-visit intro (components/citizen/onboarding.tsx): a dot map
+   of Indonesia sweeping in west→east, with pulsing rings on real recent
+   hazard events. SVG circles scale from their own centre (fill-box). Under
+   reduced-motion everything rests on the finished frame. */
+.intro-dot,
+.intro-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.intro-dot {
+  opacity: 0;
+  animation: intro-dot 0.6s ease-out forwards;
+}
+.intro-ring {
+  animation: intro-ring 2.2s ease-out infinite;
+}
+@keyframes intro-dot {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 0.9; transform: scale(1); }
+}
+@keyframes intro-ring {
+  0% { transform: scale(0.4); opacity: 0.9; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-dot { animation: none; opacity: 0.9; }
+  .intro-ring { animation: none; opacity: 0.4; }
+}
+
+/* Citizen portal polish: a soft brand-tinted backdrop behind the pages, a
+   staggered rise-in for page sections, hover lift on tappable cards, and a
+   radar pulse around the status icon. All motion is decorative and stops
+   under reduced-motion. */
+.citizen-backdrop {
+  background:
+    radial-gradient(60rem 28rem at 110% -10%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 70%),
+    radial-gradient(48rem 24rem at -20% 0%, color-mix(in oklab, var(--cyan) 12%, transparent), transparent 70%),
+    var(--background);
+}
+.citizen-dots {
+  background-image: radial-gradient(color-mix(in oklab, currentColor 22%, transparent) 1px, transparent 1.5px);
+  background-size: 18px 18px;
+}
+.citizen-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.citizen-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -18px rgba(20, 33, 61, 0.45);
+}
+.citizen-lift:active {
+  transform: translateY(0) scale(0.99);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .citizen-rise > * {
+    animation: citizen-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .citizen-rise > *:nth-child(2) { animation-delay: 0.06s; }
+  .citizen-rise > *:nth-child(3) { animation-delay: 0.12s; }
+  .citizen-rise > *:nth-child(4) { animation-delay: 0.18s; }
+  .citizen-rise > *:nth-child(n + 5) { animation-delay: 0.24s; }
+  .citizen-radar::before,
+  .citizen-radar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid currentColor;
+    animation: citizen-radar 2.6s ease-out infinite;
+    pointer-events: none;
+  }
+  .citizen-radar::after { animation-delay: 1.3s; }
+  .citizen-float {
+    animation: citizen-float 6s ease-in-out infinite;
+  }
+  .citizen-sos::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: var(--lv-awas);
+    animation: citizen-radar 2s ease-out infinite;
+    z-index: -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .citizen-lift:hover { transform: none; }
+}
+@keyframes citizen-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes citizen-radar {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@keyframes citizen-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }

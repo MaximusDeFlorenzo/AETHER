@@ -33,6 +33,7 @@ export function EvacuationAlertDialog() {
   const event = useHazardAlertStore((state) => state.queue[0] ?? null);
   const queueLength = useHazardAlertStore((state) => state.queue.length);
   const dismissCurrent = useHazardAlertStore((state) => state.dismissCurrent);
+  const dismissAll = useHazardAlertStore((state) => state.dismissAll);
 
   return (
     <Dialog open={event != null} onOpenChange={(open) => !open && dismissCurrent()}>
@@ -76,6 +77,11 @@ export function EvacuationAlertDialog() {
           </div>
 
           <DialogFooter>
+            {queueLength > 1 && (
+              <Button variant="ghost" onClick={dismissAll}>
+                Dismiss all ({queueLength})
+              </Button>
+            )}
             <Button variant="outline" onClick={dismissCurrent}>
               Dismiss
             </Button>

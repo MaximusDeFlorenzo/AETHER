@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { AlertTriangle, GitBranch } from 'lucide-react';
+import { AlertTriangle, GitBranch, ShieldAlert } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
@@ -20,6 +20,7 @@ import { TablePagination } from '@/components/shared/table-pagination';
 import { useDecisionRecommendations } from '@/hooks/use-decision-recommendations';
 import { usePagination } from '@/hooks/use-pagination';
 import type { PriorityLevel } from '@/types/domain';
+import { PageHeader } from '@/components/shared/page-header';
 
 const PRIORITY_OPTIONS: { value: PriorityLevel | 'all'; label: string }[] = [
   { value: 'all', label: 'All priorities' },
@@ -42,30 +43,29 @@ export default function DecisionIntelligencePage() {
   const { pageData, page, pageCount, setPage, canPrev, canNext, total } = usePagination(recommendations, 8);
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Decision Intelligence</h1>
-          <p className="text-sm text-muted-foreground">
-            Districts ranked by AI-computed response priority, highest first.
-          </p>
-        </div>
-        <div className="w-48 space-y-1.5">
-          <Label>Filter by priority</Label>
-          <Select value={priority} onValueChange={(v) => setPriority((v as PriorityLevel | 'all') ?? 'all')}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PRIORITY_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6">
+      <PageHeader
+        icon={ShieldAlert}
+        title="Decision Intelligence"
+        description="Districts ranked by AI-computed response priority, highest first."
+        actions={
+      <div className="w-48 space-y-1.5">
+        <Label>Filter by priority</Label>
+        <Select value={priority} onValueChange={(v) => setPriority((v as PriorityLevel | 'all') ?? 'all')}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PRIORITY_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
+        }
+      />
 
       <div className="space-y-3">
         {isLoading &&

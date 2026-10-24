@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
@@ -18,6 +23,8 @@ import type {
 } from '../common/events/domain-events';
 import { CreateResourceOptimizationPlanDto } from './dto/create-resource-optimization-plan.dto';
 import { CreateShelterDto } from './dto/create-shelter.dto';
+import { UpdateShelterDto } from './dto/update-shelter.dto';
+import type { ShelterKind } from '../database/entities/shelter.entity';
 
 @Injectable()
 export class ResourceOptimizationService {
@@ -50,9 +57,25 @@ export class ResourceOptimizationService {
       return;
     }
 
+    // `estimatedAffectedPopulation` missing means the risk-engine pipeline
+    // couldn't produce a population-based estimate for this assessment
+    // (e.g. no population_statistics row for the district) — NOT that zero
+    // people are affected. Coercing it to 0 would make every downstream
+    // estimator.py quantity (hospitals/ambulances/shelters/etc.) come back
+    // "0 needed", which reads as a real assessment rather than missing
+    // input. Skip auto-generation instead; an analyst can still create a
+    // manual plan from the workspace.
+    if (event.estimatedAffectedPopulation == null) {
+      this.logger.warn(
+        `Skipping resource-optimization auto-generation for district=${event.districtId}: ` +
+          'estimatedAffectedPopulation is unavailable (not a real zero) — cannot size a resource plan from unknown population.',
+      );
+      return;
+    }
+
     try {
       const result = await this.riskEngineClient.optimizeResources({
-        estimatedAffectedPopulation: event.estimatedAffectedPopulation ?? 0,
+        estimatedAffectedPopulation: event.estimatedAffectedPopulation,
         exposureLevel: event.exposureLevel as
           'low' | 'moderate' | 'high' | 'severe',
       });
@@ -142,25 +165,90 @@ export class ResourceOptimizationService {
     return this.planRepository.save(plan);
   }
 
-  async findAllShelters(filters: { district?: string }): Promise<Shelter[]> {
+  async findAllShelters(filters: {
+    district?: string;
+    kind?: ShelterKind;
+    includeInactive?: boolean;
+  }): Promise<Shelter[]> {
     return this.shelterRepository.find({
-      where: filters.district ? { district: { id: filters.district } } : {},
-      relations: { district: true },
+      where: {
+        ...(filters.district ? { district: { id: filters.district } } : {}),
+        ...(filters.kind ? { kind: filters.kind } : {}),
+        ...(filters.includeInactive ? {} : { isActive: true }),
+      },
+      relations: { district: { province: true } },
       order: { name: 'ASC' },
     });
   }
 
   async createShelter(dto: CreateShelterDto): Promise<Shelter> {
+    await this.assertDistrictExists(dto.districtId);
     const shelter = this.shelterRepository.create({
       district: { id: dto.districtId } as District,
-      name: dto.name,
-      geom: {
-        type: 'Point',
-        coordinates: [dto.longitude, dto.latitude],
-      } as unknown as object,
+      name: dto.name.trim(),
+      kind: dto.kind ?? 'posko',
+      geom: toPoint(dto.longitude, dto.latitude),
       capacity: dto.capacity,
+      currentOccupancy: dto.currentOccupancy ?? 0,
+      address: dto.address ?? null,
+      contactName: dto.contactName ?? null,
+      contactPhone: dto.contactPhone ?? null,
+      notes: dto.notes ?? null,
+      isActive: dto.isActive ?? true,
     });
-    return this.shelterRepository.save(shelter);
+    const saved = await this.shelterRepository.save(shelter);
+    return this.findShelterOrThrow(saved.id);
+  }
+
+  async updateShelter(id: string, dto: UpdateShelterDto): Promise<Shelter> {
+    const shelter = await this.findShelterOrThrow(id);
+    if (dto.districtId && dto.districtId !== shelter.district.id) {
+      await this.assertDistrictExists(dto.districtId);
+      shelter.district = { id: dto.districtId } as District;
+    }
+    if ((dto.latitude === undefined) !== (dto.longitude === undefined)) {
+      throw new BadRequestException(
+        'latitude and longitude must be updated together',
+      );
+    }
+    if (dto.latitude !== undefined && dto.longitude !== undefined) {
+      shelter.geom = toPoint(dto.longitude, dto.latitude);
+    }
+    if (dto.name !== undefined) shelter.name = dto.name.trim();
+    if (dto.kind !== undefined) shelter.kind = dto.kind;
+    if (dto.capacity !== undefined) shelter.capacity = dto.capacity;
+    if (dto.currentOccupancy !== undefined)
+      shelter.currentOccupancy = dto.currentOccupancy;
+    if (dto.address !== undefined) shelter.address = dto.address;
+    if (dto.contactName !== undefined) shelter.contactName = dto.contactName;
+    if (dto.contactPhone !== undefined) shelter.contactPhone = dto.contactPhone;
+    if (dto.notes !== undefined) shelter.notes = dto.notes;
+    if (dto.isActive !== undefined) shelter.isActive = dto.isActive;
+    await this.shelterRepository.save(shelter);
+    return this.findShelterOrThrow(id);
+  }
+
+  /** Nothing references a shelter by FK (citizen alarms copy its name and
+   * point), so a hard delete is safe; closing a posko is `isActive: false`. */
+  async deleteShelter(id: string): Promise<void> {
+    const result = await this.shelterRepository.delete(id);
+    if (!result.affected) throw new NotFoundException('Shelter not found');
+  }
+
+  private async findShelterOrThrow(id: string): Promise<Shelter> {
+    const shelter = await this.shelterRepository.findOne({
+      where: { id },
+      relations: { district: { province: true } },
+    });
+    if (!shelter) throw new NotFoundException('Shelter not found');
+    return shelter;
+  }
+
+  private async assertDistrictExists(districtId: string): Promise<void> {
+    const exists = await this.shelterRepository.manager.exists(District, {
+      where: { id: districtId },
+    });
+    if (!exists) throw new BadRequestException('Unknown districtId');
   }
 
   async findOnePlan(id: string): Promise<ResourceOptimizationPlan> {
@@ -173,4 +261,8 @@ export class ResourceOptimizationService {
     }
     return plan;
   }
+}
+
+function toPoint(longitude: number, latitude: number): object {
+  return { type: 'Point', coordinates: [longitude, latitude] };
 }

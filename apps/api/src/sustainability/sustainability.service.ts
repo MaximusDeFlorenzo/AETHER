@@ -72,6 +72,15 @@ export class SustainabilityService implements OnModuleInit {
    * current month's row (a rolling recompute), so it stays accurate as new
    * events/plans land; only the current month is ever touched.
    */
+  // Double-counting guard: this loop is over `districts` (kabupaten/kota)
+  // ONLY, each independent (siblings, never parent/child) — safe to sum
+  // across all of them. `RiskAssessment.district` only ever FKs to
+  // `District`; `subdistricts`/`villages` have no risk_assessments linked
+  // at all today. If a future change adds subdistrict/village-level
+  // assessments, this loop must NOT also iterate those — a district's
+  // total already implicitly covers everything inside it, so adding a
+  // child region's numbers on top would double-count. Aggregate at exactly
+  // one level per metric, never a district and its own children together.
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async computeAndPersistMetrics(): Promise<void> {
     const districts = await this.districtRepository.find();
@@ -154,10 +163,14 @@ export class SustainabilityService implements OnModuleInit {
       where: { district: { id: district.id } },
       order: { year: 'DESC' },
     });
-    const rawProtectedPopulation = withRecommendation.reduce(
-      (sum, a) => sum + (a.estimatedAffectedPopulation ?? 0),
-      0,
-    );
+    // `estimatedAffectedPopulation` should always be set on an assessment
+    // that has a decision recommendation (it's written before the
+    // recommendation is created), but skip rather than zero-fill on the
+    // off chance a row predates that guarantee — an unknown contribution
+    // must not silently read as "this assessment protected zero people".
+    const rawProtectedPopulation = withRecommendation
+      .filter((a) => a.estimatedAffectedPopulation != null)
+      .reduce((sum, a) => sum + a.estimatedAffectedPopulation!, 0);
     const protectedPopulation = population
       ? Math.min(rawProtectedPopulation, population.totalPopulation)
       : rawProtectedPopulation;
