@@ -59,26 +59,36 @@ function StatusChips({ item }: { item: NationalEvent }) {
   );
 }
 
-/** Home-page preview: hazard + time up top, the place as the headline, distance in the footer. */
-function CompactEventCard({ item }: { item: NationalEvent }) {
+/** Home-page preview: hazard + time up top, the place as the headline, distance in the footer.
+ * With `onSelect` the card shows the event on the page's map instead of opening its page. */
+function CompactEventCard({
+  item,
+  onSelect,
+  selected = false,
+}: {
+  item: NationalEvent;
+  onSelect?: () => void;
+  selected?: boolean;
+}) {
   const { event } = item;
   const details = [eventFact(event), sourceLabel(event.source)].filter(Boolean).join(' · ');
+  const className = cn(
+    'citizen-lift group relative isolate flex h-full w-full flex-col gap-2 overflow-hidden rounded-2xl border bg-card/90 p-3 text-left sm:gap-3 sm:rounded-3xl sm:p-4 shadow-[0_10px_30px_-20px_rgba(20,33,61,0.35)] hover:border-primary/30',
+    selected ? 'border-primary ring-2 ring-primary/30' : 'border-border/60',
+  );
 
-  return (
-    <Link
-      href={`/kejadian/${event.id}`}
-      className="citizen-lift group relative isolate flex h-full flex-col gap-3 overflow-hidden rounded-3xl border border-border/60 bg-card/90 p-4 shadow-[0_10px_30px_-20px_rgba(20,33,61,0.35)] hover:border-primary/30"
-    >
-      <span aria-hidden className={cn('absolute inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b to-transparent', HAZARD_WASH[event.hazardType])} />
+  const body = (
+    <>
+      <span aria-hidden className={cn('absolute inset-x-0 top-0 -z-10 h-16 bg-gradient-to-b to-transparent sm:h-24', HAZARD_WASH[event.hazardType])} />
 
       <span className="flex items-center gap-3">
         <span
           className={cn(
-            'grid h-10 w-10 shrink-0 place-items-center rounded-2xl ring-1 ring-current/15 transition-transform duration-200 group-hover:scale-110',
+            'grid h-8 w-8 shrink-0 place-items-center rounded-xl ring-1 sm:h-10 sm:w-10 sm:rounded-2xl ring-current/15 transition-transform duration-200 group-hover:scale-110',
             HAZARD_TONE[event.hazardType],
           )}
         >
-          <HazardIcon hazardType={event.hazardType} className="h-5 w-5" />
+          <HazardIcon hazardType={event.hazardType} className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
         <span className="grid min-w-0">
           <span className={cn('truncate text-xs font-black tracking-wide uppercase', HAZARD_TEXT[event.hazardType])}>
@@ -88,9 +98,9 @@ function CompactEventCard({ item }: { item: NationalEvent }) {
         </span>
       </span>
 
-      <span className="grid gap-1">
-        <span className="line-clamp-2 text-[15px] leading-snug font-extrabold">{eventPlace(event)}</span>
-        {details && <span className="text-xs text-muted-foreground">{details}</span>}
+      <span className="grid gap-0.5 sm:gap-1">
+        <span className="line-clamp-1 text-sm leading-snug font-extrabold sm:line-clamp-2 sm:text-[15px]">{eventPlace(event)}</span>
+        {details && <span className="truncate text-xs text-muted-foreground sm:whitespace-normal">{details}</span>}
       </span>
 
       <span className="flex flex-wrap gap-1.5 empty:hidden">
@@ -99,7 +109,7 @@ function CompactEventCard({ item }: { item: NationalEvent }) {
 
       <span
         className={cn(
-          'mt-auto flex items-center gap-1.5 border-t border-border/60 pt-3 text-xs font-bold',
+          'mt-auto flex items-center gap-1.5 border-t border-border/60 pt-2 text-xs font-bold sm:pt-3',
           item.proximity.near ? 'text-primary' : 'text-muted-foreground',
         )}
       >
@@ -107,13 +117,37 @@ function CompactEventCard({ item }: { item: NationalEvent }) {
         <span className="truncate">{item.proximity.label}</span>
         <ChevronRight className="ml-auto h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
       </span>
+    </>
+  );
+
+  if (onSelect) {
+    return (
+      <button type="button" onClick={onSelect} aria-pressed={selected} className={className}>
+        {body}
+      </button>
+    );
+  }
+  return (
+    <Link href={`/kejadian/${event.id}`} className={className}>
+      {body}
     </Link>
   );
 }
 
 /** A nationwide event with its "does this affect me" labels. */
-export function NationalEventCard({ item, compact = false }: { item: NationalEvent; compact?: boolean }) {
-  if (compact) return <CompactEventCard item={item} />;
+export function NationalEventCard({
+  item,
+  compact = false,
+  onSelect,
+  selected,
+}: {
+  item: NationalEvent;
+  compact?: boolean;
+  /** Compact only: show the event on the page's map instead of linking to it. */
+  onSelect?: () => void;
+  selected?: boolean;
+}) {
+  if (compact) return <CompactEventCard item={item} onSelect={onSelect} selected={selected} />;
   const { event } = item;
   const fact = eventFact(event);
 

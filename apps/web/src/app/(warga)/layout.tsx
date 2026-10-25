@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     template: '%s · AETHER Siaga',
   },
   description:
-    'Status bahaya di wilayah Anda, kejadian bencana di Indonesia, panduan keselamatan, dan peringatan darurat. Tanpa daftar, tanpa login.',
+    'Status bahaya di wilayah Anda, kejadian bencana di Indonesia, panduan keselamatan, dan peringatan darurat.',
   appleWebApp: {
     capable: true,
     title: 'AETHER Siaga',

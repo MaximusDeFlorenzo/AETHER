@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   CircleMarker,
@@ -141,6 +141,66 @@ function HotspotPointsLayer() {
   );
 }
 
+/** An event dot with its popup. When `selected` (with a new `selectKey`
+ * each time a card is tapped), the popup opens once the fly-to settles. */
+function EventMarker({ item, selected, selectKey }: { item: NationalEvent; selected: boolean; selectKey: string | null }) {
+  const { event, proximity } = item;
+  const markerRef = useRef<leaflet.CircleMarker | null>(null);
+  useEffect(() => {
+    if (!selected) return;
+    const timer = window.setTimeout(() => markerRef.current?.openPopup(), 900);
+    return () => window.clearTimeout(timer);
+  }, [selected, selectKey]);
+
+  return (
+    <CircleMarker
+      ref={markerRef}
+      center={[event.latitude, event.longitude]}
+      radius={selected ? 11 : proximity.near ? 10 : 7}
+      pathOptions={{
+        color: '#ffffff',
+        weight: selected ? 3 : 2,
+        fillColor: CITIZEN_HAZARD_COLORS[event.hazardType],
+        fillOpacity: 0.9,
+      }}
+    >
+      <Popup>
+        <div className="grid gap-1 font-citizen">
+          <strong className="text-sm">{eventTitle(event)}</strong>
+          <span className="text-xs">{[eventFact(event), timeAgo(event.eventTime)].filter(Boolean).join(' · ')}</span>
+          {isClusterEvent(event) && <span className="text-xs">Satelit: {event.cluster.sensors.join(', ')}</span>}
+          <span className="text-xs">{proximity.label}</span>
+          <Link href={`/kejadian/${event.id}`} className="text-xs font-bold">
+            Lihat detail →
+          </Link>
+        </div>
+      </Popup>
+    </CircleMarker>
+  );
+}
+
+// Sabang to Merauke, Miangas to Rote.
+const INDONESIA_BOUNDS: [[number, number], [number, number]] = [
+  [-11.2, 94.8],
+  [6.2, 141.2],
+];
+
+/** Fits the whole country on mount; a fixed (non-interactive) map refits
+ * whenever its box changes size (rotation, mobile URL bar, layout). */
+function NationalFit({ refitOnResize }: { refitOnResize: boolean }) {
+  const map = useMap();
+  useEffect(() => {
+    const fit = () => map.fitBounds(INDONESIA_BOUNDS, { padding: [8, 8], animate: false });
+    fit();
+    if (!refitOnResize) return;
+    map.on('resize', fit);
+    return () => {
+      map.off('resize', fit);
+    };
+  }, [map, refitOnResize]);
+  return null;
+}
+
 /** Flies the map to `focus` whenever it changes (tap a fire → go there). */
 function MapFocus({ focus }: { focus: { lat: number; lng: number; zoom: number; key: string } | null }) {
   const map = useMap();
@@ -230,6 +290,8 @@ export function CitizenMap({
   showHotspotPoints = false,
   nationalView = false,
   scrollWheelZoom = true,
+  selectedEventId = null,
+  interactive = true,
 }: {
   events: NationalEvent[];
   user: { lat: number; lng: number; label: string } | null;
@@ -246,6 +308,10 @@ export function CitizenMap({
   nationalView?: boolean;
   /** Off where the map sits inside a scrolling page (zoom via buttons/pinch). */
   scrollWheelZoom?: boolean;
+  /** Event to highlight and open the popup of (paired with `focus` to fly there). */
+  selectedEventId?: string | null;
+  /** false = fixed view: no pan, zoom or zoom buttons (markers stay tappable). */
+  interactive?: boolean;
 }) {
   // Light smoke on dark imagery in either theme.
   const smokeColor = CITIZEN_SMOKE_COLORS.dark;
@@ -257,7 +323,13 @@ export function CitizenMap({
     <MapContainer
       center={center}
       zoom={zoom}
-      scrollWheelZoom={scrollWheelZoom}
+      scrollWheelZoom={interactive && scrollWheelZoom}
+      dragging={interactive}
+      touchZoom={interactive}
+      doubleClickZoom={interactive}
+      boxZoom={interactive}
+      keyboard={interactive}
+      zoomSnap={nationalView ? 0.25 : 1}
       zoomControl={false}
       style={{ height: '100%', width: '100%' }}
       className="z-0 rounded-[inherit]"
@@ -268,7 +340,8 @@ export function CitizenMap({
         attribution={SATELLITE_TILES.attribution}
         maxZoom={SATELLITE_TILES.maxZoom}
       />
-      <ZoomControl position="bottomright" />
+      {interactive && <ZoomControl position="bottomright" />}
+      {nationalView && <NationalFit refitOnResize={!interactive} />}
       <MapFocus focus={focus} />
 
       {plumes.map((plume) => (
@@ -283,30 +356,13 @@ export function CitizenMap({
 
       {events
         .filter(({ event }) => !(showSmoke && event.hazardType === 'wildfire'))
-        .map(({ event, proximity }) => (
-        <CircleMarker
-          key={event.id}
-          center={[event.latitude, event.longitude]}
-          radius={proximity.near ? 10 : 7}
-          pathOptions={{
-            color: '#ffffff',
-            weight: 2,
-            fillColor: CITIZEN_HAZARD_COLORS[event.hazardType],
-            fillOpacity: 0.9,
-          }}
-        >
-          <Popup>
-            <div className="grid gap-1 font-citizen">
-              <strong className="text-sm">{eventTitle(event)}</strong>
-              <span className="text-xs">{[eventFact(event), timeAgo(event.eventTime)].filter(Boolean).join(' · ')}</span>
-              {isClusterEvent(event) && <span className="text-xs">Satelit: {event.cluster.sensors.join(', ')}</span>}
-              <span className="text-xs">{proximity.label}</span>
-              <Link href={`/kejadian/${event.id}`} className="text-xs font-bold">
-                Lihat detail →
-              </Link>
-            </div>
-          </Popup>
-        </CircleMarker>
+        .map((item) => (
+          <EventMarker
+            key={item.event.id}
+            item={item}
+            selected={item.event.id === selectedEventId}
+            selectKey={focus?.key ?? null}
+          />
         ))}
 
       {showHotspotPoints && <HotspotPointsLayer />}

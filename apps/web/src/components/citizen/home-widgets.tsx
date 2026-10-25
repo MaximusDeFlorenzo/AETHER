@@ -423,7 +423,7 @@ export function AlarmEnableCard({ location }: { location: CitizenLocation }) {
           <h2 className="text-lg font-black">Aktifkan peringatan darurat</h2>
           <p className="text-sm text-muted-foreground">
             Saat bahaya mencapai level tertinggi, perangkat ini berbunyi dan menampilkan layar merah berisi langkah penyelamatan,
-            walaupun web ini tidak sedang dibuka. Tanpa daftar, tanpa login.
+            walaupun web ini tidak sedang dibuka.
           </p>
         </div>
       </div>

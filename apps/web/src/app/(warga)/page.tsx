@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { BellRing, Loader2, MapPin, MessageSquareText, Share, ShieldCheck, Sparkles, SquarePlus } from 'lucide-react';
+import { BellRing, Loader2, MapPin, MessageSquareText, Share, ShieldCheck, SquarePlus } from 'lucide-react';
 import { useLocationPicker } from '@/components/citizen/citizen-shell';
 import {
   AlarmEnableCard,
@@ -17,7 +17,7 @@ import {
 import { AirQualityCard } from '@/components/citizen/air-quality-card';
 import { AlarmHoldButton } from '@/components/citizen/alarm-hold-button';
 import { FamilyAreas } from '@/components/citizen/family-areas';
-import { IndonesiaEventMap } from '@/components/citizen/indonesia-event-map';
+import { IndonesiaEventMap, type MapSelection } from '@/components/citizen/indonesia-event-map';
 import { NationalEventCard } from '@/components/citizen/national-event-card';
 import { PageContainer, SectionTitle } from '@/components/citizen/page-container';
 import { SmokeAdvisory, useSmokeAdvisory } from '@/components/citizen/smoke-advisory';
@@ -46,6 +46,8 @@ function NationalPreview() {
   const location = useCitizenStore((state) => state.location);
   const weather = usePublicWeather(location?.districtId);
   const { events, isLoading, isError } = useNationalEvents(location, weather.data);
+  const [selection, setSelection] = useState<MapSelection | null>(null);
+  const clearSelection = useCallback(() => setSelection(null), []);
 
   // Near-to-me and smoke-toward-me first, then the rest by recency.
   const sorted = [...events].sort(
@@ -89,11 +91,16 @@ function NationalPreview() {
         </p>
       ) : (
         <div className="grid gap-3">
-          <IndonesiaEventMap items={events} />
+          <IndonesiaEventMap items={events} selection={selection} onClose={clearSelection} />
           <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
             {preview.map((item) => (
               <div key={item.event.id} className="w-[78%] shrink-0 snap-start sm:w-auto">
-                <NationalEventCard item={item} compact />
+                <NationalEventCard
+                  item={item}
+                  compact
+                  selected={selection?.event.id === item.event.id}
+                  onSelect={() => setSelection({ event: item.event, key: `${item.event.id}-${Date.now()}` })}
+                />
               </div>
             ))}
           </div>
@@ -142,16 +149,12 @@ function Welcome() {
 
       <div className="grid gap-5 sm:gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
         <div className="grid gap-3 sm:gap-4">
-          <span className="inline-flex items-center gap-2 justify-self-start rounded-full bg-white/10 px-3 py-1 text-xs font-black tracking-wide text-cyan uppercase ring-1 ring-white/15 backdrop-blur sm:text-sm">
-            <Sparkles className="h-4 w-4" /> AETHER Siaga
-          </span>
           <h1 className="text-2xl leading-[1.1] font-black tracking-tight text-balance sm:text-5xl">
             Info bencana untuk{' '}
             <span className="bg-gradient-to-r from-cyan to-white bg-clip-text text-transparent">wilayah Anda</span>
           </h1>
           <p className="max-w-xl text-sm text-white/80 sm:text-lg">
             Pilih kabupaten/kota Anda untuk melihat status bahaya, apa yang perlu dilakukan, dan menerima peringatan darurat.
-            Tanpa daftar, tanpa login.
           </p>
           <ul className="flex flex-wrap gap-1.5 sm:gap-2">
             {WELCOME_POINTS.map((point) => (

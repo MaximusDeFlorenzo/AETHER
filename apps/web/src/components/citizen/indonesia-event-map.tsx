@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { CloudFog, Loader2 } from 'lucide-react';
+import { CloudFog, Loader2, Maximize2, X } from 'lucide-react';
 import type { MapShelter } from '@/components/citizen/citizen-map';
 import { SmokeTimeSelector } from '@/components/citizen/smoke-panel';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,10 +25,29 @@ const CitizenMap = dynamic(() => import('@/components/citizen/citizen-map').then
   loading: () => <Skeleton className="h-full w-full rounded-[inherit]" />,
 });
 
-/** Home-page version of /peta: the same satellite map, hazard filters,
- * animated smoke plumes and legend, opened on the whole country. The smoke
- * answer and per-fire story stay on /peta. */
-export function IndonesiaEventMap({ items, className }: { items: NationalEvent[]; className?: string }) {
+export interface MapSelection {
+  event: NationalEvent['event'];
+  /** Changes on every tap, so tapping the same card again re-flies. */
+  key: string;
+}
+
+/** Home-page version of /peta: the same satellite map, filters, animated
+ * smoke and legend. On the page it is a fixed view of the whole country;
+ * tapping an event card (or the expand button) opens it full screen,
+ * zoomed to that event, where it can be panned and zoomed. */
+export function IndonesiaEventMap({
+  items,
+  selection = null,
+  onClose,
+  className,
+}: {
+  items: NationalEvent[];
+  /** Event picked from a card below the map: opens the full-screen map on it. */
+  selection?: MapSelection | null;
+  /** Called when the full-screen map is closed (clear `selection`). */
+  onClose?: () => void;
+  className?: string;
+}) {
   const location = useCitizenStore((state) => state.location);
   const shelters = useShelters(location?.districtId);
   const alerts = useActiveAlerts(location);
@@ -36,6 +55,8 @@ export function IndonesiaEventMap({ items, className }: { items: NationalEvent[]
   const [showSmoke, setShowSmoke] = useState(true);
   const [smokeHours, setSmokeHours] = useState(6);
   const [selectedFireId, setSelectedFireId] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const fullscreen = expanded || selection !== null;
 
   const visibleEvents = useMemo(() => items.filter((item) => !hidden.has(item.event.hazardType)), [items, hidden]);
   const wildfireEvents = useMemo(
@@ -57,6 +78,34 @@ export function IndonesiaEventMap({ items, className }: { items: NationalEvent[]
     [location, shelters.data],
   );
 
+  const focus = useMemo(
+    () => (selection ? { lat: selection.event.latitude, lng: selection.event.longitude, zoom: 9, key: selection.key } : null),
+    [selection],
+  );
+
+  const close = () => {
+    setExpanded(false);
+    onClose?.();
+  };
+
+  // Full screen: lock the page behind it and close on Esc.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setExpanded(false);
+        onClose?.();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [fullscreen, onClose]);
+
   const toggle = (type: HazardType) =>
     setHidden((current) => {
       const next = new Set(current);
@@ -65,8 +114,8 @@ export function IndonesiaEventMap({ items, className }: { items: NationalEvent[]
       return next;
     });
 
-  return (
-    <div className={cn('grid min-w-0 gap-3', className)}>
+  const controls = (
+    <>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Tampilkan jenis kejadian">
         {NATIONAL_ORDER.map((type) => {
           const on = !hidden.has(type);
@@ -98,44 +147,94 @@ export function IndonesiaEventMap({ items, className }: { items: NationalEvent[]
           <CloudFog className="h-4 w-4" /> Sebaran asap
         </button>
       </div>
-
       {showSmoke && hasFires && <SmokeTimeSelector hours={smokeHours} onChange={setSmokeHours} />}
+    </>
+  );
+
+  const map = (interactive: boolean) => (
+    <>
+      <CitizenMap
+        events={visibleEvents}
+        user={userPoint && location ? { ...userPoint, label: locationSummary(location) } : null}
+        shelters={mapShelters}
+        alerts={alerts.data ?? []}
+        plumes={showSmoke ? smoke.plumes : []}
+        selectedFireId={selectedFireId ?? smoke.plumes[0]?.fire.id ?? null}
+        onSelectFire={setSelectedFireId}
+        showHotspotPoints={interactive && !hidden.has('wildfire')}
+        nationalView
+        interactive={interactive}
+        scrollWheelZoom={interactive}
+        focus={interactive ? focus : null}
+        selectedEventId={interactive ? (selection?.event.id ?? null) : null}
+      />
+      {showSmoke && hasFires && smoke.isLoading && (
+        <span className="absolute top-3 left-3 z-[400] inline-flex items-center gap-2 rounded-full bg-card/95 px-3 py-1.5 text-xs font-bold shadow">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Menghitung arah asap…
+        </span>
+      )}
+    </>
+  );
+
+  const legend = (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5">
+        <span className="h-3 w-3 rounded-full" style={{ background: CITIZEN_USER_COLOR }} /> Wilayah Anda
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="h-3 w-3 rounded-full" style={{ background: CITIZEN_SHELTER_COLOR }} /> Posko
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="h-3 w-3 rounded-full" style={{ background: SHELTER_KIND_COLORS.assembly_point }} /> Titik kumpul
+      </span>
+      <span>{visibleEvents.length} kejadian ditampilkan</span>
+      <Link href="/peta" className="ml-auto text-sm font-extrabold text-primary">
+        Peta lengkap & sebaran asap →
+      </Link>
+    </div>
+  );
+
+  return (
+    <div className={cn('grid min-w-0 gap-3', className)}>
+      {controls}
 
       <div className="relative h-[46svh] min-h-[300px] overflow-hidden rounded-3xl border border-border/70 lg:h-[440px]">
-        <CitizenMap
-          events={visibleEvents}
-          user={userPoint && location ? { ...userPoint, label: locationSummary(location) } : null}
-          shelters={mapShelters}
-          alerts={alerts.data ?? []}
-          plumes={showSmoke ? smoke.plumes : []}
-          selectedFireId={selectedFireId ?? smoke.plumes[0]?.fire.id ?? null}
-          onSelectFire={setSelectedFireId}
-          showHotspotPoints={!hidden.has('wildfire')}
-          nationalView
-          scrollWheelZoom={false}
-        />
-        {showSmoke && hasFires && smoke.isLoading && (
-          <span className="absolute top-3 left-3 z-[400] inline-flex items-center gap-2 rounded-full bg-card/95 px-3 py-1.5 text-xs font-bold shadow">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Menghitung arah asap…
-          </span>
-        )}
+        {!fullscreen && map(false)}
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="absolute right-3 bottom-3 z-[400] inline-flex items-center gap-1.5 rounded-full bg-card/95 px-3 py-1.5 text-xs font-extrabold shadow"
+        >
+          <Maximize2 className="h-3.5 w-3.5" /> Perbesar peta
+        </button>
       </div>
+      <p className="text-xs text-muted-foreground">Ketuk kartu kejadian di bawah untuk melihat lokasinya dari dekat.</p>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full" style={{ background: CITIZEN_USER_COLOR }} /> Wilayah Anda
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full" style={{ background: CITIZEN_SHELTER_COLOR }} /> Posko
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full" style={{ background: SHELTER_KIND_COLORS.assembly_point }} /> Titik kumpul
-        </span>
-        <span>{visibleEvents.length} kejadian ditampilkan</span>
-        <Link href="/peta" className="ml-auto text-sm font-extrabold text-primary">
-          Peta lengkap & sebaran asap →
-        </Link>
-      </div>
+      {legend}
+
+      {fullscreen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Peta kejadian Indonesia hari ini"
+          className="fixed inset-0 z-[60] flex flex-col gap-3 bg-background p-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] font-citizen sm:p-5"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="truncate text-lg font-black">Indonesia hari ini</h2>
+            <button
+              type="button"
+              onClick={close}
+              aria-label="Tutup peta"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-card shadow-sm hover:bg-accent"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          {controls}
+          <div className="relative min-h-0 flex-1 overflow-hidden rounded-3xl border border-border/70">{map(true)}</div>
+          {legend}
+        </div>
+      )}
     </div>
   );
 }

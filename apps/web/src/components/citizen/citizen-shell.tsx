@@ -115,7 +115,7 @@ export function CitizenShell({ children }: { children: React.ReactNode }) {
 
   return (
     <LocationPickerContext.Provider value={{ openPicker, openIntro: () => setIntroOpen(true) }}>
-      <div lang="id" className="citizen-backdrop flex min-h-svh flex-col font-citizen">
+      <div lang="id" className="citizen-backdrop flex min-h-svh flex-col overflow-x-clip font-citizen">
         <header className="sticky top-0 z-40 border-b border-border/60 bg-card/80 backdrop-blur-xl supports-[backdrop-filter]:bg-card/65">
           <div aria-hidden className="h-[3px] bg-gradient-to-r from-navy via-primary to-cyan" />
           <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center gap-3 px-4 sm:h-16 sm:px-6 lg:px-8 2xl:px-10">

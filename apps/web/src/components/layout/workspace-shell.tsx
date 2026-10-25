@@ -25,7 +25,7 @@ export function WorkspaceShell({ children, defaultOpen = true }: { children: Rea
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <ShellSidebar brand={BRAND} sections={SHELL_NAV_SECTIONS} footerLinks={[CITIZEN_PORTAL_LINK]} />
-      <SidebarInset className="min-w-0">
+      <SidebarInset className="min-w-0 overflow-x-clip">
         <TopNav brand={BRAND} />
         <div className="flex-1 bg-background">{children}</div>
       </SidebarInset>

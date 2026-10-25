@@ -13,7 +13,7 @@ export function AdminShell({ children, defaultOpen = true }: { children: React.R
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <ShellSidebar brand={BRAND} sections={[{ label: 'Admin', items: ADMIN_NAV_ITEMS }]} footerLinks={[BACK_LINK]} />
-      <SidebarInset className="min-w-0">
+      <SidebarInset className="min-w-0 overflow-x-clip">
         <AdminTopbar brand={BRAND} />
         <div className="flex-1">{children}</div>
       </SidebarInset>
