@@ -47,6 +47,18 @@ export interface PublicAlertView {
   endedAt: Date | null;
 }
 
+export interface AutomaticAlertInput {
+  hazard: PublicAlert['hazard'];
+  title: string;
+  action: string;
+  message: string;
+  avoidText: string | null;
+  sourceLabel: string;
+  districtId: string;
+  hazardEventId: string;
+  expiresInHours: number;
+}
+
 export interface ResponseCounts {
   safe: number;
   needsHelp: number;
@@ -127,17 +139,55 @@ export class PublicAlertsService {
       expiresAt: new Date(Date.now() + dto.expiresInHours * HOUR_MS),
     });
     const saved = await this.alertRepository.save(alert);
+    this.dispatchPush(saved);
+    return PublicAlertsService.toView(saved);
+  }
 
-    // Fire-and-forget: the operator shouldn't wait on thousands of push
-    // round-trips, and a push failure must never roll back the alert
-    // itself (open browser tabs still pick it up by polling).
-    this.webPushService.sendAlert(saved).catch((error: Error) => {
+  /**
+   * District-wide alert raised by AETHER itself rather than an operator —
+   * only for relaying an official warning (see BmkgAutoAlertService), so
+   * there is no creator and no evacuation destination.
+   */
+  async issueAutomatic(input: AutomaticAlertInput): Promise<PublicAlert> {
+    const area = await this.areaResolver.resolve(input.districtId);
+    const alert = this.alertRepository.create({
+      hazard: input.hazard,
+      status: PublicAlertStatus.ACTIVE,
+      title: input.title,
+      action: input.action,
+      message: input.message,
+      destinationName: null,
+      destinationLatitude: null,
+      destinationLongitude: null,
+      avoidText: input.avoidText,
+      sourceLabel: input.sourceLabel,
+      district: area.district,
+      subdistrict: null,
+      village: null,
+      hazardEvent: { id: input.hazardEventId } as HazardEvent,
+      createdBy: null,
+      expiresAt: new Date(Date.now() + input.expiresInHours * HOUR_MS),
+    });
+    const saved = await this.alertRepository.save(alert);
+    this.dispatchPush(saved);
+    return saved;
+  }
+
+  async existsForHazardEvent(hazardEventId: string): Promise<boolean> {
+    return this.alertRepository.exists({
+      where: { hazardEvent: { id: hazardEventId } },
+    });
+  }
+
+  // Fire-and-forget: the issuer shouldn't wait on thousands of push
+  // round-trips, and a push failure must never roll back the alert itself
+  // (open browser tabs still pick it up by polling).
+  private dispatchPush(alert: PublicAlert): void {
+    this.webPushService.sendAlert(alert).catch((error: Error) => {
       this.logger.error(
-        `Push fan-out for alert ${saved.id} failed: ${error.message}`,
+        `Push fan-out for alert ${alert.id} failed: ${error.message}`,
       );
     });
-
-    return PublicAlertsService.toView(saved);
   }
 
   async findActiveForArea(query: AreaQueryDto): Promise<PublicAlertView[]> {

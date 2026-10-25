@@ -228,6 +228,8 @@ export function CitizenMap({
   onSelectFire,
   focus = null,
   showHotspotPoints = false,
+  nationalView = false,
+  scrollWheelZoom = true,
 }: {
   events: NationalEvent[];
   user: { lat: number; lng: number; label: string } | null;
@@ -240,18 +242,22 @@ export function CitizenMap({
   focus?: { lat: number; lng: number; zoom: number; key: string } | null;
   /** Individual FIRMS detections when zoomed in. */
   showHotspotPoints?: boolean;
+  /** Open on the whole country even when the citizen's area is known. */
+  nationalView?: boolean;
+  /** Off where the map sits inside a scrolling page (zoom via buttons/pinch). */
+  scrollWheelZoom?: boolean;
 }) {
   // Light smoke on dark imagery in either theme.
   const smokeColor = CITIZEN_SMOKE_COLORS.dark;
   const showSmoke = plumes.length > 0;
-  const center: [number, number] = user ? [user.lat, user.lng] : INDONESIA_CENTER;
-  const zoom = user ? 8 : 5;
+  const center: [number, number] = user && !nationalView ? [user.lat, user.lng] : INDONESIA_CENTER;
+  const zoom = user && !nationalView ? 8 : 5;
 
   return (
     <MapContainer
       center={center}
       zoom={zoom}
-      scrollWheelZoom
+      scrollWheelZoom={scrollWheelZoom}
       zoomControl={false}
       style={{ height: '100%', width: '100%' }}
       className="z-0 rounded-[inherit]"

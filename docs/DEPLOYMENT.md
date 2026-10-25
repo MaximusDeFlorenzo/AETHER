@@ -115,3 +115,41 @@ Memory caps per container (sum ~2.4 GB, relies on swap at peak): postgres
 96 MB. If a container keeps restarting, `docker inspect <name> | grep OOMKilled`
 tells you whether it hit its cap. `HOTSPOT_RETENTION_DAYS` defaults to 60
 here to keep FIRMS growth in check on 20 GB.
+
+## Current production: native install (no Docker)
+
+The VPS (115.178.134.151) is a Proxmox LXC container without nesting, so
+Docker cannot start containers there (overlay mount and mount-propagation
+are denied). Until the provider enables nesting or moves it to KVM, the
+same stack runs directly on the host:
+
+| Service | systemd unit | Listens | Notes |
+|---|---|---|---|
+| api | `aether-api` | 127.0.0.1:4000 | `node dist/main.js`, env `/opt/aether/.env.production`, MemoryMax 700M |
+| ai-engine | `aether-ai-engine` | 127.0.0.1:8000 | venv `/opt/aether/ai-venv` (Python 3.12 via uv), env `/opt/aether/ai-engine.env` |
+| Postgres 16 + PostGIS 3 | `postgresql@16-main` | 127.0.0.1:5432 | tuning in `/etc/postgresql/16/main/conf.d/aether.conf` |
+| Redis 7.4 | `redis-server` | 127.0.0.1:6379 | `/etc/redis/aether.conf` (128 MB, noeviction), apt-held |
+| Garage 2.1 (S3) | `garage` | 127.0.0.1:3900 | replaces MinIO, whose free binaries are no longer published (dl.min.io returns 410); `/etc/garage.toml` |
+| Caddy | `caddy` | :80/:443 | `/etc/caddy/Caddyfile` |
+
+Code lives in `/opt/aether/app` (a `git archive` of `main`, not a clone).
+Helpers: `aether-status`, `aether-create-admin`.
+
+Update:
+
+```bash
+# from the dev machine
+git archive --format=tar origin/main | ssh root@115.178.134.151 \
+  'tar -x -C /opt/aether/app && chown -R aether:aether /opt/aether/app'
+# on the VPS
+cd /opt/aether/app && pnpm install --frozen-lockfile --filter @aether/api...
+cd apps/api && pnpm run build && set -a && . /opt/aether/.env.production && set +a && pnpm run migration:run
+VIRTUAL_ENV=/opt/aether/ai-venv uv pip install -r /opt/aether/app/apps/ai-engine/requirements.txt
+systemctl restart aether-ai-engine aether-api
+```
+
+Switching to Docker later: `pg_dump -Fc` the database, stop and disable
+the units above, `systemctl enable --now docker`, bring up
+`infra/docker-compose.prod.yml`, restore with `pg_restore`. The compose
+file still uses MinIO; either copy the Garage objects across or swap the
+`minio` service for Garage first.

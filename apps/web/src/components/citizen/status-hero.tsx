@@ -32,7 +32,7 @@ function arcPoint(deg: number) {
 function LevelGauge({ level }: { level: CitizenLevel }) {
   const current = LEVEL_ORDER.indexOf(level);
   return (
-    <div className="grid justify-items-center gap-1">
+    <div className="hidden justify-items-center gap-1 sm:grid">
       <svg
         viewBox="0 0 240 150"
         className="h-auto w-full max-w-[260px]"
@@ -98,7 +98,7 @@ function ShareButton({ text }: { text: string }) {
     <button
       type="button"
       onClick={share}
-      className="inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 text-sm font-extrabold text-white ring-1 ring-white/20 transition-colors hover:bg-white/10"
+      className="inline-flex min-h-10 items-center gap-2 rounded-2xl px-4 text-sm font-extrabold text-white ring-1 sm:min-h-11 ring-white/20 transition-colors hover:bg-white/10"
     >
       {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
       {copied ? 'Tersalin' : 'Bagikan ke keluarga'}
@@ -135,7 +135,7 @@ export function StatusHero({
   return (
     <section
       aria-live="polite"
-      className="theme-dark relative isolate overflow-hidden rounded-[32px] bg-navy-dark p-5 text-foreground shadow-[0_24px_50px_-28px_rgba(8,27,58,0.9)] sm:p-8"
+      className="theme-dark relative isolate overflow-hidden rounded-3xl bg-navy-dark p-4 text-foreground sm:rounded-[32px] shadow-[0_24px_50px_-28px_rgba(8,27,58,0.9)] sm:p-8"
     >
       <ContourCanvas className="absolute inset-0 -z-10 h-full w-full" />
       <div
@@ -144,7 +144,7 @@ export function StatusHero({
       />
 
       <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_240px] sm:items-center">
-        <div className="grid min-w-0 content-start gap-4">
+        <div className="grid min-w-0 content-start gap-3 sm:gap-4">
           <span className="inline-flex items-center gap-2 justify-self-start rounded-full bg-white/10 px-3 py-1 text-xs font-extrabold text-white/80">
             <span className="relative flex h-2 w-2">
               <span className={cn('absolute inline-flex h-full w-full animate-ping rounded-full opacity-60', meta.solid)} />
@@ -156,31 +156,31 @@ export function StatusHero({
           <div className="flex items-center gap-3">
             <span
               className={cn(
-                'grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-navy-dark sm:h-14 sm:w-14',
+                'grid h-10 w-10 shrink-0 place-items-center rounded-xl text-navy-dark sm:h-14 sm:w-14 sm:rounded-2xl',
                 meta.solid,
                 status.level !== 'normal' && 'citizen-radar',
               )}
               aria-hidden
             >
               {status.level === 'normal' ? (
-                <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7" />
+                <ShieldCheck className="h-5 w-5 sm:h-7 sm:w-7" />
               ) : (
-                <HazardIcon hazardType={status.hazardType} alertHazard={status.alertHazard} className="h-6 w-6 sm:h-7 sm:w-7" />
+                <HazardIcon hazardType={status.hazardType} alertHazard={status.alertHazard} className="h-5 w-5 sm:h-7 sm:w-7" />
               )}
             </span>
-            <span className={cn('text-[2.75rem] leading-[0.95] font-black tracking-[-0.035em] sm:text-6xl', meta.text)}>
+            <span className={cn('text-4xl leading-[0.95] font-black tracking-[-0.035em] sm:text-6xl', meta.text)}>
               {copy.tag}
             </span>
           </div>
 
-          <div className="grid gap-2">
-            <h1 className="text-2xl leading-tight font-black tracking-tight text-balance text-white sm:text-[1.75rem]">
+          <div className="grid gap-1.5 sm:gap-2">
+            <h1 className="text-xl leading-tight font-black tracking-tight text-balance text-white sm:text-[1.75rem]">
               {copy.headline}
             </h1>
-            <p className="max-w-[52ch] text-[15px] leading-relaxed text-white/75 sm:text-base">{copy.body}</p>
+            <p className="max-w-[52ch] text-sm leading-relaxed text-white/75 sm:text-base">{copy.body}</p>
           </div>
 
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2 sm:gap-2.5">
             {status.alert ? (
               <Link
                 href={`/peringatan/${status.alert.id}`}
@@ -191,7 +191,7 @@ export function StatusHero({
             ) : (
               <Link
                 href={guideHref}
-                className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-extrabold text-navy-dark transition-transform hover:-translate-y-0.5"
+                className="inline-flex min-h-10 items-center gap-2 rounded-2xl bg-white px-4 text-sm sm:min-h-11 font-extrabold text-navy-dark transition-transform hover:-translate-y-0.5"
               >
                 {status.level === 'normal' ? 'Lihat persiapan' : 'Lihat panduan'} <ChevronRight className="h-4 w-4" />
               </Link>
@@ -206,7 +206,7 @@ export function StatusHero({
       {status.event && (
         <Link
           href={`/kejadian/${status.event.id}`}
-          className="citizen-lift mt-5 flex items-center justify-between gap-3 rounded-2xl bg-white/8 px-4 py-3 text-sm font-bold ring-1 ring-white/10 backdrop-blur hover:bg-white/12"
+          className="citizen-lift mt-4 flex items-center justify-between gap-3 rounded-2xl bg-white/8 px-4 py-3 text-sm sm:mt-5 font-bold ring-1 ring-white/10 backdrop-blur hover:bg-white/12"
         >
           <span className="min-w-0">
             <span className="block truncate">{eventTitle(status.event)}</span>
@@ -217,7 +217,7 @@ export function StatusHero({
       )}
 
       {status.proneTo.length > 0 && (
-        <p className="mt-4 text-sm text-white/70">
+        <p className="mt-3 text-xs text-white/70 sm:mt-4 sm:text-sm">
           Catatan: wilayah Anda termasuk rawan{' '}
           <strong className="text-white">{status.proneTo.map((type) => HAZARD_NOUN[type]).join(' dan ')}</strong>{' '}
           berdasarkan data risiko jangka panjang.

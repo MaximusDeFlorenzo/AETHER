@@ -1,68 +1,141 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import type { NationalEvent } from '@/hooks/use-national-events';
-import { useDistricts } from '@/hooks/use-geo';
-import { CITIZEN_HAZARD_COLORS } from '@/lib/chart-colors';
-import { eventPlace, eventKind } from '@/lib/citizen/events';
+import { CloudFog, Loader2 } from 'lucide-react';
+import type { MapShelter } from '@/components/citizen/citizen-map';
+import { SmokeTimeSelector } from '@/components/citizen/smoke-panel';
+import { Skeleton } from '@/components/ui/skeleton';
+import { NATIONAL_ORDER, type NationalEvent } from '@/hooks/use-national-events';
+import { useActiveAlerts } from '@/hooks/use-public-alerts';
+import { useShelters } from '@/hooks/use-resource-plans';
+import { useSmokePlumes } from '@/hooks/use-smoke-plumes';
+import { CITIZEN_HAZARD_COLORS, CITIZEN_SHELTER_COLOR, CITIZEN_USER_COLOR } from '@/lib/chart-colors';
+import { locationLatLng, locationSummary } from '@/lib/citizen/geo';
+import { shelterLatLng, SHELTER_KIND_COLORS } from '@/lib/citizen/shelters';
+import { HAZARD_LABEL_ID } from '@/lib/citizen/status';
 import { cn } from '@/lib/utils';
+import { useCitizenStore } from '@/stores/citizen-store';
+import type { HazardType } from '@/types/domain';
 
-// Same equirectangular frame as the intro map (lng 94.5–141.5, lat 6.5 to -11.5).
-const VIEW_W = 1000;
-const VIEW_H = 383;
-const project = (lng: number, lat: number) => ({
-  x: ((lng - 94.5) / 47) * VIEW_W,
-  y: ((6.5 - lat) / 18) * VIEW_H,
+// react-leaflet touches `window` at import time — client-only, same as /peta.
+const CitizenMap = dynamic(() => import('@/components/citizen/citizen-map').then((mod) => mod.CitizenMap), {
+  ssr: false,
+  loading: () => <Skeleton className="h-full w-full rounded-[inherit]" />,
 });
 
-/** Indonesia drawn from the kabupaten/kota reference points, with today's
- * events and the citizen's own area marked on it. */
-export function IndonesiaEventMap({
-  items,
-  userPoint,
-  className,
-}: {
-  items: NationalEvent[];
-  /** [lng, lat] of the citizen's district. */
-  userPoint: [number, number] | null;
-  className?: string;
-}) {
-  const districts = useDistricts();
-  const dots = useMemo(
-    () =>
-      (districts.data ?? []).flatMap((district) => {
-        const point = district.geom?.coordinates;
-        return point ? [{ id: district.id, ...project(point[0], point[1]) }] : [];
-      }),
-    [districts.data],
+/** Home-page version of /peta: the same satellite map, hazard filters,
+ * animated smoke plumes and legend, opened on the whole country. The smoke
+ * answer and per-fire story stay on /peta. */
+export function IndonesiaEventMap({ items, className }: { items: NationalEvent[]; className?: string }) {
+  const location = useCitizenStore((state) => state.location);
+  const shelters = useShelters(location?.districtId);
+  const alerts = useActiveAlerts(location);
+  const [hidden, setHidden] = useState<Set<HazardType>>(new Set());
+  const [showSmoke, setShowSmoke] = useState(true);
+  const [smokeHours, setSmokeHours] = useState(6);
+  const [selectedFireId, setSelectedFireId] = useState<string | null>(null);
+
+  const visibleEvents = useMemo(() => items.filter((item) => !hidden.has(item.event.hazardType)), [items, hidden]);
+  const wildfireEvents = useMemo(
+    () => (showSmoke && !hidden.has('wildfire') ? items.filter((item) => item.event.hazardType === 'wildfire').map((item) => item.event) : []),
+    [items, hidden, showSmoke],
   );
-  const me = userPoint ? project(userPoint[0], userPoint[1]) : null;
+  const userPoint = locationLatLng(location);
+  const smoke = useSmokePlumes(wildfireEvents, smokeHours, userPoint);
+  const hasFires = smoke.clusters.length > 0;
+
+  const mapShelters = useMemo<MapShelter[]>(
+    () =>
+      (location ? (shelters.data ?? []) : []).flatMap((shelter) => {
+        const point = shelterLatLng(shelter);
+        return point
+          ? [{ id: shelter.id, name: shelter.name, kind: shelter.kind, capacity: shelter.capacity, ...point }]
+          : [];
+      }),
+    [location, shelters.data],
+  );
+
+  const toggle = (type: HazardType) =>
+    setHidden((current) => {
+      const next = new Set(current);
+      if (next.has(type)) next.delete(type);
+      else next.add(type);
+      return next;
+    });
 
   return (
-    <svg viewBox={`-12 -12 ${VIEW_W + 24} ${VIEW_H + 24}`} className={cn('h-auto w-full', className)} role="img" aria-label="Peta kejadian bencana di Indonesia hari ini">
-      {dots.map((dot) => (
-        <circle key={dot.id} cx={dot.x} cy={dot.y} r={4} className="fill-muted-foreground/35" />
-      ))}
-      {items.map(({ event }) => {
-        const { x, y } = project(event.longitude, event.latitude);
-        const color = CITIZEN_HAZARD_COLORS[event.hazardType];
-        return (
-          <Link key={event.id} href={`/kejadian/${event.id}`} aria-label={`${eventKind(event)} · ${eventPlace(event)}`}>
-            <circle cx={x} cy={y} r={16} fill={color} opacity={0.18} />
-            <circle cx={x} cy={y} r={7} fill={color} className="stroke-card" strokeWidth={2.5} />
-            <title>{`${eventKind(event)} · ${eventPlace(event)}`}</title>
-          </Link>
-        );
-      })}
-      {me && (
-        <g>
-          <circle cx={me.x} cy={me.y} r={9} className="fill-primary stroke-card motion-safe:animate-pulse" strokeWidth={3} />
-          <text x={me.x + 14} y={me.y + 5} className="fill-foreground" fontSize={14} fontWeight={800}>
-            Anda
-          </text>
-        </g>
-      )}
-    </svg>
+    <div className={cn('grid min-w-0 gap-3', className)}>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Tampilkan jenis kejadian">
+        {NATIONAL_ORDER.map((type) => {
+          const on = !hidden.has(type);
+          return (
+            <button
+              key={type}
+              type="button"
+              aria-pressed={on}
+              onClick={() => toggle(type)}
+              className={cn(
+                'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-extrabold transition-colors',
+                on ? 'border-border bg-card' : 'border-dashed border-border bg-transparent text-muted-foreground line-through',
+              )}
+            >
+              <span className="h-3 w-3 rounded-full" style={{ background: CITIZEN_HAZARD_COLORS[type] }} />
+              {HAZARD_LABEL_ID[type]}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          aria-pressed={showSmoke}
+          onClick={() => setShowSmoke((v) => !v)}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-extrabold transition-colors',
+            showSmoke ? 'border-primary bg-accent text-primary' : 'border-dashed border-border text-muted-foreground',
+          )}
+        >
+          <CloudFog className="h-4 w-4" /> Sebaran asap
+        </button>
+      </div>
+
+      {showSmoke && hasFires && <SmokeTimeSelector hours={smokeHours} onChange={setSmokeHours} />}
+
+      <div className="relative h-[46svh] min-h-[300px] overflow-hidden rounded-3xl border border-border/70 lg:h-[440px]">
+        <CitizenMap
+          events={visibleEvents}
+          user={userPoint && location ? { ...userPoint, label: locationSummary(location) } : null}
+          shelters={mapShelters}
+          alerts={alerts.data ?? []}
+          plumes={showSmoke ? smoke.plumes : []}
+          selectedFireId={selectedFireId ?? smoke.plumes[0]?.fire.id ?? null}
+          onSelectFire={setSelectedFireId}
+          showHotspotPoints={!hidden.has('wildfire')}
+          nationalView
+          scrollWheelZoom={false}
+        />
+        {showSmoke && hasFires && smoke.isLoading && (
+          <span className="absolute top-3 left-3 z-[400] inline-flex items-center gap-2 rounded-full bg-card/95 px-3 py-1.5 text-xs font-bold shadow">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Menghitung arah asap…
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-full" style={{ background: CITIZEN_USER_COLOR }} /> Wilayah Anda
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-full" style={{ background: CITIZEN_SHELTER_COLOR }} /> Posko
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-full" style={{ background: SHELTER_KIND_COLORS.assembly_point }} /> Titik kumpul
+        </span>
+        <span>{visibleEvents.length} kejadian ditampilkan</span>
+        <Link href="/peta" className="ml-auto text-sm font-extrabold text-primary">
+          Peta lengkap & sebaran asap →
+        </Link>
+      </div>
+    </div>
   );
 }

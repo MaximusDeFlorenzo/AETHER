@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { BellRing, Loader2, MapPin, MessageSquareText, ShieldCheck, Sparkles } from 'lucide-react';
+import { BellRing, Loader2, MapPin, MessageSquareText, Share, ShieldCheck, Sparkles, SquarePlus } from 'lucide-react';
 import { useLocationPicker } from '@/components/citizen/citizen-shell';
 import {
   AlarmEnableCard,
@@ -27,7 +27,7 @@ import { useNationalEvents } from '@/hooks/use-national-events';
 import { usePublicWeather } from '@/hooks/use-public-alerts';
 import { useRegionStatus } from '@/hooks/use-region-status';
 import { locationLatLng, locationSummary } from '@/lib/citizen/geo';
-import { enableAlarmPush } from '@/lib/citizen/push';
+import { enableAlarmPush, getPushSupport, type PushSupport } from '@/lib/citizen/push';
 import { statusTasks } from '@/lib/citizen/status';
 import { cn } from '@/lib/utils';
 import { useCitizenStore } from '@/stores/citizen-store';
@@ -89,9 +89,7 @@ function NationalPreview() {
         </p>
       ) : (
         <div className="grid gap-3">
-          <div className={cn(card, 'p-3 sm:p-4')}>
-            <IndonesiaEventMap items={preview} userPoint={location?.point ?? null} />
-          </div>
+          <IndonesiaEventMap items={events} />
           <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
             {preview.map((item) => (
               <div key={item.event.id} className="w-[78%] shrink-0 snap-start sm:w-auto">
@@ -115,6 +113,9 @@ function Welcome() {
   const { openPicker } = useLocationPicker();
   const setLocation = useCitizenStore((state) => state.setLocation);
   const setPushEnabled = useCitizenStore((state) => state.setPushEnabled);
+  const [pushSupport, setPushSupport] = useState<PushSupport | null>(null);
+
+  useEffect(() => setPushSupport(getPushSupport()), []);
 
   // Alarms are filed under an area, so the hold opens the picker first and
   // turns them on once an area is chosen. Resolves false right away so the
@@ -132,31 +133,31 @@ function Welcome() {
     return false;
   };
   return (
-    <section className="relative isolate overflow-hidden rounded-[32px] bg-gradient-to-br from-navy-dark via-navy to-primary p-6 text-white shadow-[0_24px_60px_-30px_rgba(16,42,86,0.8)] sm:p-10">
+    <section className="relative isolate overflow-hidden rounded-3xl bg-gradient-to-br from-navy-dark via-navy to-primary p-5 text-white sm:rounded-[32px] shadow-[0_24px_60px_-30px_rgba(16,42,86,0.8)] sm:p-10">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 opacity-60 [mask-image:linear-gradient(to_left,black,transparent_75%)]">
         <Topography color="#43c6d5" lineCount={26} speed={0.15} glow={0.4} hoverEffect="light" clickEffect="none" />
       </div>
       <div aria-hidden className="absolute -top-24 -right-24 -z-10 h-72 w-72 rounded-full bg-cyan/30 blur-3xl" />
       <div aria-hidden className="absolute -bottom-32 left-1/3 -z-10 h-72 w-72 rounded-full bg-primary/40 blur-3xl" />
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-        <div className="grid gap-4">
+      <div className="grid gap-5 sm:gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div className="grid gap-3 sm:gap-4">
           <span className="inline-flex items-center gap-2 justify-self-start rounded-full bg-white/10 px-3 py-1 text-xs font-black tracking-wide text-cyan uppercase ring-1 ring-white/15 backdrop-blur sm:text-sm">
             <Sparkles className="h-4 w-4" /> AETHER Siaga
           </span>
-          <h1 className="text-3xl leading-[1.1] font-black tracking-tight text-balance sm:text-5xl">
-            Info bencana untuk wilayah Anda,{' '}
-            <span className="bg-gradient-to-r from-cyan to-white bg-clip-text text-transparent">dalam bahasa sehari-hari</span>
+          <h1 className="text-2xl leading-[1.1] font-black tracking-tight text-balance sm:text-5xl">
+            Info bencana untuk{' '}
+            <span className="bg-gradient-to-r from-cyan to-white bg-clip-text text-transparent">wilayah Anda</span>
           </h1>
-          <p className="max-w-xl text-base text-white/80 sm:text-lg">
+          <p className="max-w-xl text-sm text-white/80 sm:text-lg">
             Pilih kabupaten/kota Anda untuk melihat status bahaya, apa yang perlu dilakukan, dan menerima peringatan darurat.
             Tanpa daftar, tanpa login.
           </p>
-          <ul className="flex flex-wrap gap-2">
+          <ul className="flex flex-wrap gap-1.5 sm:gap-2">
             {WELCOME_POINTS.map((point) => (
               <li
                 key={point.text}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm font-bold ring-1 ring-white/10"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs font-bold ring-1 ring-white/10 sm:px-3 sm:py-1.5 sm:text-sm"
               >
                 <point.icon className="h-4 w-4 text-cyan" /> {point.text}
               </li>
@@ -164,7 +165,7 @@ function Welcome() {
           </ul>
         </div>
 
-        <div className="grid justify-items-center gap-5">
+        <div className="grid justify-items-center gap-3 sm:gap-5">
           <span aria-hidden className="citizen-float relative hidden h-36 w-36 place-items-center lg:grid">
             <span className="citizen-radar absolute inset-6 rounded-full text-cyan" />
             <span className="absolute inset-0 rounded-full border border-white/15" />
@@ -176,11 +177,23 @@ function Welcome() {
           <button
             type="button"
             onClick={() => openPicker()}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 text-lg font-black text-navy shadow-[0_12px_30px_-10px_rgba(67,198,213,0.7)] transition-transform hover:-translate-y-0.5 active:translate-y-0 sm:w-80"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3 text-base font-black sm:py-4 sm:text-lg text-navy shadow-[0_12px_30px_-10px_rgba(67,198,213,0.7)] transition-transform hover:-translate-y-0.5 active:translate-y-0 sm:w-80"
           >
             <MapPin className="h-5 w-5 text-primary" /> Pilih wilayah saya
           </button>
-          <AlarmHoldButton label="Aktifkan peringatan darurat" onConfirm={enableAlarms} onDark className="w-full sm:w-80" />
+          {pushSupport === 'ios-needs-install' ? (
+            <div role="note" className="grid w-full gap-1.5 rounded-2xl bg-white/10 p-3 text-sm ring-1 ring-white/20 sm:w-80">
+              <p className="font-black text-white">Pengguna iPhone/iPad: tambahkan dulu ke Layar Utama</p>
+              <p className="text-white/80">
+                Peringatan darurat di iPhone hanya bisa diterima dari Layar Utama. Di Safari, ketuk{' '}
+                <Share className="inline h-4 w-4 align-text-bottom" /> <strong className="text-white">Bagikan</strong> →{' '}
+                <SquarePlus className="inline h-4 w-4 align-text-bottom" />{' '}
+                <strong className="text-white">Tambahkan ke Layar Utama</strong>, lalu buka AETHER dari ikonnya.
+              </p>
+            </div>
+          ) : (
+            <AlarmHoldButton label="Aktifkan peringatan darurat" onConfirm={enableAlarms} onDark className="w-full sm:w-80" />
+          )}
         </div>
       </div>
     </section>

@@ -247,6 +247,14 @@ class EnvironmentVariables {
   @IsBoolean()
   STORAGE_FORCE_PATH_STYLE = true;
 
+  // Relay BMKG earthquake / tsunami-potential information to subscribed
+  // citizens automatically (public-alerts/bmkg-auto-alert.service.ts).
+  // Compared as a string ('false' disables) — see the @Type(() => Boolean)
+  // note above.
+  @IsOptional()
+  @IsString()
+  BMKG_AUTO_ALERTS_ENABLED = 'true';
+
   // --- Karhutla spread + smoke predictions (karhutla-prediction/) ---
   // Scheduled run interval; 0 disables scheduled runs (manual runs still
   // work). Default 3 h — MODIS gives ~4 overpasses/day over Indonesia.

@@ -20,7 +20,9 @@ import { User } from './user.entity';
 
 // A citizen-facing emergency alarm ("layar merah"): one life-saving action
 // for one area, issued by a human operator — never raised automatically by
-// the risk engine. Targets a district and optionally narrows to a
+// the risk engine. The one automatic path relays BMKG's own earthquake /
+// tsunami-potential information (BmkgAutoAlertService, createdBy = null).
+// Targets a district and optionally narrows to a
 // subdistrict/village; see PublicAlertsService.findActiveForArea for how
 // that narrowing matches subscribers who only picked a coarser area.
 @Entity('public_alerts')
