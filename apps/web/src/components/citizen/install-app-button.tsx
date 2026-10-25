@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, EllipsisVertical, Share, SquarePlus } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { openInstallPrompt } from './install-prompt';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -60,6 +61,25 @@ export function useInstallState(): InstallState | null {
   return state;
 }
 
+/** Resolves true once the browser's install prompt is available, false if it
+ * doesn't arrive within `timeoutMs`. Chrome only fires it a few seconds after
+ * load, once it has checked the manifest and service worker. */
+export function waitForInstallPrompt(timeoutMs: number): Promise<boolean> {
+  if (deferredPrompt) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const done = (ok: boolean) => {
+      listeners.delete(check);
+      window.clearTimeout(timer);
+      resolve(ok);
+    };
+    const check = () => {
+      if (deferredPrompt) done(true);
+    };
+    const timer = window.setTimeout(() => done(deferredPrompt !== null), timeoutMs);
+    listeners.add(check);
+  });
+}
+
 /** Shows the browser's install prompt. false when there is none to show
  * (the caller then explains the manual Add-to-Home-Screen steps). */
 export async function promptInstall(): Promise<boolean> {
@@ -73,19 +93,21 @@ export async function promptInstall(): Promise<boolean> {
   return true;
 }
 
-/** Round install icon (top-right of the welcome card), hidden once AETHER runs installed. Uses the
- * browser's install prompt where there is one (Chrome/Edge/Android on
- * HTTPS); otherwise — Safari, Firefox, or before Chrome offers the prompt —
- * it shows how to add AETHER to the home screen by hand. */
+/** Round install icon (top-right of the home cards), hidden once AETHER runs
+ * installed. Uses the browser's install prompt where there is one
+ * (Chrome/Edge/Android on HTTPS); otherwise opens the install modal, which
+ * explains adding AETHER to the home screen by hand. */
 export function InstallAppButton({ className }: { className?: string }) {
   const state = useInstallState();
-  const [showSteps, setShowSteps] = useState(false);
 
   // Server render / already installed: nothing to offer.
   if (!state || state.installed) return null;
 
   const install = async () => {
-    if (!(await promptInstall())) setShowSteps((open) => !open);
+    if (!state.ios) await waitForInstallPrompt(4_000);
+    // No browser prompt (iPhone, Firefox, …): the invitation modal explains
+    // the manual steps — never inline in the card.
+    if (!(await promptInstall())) openInstallPrompt();
   };
 
   return (
@@ -95,32 +117,10 @@ export function InstallAppButton({ className }: { className?: string }) {
         onClick={install}
         aria-label="Pasang aplikasi AETHER"
         title="Pasang aplikasi AETHER"
-        aria-expanded={state.canPrompt ? undefined : showSteps}
         className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/20 backdrop-blur transition-colors hover:bg-white/20 sm:h-10 sm:w-10"
       >
         <Download className="h-4 w-4 sm:h-5 sm:w-5" />
       </button>
-      {showSteps && !state.canPrompt && (
-        <p
-          role="note"
-          className="absolute top-full right-0 mt-2 w-60 rounded-2xl bg-navy-dark/95 p-3 text-xs text-white/85 shadow-lg ring-1 ring-white/15 backdrop-blur"
-        >
-          <strong className="mb-1 block text-white">Pasang aplikasi AETHER</strong>
-          {state.ios ? (
-            <>
-              Di Safari, ketuk <Share className="inline h-3.5 w-3.5 align-text-bottom" /> <strong className="text-white">Bagikan</strong> →{' '}
-              <SquarePlus className="inline h-3.5 w-3.5 align-text-bottom" />{' '}
-              <strong className="text-white">Tambahkan ke Layar Utama</strong>.
-            </>
-          ) : (
-            <>
-              Buka menu browser <EllipsisVertical className="inline h-3.5 w-3.5 align-text-bottom" /> lalu pilih{' '}
-              <strong className="text-white">Instal aplikasi</strong> atau{' '}
-              <strong className="text-white">Tambahkan ke layar utama</strong>.
-            </>
-          )}
-        </p>
-      )}
     </div>
   );
 }

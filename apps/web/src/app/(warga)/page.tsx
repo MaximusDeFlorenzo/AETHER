@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { BellRing, Loader2, MapPin, Share, ShieldCheck, SquarePlus } from 'lucide-react';
+import { BellRing, Loader2, MapPin, ShieldCheck } from 'lucide-react';
 import { useLocationPicker } from '@/components/citizen/citizen-shell';
 import {
   AlarmEnableCard,
@@ -18,6 +18,7 @@ import { AirQualityCard } from '@/components/citizen/air-quality-card';
 import { AlarmHoldButton } from '@/components/citizen/alarm-hold-button';
 import { FamilyAreas } from '@/components/citizen/family-areas';
 import { InstallAppButton } from '@/components/citizen/install-app-button';
+import { openInstallPrompt } from '@/components/citizen/install-prompt';
 import { IndonesiaEventMap, type MapSelection } from '@/components/citizen/indonesia-event-map';
 import { NationalEventCard } from '@/components/citizen/national-event-card';
 import { PageContainer, SectionTitle } from '@/components/citizen/page-container';
@@ -187,15 +188,16 @@ function Welcome() {
             <MapPin className="h-5 w-5 text-primary" /> Pilih wilayah saya
           </button>
           {pushSupport === 'ios-needs-install' ? (
-            <div role="note" className="grid w-full gap-1.5 rounded-2xl bg-white/10 p-3 text-sm ring-1 ring-white/20 sm:w-80">
-              <p className="font-black text-white">Pengguna iPhone/iPad: tambahkan dulu ke Layar Utama</p>
-              <p className="text-white/80">
-                Peringatan darurat di iPhone hanya bisa diterima dari Layar Utama. Di Safari, ketuk{' '}
-                <Share className="inline h-4 w-4 align-text-bottom" /> <strong className="text-white">Bagikan</strong> →{' '}
-                <SquarePlus className="inline h-4 w-4 align-text-bottom" />{' '}
-                <strong className="text-white">Tambahkan ke Layar Utama</strong>, lalu buka AETHER dari ikonnya.
-              </p>
-            </div>
+            // iPhone needs AETHER on the Home Screen first; the install modal explains how.
+            <AlarmHoldButton
+              label="Aktifkan peringatan darurat"
+              onConfirm={async () => {
+                openInstallPrompt();
+                return false;
+              }}
+              onDark
+              className="w-full sm:w-80"
+            />
           ) : (
             <AlarmHoldButton label="Aktifkan peringatan darurat" onConfirm={enableAlarms} onDark className="w-full sm:w-80" />
           )}

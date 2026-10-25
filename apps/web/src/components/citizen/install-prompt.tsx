@@ -3,18 +3,31 @@
 import { useEffect, useState } from 'react';
 import { BellRing, EllipsisVertical, MapPin, Share, ShieldCheck, SquarePlus, X, Zap } from 'lucide-react';
 import { BrandMark } from '@/components/shared/brand-logo';
-import { promptInstall, useInstallState } from './install-app-button';
+import { promptInstall, useInstallState, waitForInstallPrompt } from './install-app-button';
 
 const DISMISSED_KEY = 'aether-install-prompt-dismissed-at';
 // "Nanti saja" hides the invitation for a week, not forever.
 const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
 const SHOW_DELAY_MS = 2_500;
+// Outside iOS, hold the invitation until Chrome offers its one-tap install,
+// so "Pasang sekarang" installs directly instead of falling back to the
+// manual ⋮-menu steps. Browsers that never offer it get the steps after this.
+const WAIT_FOR_PROMPT_MS = 20_000;
+const TAP_WAIT_MS = 4_000;
 
 const BENEFITS = [
   { icon: BellRing, text: 'Peringatan darurat dari BPBD dan BMKG langsung masuk, walau AETHER sedang tidak dibuka' },
   { icon: MapPin, text: 'Status bahaya dan titik kumpul terdekat untuk wilayah Anda' },
   { icon: Zap, text: 'Sekali ketuk dari layar utama, ringan, tanpa unduh dari Play Store' },
 ];
+
+// Anything on the page can open the invitation (the install icon, the
+// iPhone "Aktifkan peringatan darurat" button) so install steps are only ever
+// explained here, never inline in a card.
+const openers = new Set<() => void>();
+export function openInstallPrompt() {
+  openers.forEach((open) => open());
+}
 
 function snoozed(): boolean {
   try {
@@ -31,12 +44,33 @@ export function InstallPrompt({ ready }: { ready: boolean }) {
   const state = useInstallState();
   const [open, setOpen] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
+  const [preparing, setPreparing] = useState(false);
+  const eligible = ready && !!state && !state.installed;
 
   useEffect(() => {
-    if (!ready || !state || state.installed || snoozed()) return;
-    const timer = window.setTimeout(() => setOpen(true), SHOW_DELAY_MS);
-    return () => window.clearTimeout(timer);
-  }, [ready, state]);
+    const openNow = () => {
+      setShowSteps(false);
+      setOpen(true);
+    };
+    openers.add(openNow);
+    return () => {
+      openers.delete(openNow);
+    };
+  }, []);
+  const ios = state?.ios ?? false;
+
+  useEffect(() => {
+    if (!eligible || snoozed()) return;
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      if (!ios) await waitForInstallPrompt(WAIT_FOR_PROMPT_MS);
+      if (!cancelled) setOpen(true);
+    }, SHOW_DELAY_MS);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [eligible, ios]);
 
   // Installed from the prompt (or elsewhere): close.
   useEffect(() => {
@@ -55,6 +89,11 @@ export function InstallPrompt({ ready }: { ready: boolean }) {
   };
 
   const install = async () => {
+    if (!state.ios) {
+      setPreparing(true);
+      await waitForInstallPrompt(TAP_WAIT_MS);
+      setPreparing(false);
+    }
     if (await promptInstall()) setOpen(false);
     else setShowSteps(true);
   };
@@ -125,9 +164,10 @@ export function InstallPrompt({ ready }: { ready: boolean }) {
           <button
             type="button"
             onClick={showSteps ? later : install}
+            disabled={preparing}
             className="h-12 rounded-2xl bg-primary px-4 text-base font-black text-primary-foreground shadow-[0_10px_24px_-12px_var(--primary)] transition-transform active:scale-[0.99]"
           >
-            {showSteps ? 'Mengerti' : 'Pasang sekarang'}
+            {showSteps ? 'Mengerti' : preparing ? 'Menyiapkan…' : 'Pasang sekarang'}
           </button>
           {!showSteps && (
             <button type="button" onClick={later} className="h-10 rounded-2xl text-sm font-bold text-muted-foreground hover:bg-accent">

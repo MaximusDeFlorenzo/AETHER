@@ -18,8 +18,6 @@ import {
   Loader2,
   Map as MapIcon,
   Phone,
-  Share,
-  SquarePlus,
   Sun,
   Tent,
   Wind,
@@ -32,6 +30,7 @@ import type { CitizenLocation, PublicWeather } from '@/lib/citizen/types';
 import { cn } from '@/lib/utils';
 import { SpringCheck } from '@/components/ui/spring-check';
 import { AlarmHoldButton } from './alarm-hold-button';
+import { openInstallPrompt } from './install-prompt';
 import { useCitizenStore } from '@/stores/citizen-store';
 
 export const card =
@@ -480,18 +479,14 @@ export function AlarmEnableCard({ location }: { location: CitizenLocation }) {
       </div>
 
       {support === 'ios-needs-install' ? (
-        <div className="grid gap-2 rounded-2xl bg-background p-3 text-sm">
-          <p className="font-bold">Di iPhone/iPad, tambahkan dulu ke Layar Utama:</p>
-          <ol className="grid gap-1.5">
-            <li className="flex items-center gap-2">
-              1. Ketuk <Share className="h-4 w-4" /> <strong>Bagikan</strong> di Safari
-            </li>
-            <li className="flex items-center gap-2">
-              2. Pilih <SquarePlus className="h-4 w-4" /> <strong>Tambahkan ke Layar Utama</strong>
-            </li>
-            <li>3. Buka AETHER dari ikon di Layar Utama, lalu aktifkan di sini.</li>
-          </ol>
-        </div>
+        // iPhone needs AETHER on the Home Screen first; the install modal explains how.
+        <AlarmHoldButton
+          label={`Aktifkan untuk ${locationSummary(location)}`}
+          onConfirm={async () => {
+            openInstallPrompt();
+            return false;
+          }}
+        />
       ) : support === 'unsupported' ? (
         <p className="rounded-2xl bg-background p-3 text-sm">
           Browser ini belum mendukung notifikasi. Peringatan tetap muncul selama halaman ini terbuka. Coba Chrome di Android
