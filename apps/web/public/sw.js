@@ -29,7 +29,7 @@ self.addEventListener('push', (event) => {
     (async () => {
       await self.registration.showNotification(title, {
         body: data.body || 'Buka untuk melihat langkah penyelamatan.',
-        icon: '/icons/icon-192.png',
+        icon: '/icons/icon-192.png?v=2',
         badge: '/icons/badge-96.png',
         // Level-coloured banner (Siaga orange, Awas red) in the expanded notification.
         image: data.image || (data.level ? `/icons/alert-${data.level}.png` : '/icons/alert-awas.png'),
