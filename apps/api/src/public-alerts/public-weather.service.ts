@@ -14,6 +14,8 @@ const FORECAST_HOURS = 12;
 const POINT_FORECAST_HOURS = 48;
 
 interface OpenMeteoWindResponse {
+  /** Offset of the response's local times from UTC (0 for timezone=GMT). */
+  utc_offset_seconds?: number;
   current?: {
     time: string;
     wind_speed_10m: number;
@@ -25,6 +27,12 @@ interface OpenMeteoWindResponse {
     wind_speed_10m: number[];
     wind_direction_10m: number[];
     precipitation: number[];
+  };
+  daily?: {
+    time: string[];
+    precipitation_sum: Array<number | null>;
+    precipitation_probability_max: Array<number | null>;
+    weather_code: Array<number | null>;
   };
 }
 
@@ -42,28 +50,42 @@ export interface PublicWeather {
     windFromDeg: number;
     precipitationMm: number;
   }>;
+  /** Today and tomorrow in the district's own time zone (WIB/WITA/WIT),
+   * district lookups only. */
+  daily?: Array<{
+    /** Local calendar date, YYYY-MM-DD. */
+    date: string;
+    precipitationSumMm: number | null;
+    precipitationProbabilityMax: number | null;
+    /** WMO weather interpretation code. */
+    weatherCode: number | null;
+  }>;
   source: 'open-meteo';
 }
 
-export type PointWind = Omit<PublicWeather, 'districtId'> & {
+export type PointWind = Omit<PublicWeather, 'districtId' | 'daily'> & {
   latitude: number;
   longitude: number;
 };
 
 const WIND_VARIABLES = 'wind_speed_10m,wind_direction_10m,precipitation';
+const DAILY_VARIABLES =
+  'precipitation_sum,precipitation_probability_max,weather_code';
 // Points closer than this share one cached lookup (~11 km) — plenty for
 // "which way is the smoke drifting", and keeps a map full of hotspots from
 // turning into hundreds of Open-Meteo calls.
 const POINT_CACHE_PRECISION = 1;
 export const MAX_WIND_POINTS = 30;
 
-/** Open-Meteo returns `timezone=GMT` times without an offset
- * ("2026-09-29T07:00"); normalize to an explicit UTC ISO string so clients
- * (apps/web's `new Date(time)`) never read it as browser-local time —
- * Indonesia spans WIB/WITA/WIT, so no single local zone is correct. */
-export function toUtcIso(time: string): string | null {
+/** Open-Meteo returns local times without an offset ("2026-09-29T07:00",
+ * in the requested timezone; `utc_offset_seconds` says which). Normalize to
+ * an explicit UTC ISO string so clients (apps/web's `new Date(time)`) never
+ * read it as browser-local time — Indonesia spans WIB/WITA/WIT, so no single
+ * local zone is correct. */
+export function toUtcIso(time: string, utcOffsetSeconds = 0): string | null {
   const date = new Date(`${time}${time.endsWith('Z') ? '' : 'Z'}`);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  if (Number.isNaN(date.getTime())) return null;
+  return new Date(date.getTime() - utcOffsetSeconds * 1000).toISOString();
 }
 
 /** Exported for tests. */
@@ -71,9 +93,11 @@ export function toWind(
   data: OpenMeteoWindResponse,
 ): Omit<PublicWeather, 'districtId'> | null {
   if (!data.current) return null;
-  const observedAt = toUtcIso(data.current.time);
+  const offset = data.utc_offset_seconds ?? 0;
+  const observedAt = toUtcIso(data.current.time, offset);
   if (!observedAt) return null;
   const hourly = data.hourly;
+  const daily = data.daily;
   return {
     observedAt,
     windSpeedKmh: data.current.wind_speed_10m,
@@ -81,7 +105,7 @@ export function toWind(
     precipitationMm: data.current.precipitation,
     hourly: hourly
       ? hourly.time.flatMap((rawTime, index) => {
-          const time = toUtcIso(rawTime);
+          const time = toUtcIso(rawTime, offset);
           return time
             ? [
                 {
@@ -94,6 +118,17 @@ export function toWind(
             : [];
         })
       : [],
+    ...(daily
+      ? {
+          daily: daily.time.map((date, index) => ({
+            date,
+            precipitationSumMm: daily.precipitation_sum[index] ?? null,
+            precipitationProbabilityMax:
+              daily.precipitation_probability_max[index] ?? null,
+            weatherCode: daily.weather_code[index] ?? null,
+          })),
+        }
+      : {}),
     source: 'open-meteo',
   };
 }
@@ -151,8 +186,12 @@ export class PublicWeatherService {
             current: WIND_VARIABLES,
             hourly: WIND_VARIABLES,
             forecast_hours: FORECAST_HOURS,
+            // Today + tomorrow, split at the district's local midnight —
+            // hence timezone=auto here; toWind() converts times back to UTC.
+            daily: DAILY_VARIABLES,
+            forecast_days: 2,
             wind_speed_unit: 'kmh',
-            timezone: 'GMT',
+            timezone: 'auto',
           },
           timeout: 8_000,
         }),

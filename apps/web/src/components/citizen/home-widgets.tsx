@@ -8,13 +8,19 @@ import {
   BellRing,
   BookOpen,
   ChevronDown,
+  Cloud,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
   CloudRain,
+  CloudSun,
   ListChecks,
   Loader2,
   Map as MapIcon,
   Phone,
   Share,
   SquarePlus,
+  Sun,
   Tent,
   Wind,
 } from 'lucide-react';
@@ -22,7 +28,7 @@ import { usePublicWeather } from '@/hooks/use-public-alerts';
 import { compassName, locationSummary } from '@/lib/citizen/geo';
 import type { GuideKey } from '@/lib/citizen/guides';
 import { disableAlarmPush, enableAlarmPush, getPushSupport, type PushSupport } from '@/lib/citizen/push';
-import type { CitizenLocation } from '@/lib/citizen/types';
+import type { CitizenLocation, PublicWeather } from '@/lib/citizen/types';
 import { cn } from '@/lib/utils';
 import { SpringCheck } from '@/components/ui/spring-check';
 import { AlarmHoldButton } from './alarm-hold-button';
@@ -208,6 +214,49 @@ export function QuickActions({ guideKey, layout = 'row' }: { guideKey: GuideKey 
 const HEAVY_RAIN_MM = 10;
 
 /** Open-Meteo's next 12 hours of rain for the district, with the heavy-rain line drawn in. */
+type DailyWeather = NonNullable<PublicWeather['daily']>[number];
+
+/** BMKG daily rainfall classes (mm/day), with the sky from the WMO code when dry. */
+function describeDay(day: DailyWeather): { label: string; icon: typeof Sun; wet: boolean } {
+  const sum = day.precipitationSumMm ?? 0;
+  const code = day.weatherCode ?? 0;
+  const thunder = code >= 95;
+  if (sum >= 100) return { label: 'Hujan sangat lebat', icon: CloudLightning, wet: true };
+  if (sum >= 50) return { label: 'Hujan lebat', icon: thunder ? CloudLightning : CloudRain, wet: true };
+  if (sum >= 20) return { label: thunder ? 'Hujan sedang & petir' : 'Hujan sedang', icon: thunder ? CloudLightning : CloudRain, wet: true };
+  if (sum >= 0.5) return { label: thunder ? 'Hujan ringan & petir' : 'Hujan ringan', icon: thunder ? CloudLightning : CloudDrizzle, wet: true };
+  if (code === 45 || code === 48) return { label: 'Berkabut', icon: CloudFog, wet: false };
+  if (code >= 3) return { label: 'Berawan, tidak hujan', icon: Cloud, wet: false };
+  if (code === 2) return { label: 'Cerah berawan', icon: CloudSun, wet: false };
+  return { label: 'Cerah', icon: Sun, wet: false };
+}
+
+function DailyRain({ days }: { days: DailyWeather[] }) {
+  const mm = (value: number) => value.toLocaleString('id-ID', { maximumFractionDigits: 1 });
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {days.slice(0, 2).map((day, index) => {
+        const { label, icon: Icon, wet } = describeDay(day);
+        const details = [
+          wet && day.precipitationSumMm !== null ? `± ${mm(day.precipitationSumMm)} mm` : null,
+          day.precipitationProbabilityMax !== null ? `peluang ${day.precipitationProbabilityMax}%` : null,
+        ]
+          .filter(Boolean)
+          .join(' · ');
+        return (
+          <div key={day.date} className={cn('grid gap-1 rounded-2xl p-3', wet ? 'bg-accent' : 'bg-muted/60')}>
+            <span className="text-xs font-bold text-muted-foreground">{index === 0 ? 'Hari ini' : 'Besok'}</span>
+            <span className="flex items-center gap-1.5 text-sm leading-tight font-black">
+              <Icon className={cn('h-4 w-4 shrink-0', wet ? 'text-primary' : 'text-muted-foreground')} /> {label}
+            </span>
+            {details && <span className="text-xs text-muted-foreground">{details}</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function RainForecastCard({ location }: { location: CitizenLocation }) {
   const { data, isLoading } = usePublicWeather(location.districtId);
 
@@ -241,10 +290,12 @@ export function RainForecastCard({ location }: { location: CitizenLocation }) {
           <CloudRain className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg leading-tight font-black">Hujan 12 jam ke depan</h2>
-          <p className="text-sm text-muted-foreground">{summary}</p>
+          <h2 className="text-lg leading-tight font-black">Prakiraan hujan</h2>
+          <p className="text-sm text-muted-foreground">12 jam ke depan: {summary.charAt(0).toLowerCase() + summary.slice(1)}</p>
         </div>
       </div>
+
+      {data?.daily && data.daily.length > 0 && <DailyRain days={data.daily} />}
 
       <div className="relative" role="img" aria-label={`Prakiraan hujan per jam. ${summary}`}>
         <div

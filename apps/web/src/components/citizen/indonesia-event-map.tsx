@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { CloudFog, Loader2, Maximize2, X } from 'lucide-react';
@@ -212,12 +213,17 @@ export function IndonesiaEventMap({
         Ketuk kartu kejadian di bawah untuk melihat lokasinya dari dekat{showSmoke && hasFires ? ' dan mengatur perkiraan asap' : ''}.
       </p>
 
-      {fullscreen && (
+      {/* Portalled to <body>: the page's entrance animation leaves a
+          `transform` on an ancestor, which would trap a `fixed` overlay
+          inside the card instead of covering the screen. */}
+      {fullscreen &&
+        createPortal(
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Peta kejadian Indonesia hari ini"
-          className="fixed inset-0 z-[60] flex flex-col gap-3 bg-background p-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] font-citizen sm:p-5"
+          lang="id"
+          className="fixed inset-0 z-[1100] flex flex-col gap-3 bg-background p-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] font-citizen sm:p-5"
         >
           <div className="flex items-center justify-between gap-3">
             <h2 className="truncate text-lg font-black">Indonesia hari ini</h2>
@@ -234,8 +240,9 @@ export function IndonesiaEventMap({
           {timeSelector}
           <div className="relative min-h-0 flex-1 overflow-hidden rounded-3xl border border-border/70">{map(true)}</div>
           {legend}
-        </div>
-      )}
+        </div>,
+          document.body,
+        )}
     </div>
   );
 }

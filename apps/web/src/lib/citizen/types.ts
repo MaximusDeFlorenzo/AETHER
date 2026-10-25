@@ -64,6 +64,15 @@ export interface PublicWeather {
   windFromDeg: number;
   precipitationMm: number;
   hourly: Array<{ time: string; windSpeedKmh: number; windFromDeg: number; precipitationMm: number }>;
+  /** Today and tomorrow in the district's local time zone (newer API only). */
+  daily?: Array<{
+    /** Local calendar date, YYYY-MM-DD. */
+    date: string;
+    precipitationSumMm: number | null;
+    precipitationProbabilityMax: number | null;
+    /** WMO weather interpretation code. */
+    weatherCode: number | null;
+  }>;
   source: 'open-meteo';
 }
 

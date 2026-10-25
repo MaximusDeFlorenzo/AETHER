@@ -106,3 +106,46 @@ describe('toWind', () => {
     expect(toWind(data)).toBeNull();
   });
 });
+
+describe('toWind with a local-time (timezone=auto) response', () => {
+  it('converts local times to UTC and maps the daily summary', () => {
+    const wind = toWind({
+      utc_offset_seconds: 7 * 3600,
+      current: {
+        time: '2026-10-25T12:45',
+        wind_speed_10m: 7,
+        wind_direction_10m: 200,
+        precipitation: 0,
+      },
+      hourly: {
+        time: ['2026-10-25T13:00'],
+        wind_speed_10m: [8],
+        wind_direction_10m: [210],
+        precipitation: [0.4],
+      },
+      daily: {
+        time: ['2026-10-25', '2026-10-26'],
+        precipitation_sum: [0.6, 23.1],
+        precipitation_probability_max: [35, null],
+        weather_code: [51, 63],
+      },
+    });
+
+    expect(wind?.observedAt).toBe('2026-10-25T05:45:00.000Z');
+    expect(wind?.hourly[0].time).toBe('2026-10-25T06:00:00.000Z');
+    expect(wind?.daily).toEqual([
+      {
+        date: '2026-10-25',
+        precipitationSumMm: 0.6,
+        precipitationProbabilityMax: 35,
+        weatherCode: 51,
+      },
+      {
+        date: '2026-10-26',
+        precipitationSumMm: 23.1,
+        precipitationProbabilityMax: null,
+        weatherCode: 63,
+      },
+    ]);
+  });
+});
