@@ -111,7 +111,12 @@ export default function CitizenMapPage() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <div className="grid min-w-0 gap-3">
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Tampilkan jenis kejadian">
+          {/* Phones: one swipeable row instead of ragged wrapped lines. */}
+      <div
+        className="-mx-3 flex gap-1.5 overflow-x-auto sm:gap-2 px-3 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden"
+        role="group"
+        aria-label="Tampilkan jenis kejadian"
+      >
             {NATIONAL_ORDER.map((type) => {
               const on = !hidden.has(type);
               return (
@@ -121,11 +126,11 @@ export default function CitizenMapPage() {
                   aria-pressed={on}
                   onClick={() => toggle(type)}
                   className={cn(
-                    'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-extrabold transition-colors',
+                    'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold whitespace-nowrap transition-colors sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm sm:font-extrabold',
                     on ? 'border-border bg-card' : 'border-dashed border-border bg-transparent text-muted-foreground line-through',
                   )}
                 >
-                  <span className="h-3 w-3 rounded-full" style={{ background: CITIZEN_HAZARD_COLORS[type] }} />
+                  <span className="h-2.5 w-2.5 rounded-full sm:h-3 sm:w-3" style={{ background: CITIZEN_HAZARD_COLORS[type] }} />
                   {HAZARD_LABEL_ID[type]}
                 </button>
               );
@@ -135,11 +140,11 @@ export default function CitizenMapPage() {
               aria-pressed={showSmoke}
               onClick={() => setShowSmoke((v) => !v)}
               className={cn(
-                'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-extrabold transition-colors',
+                'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold whitespace-nowrap transition-colors sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm sm:font-extrabold',
                 showSmoke ? 'border-primary bg-accent text-primary' : 'border-dashed border-border text-muted-foreground',
               )}
             >
-              <CloudFog className="h-4 w-4" /> Sebaran asap
+              <CloudFog className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Sebaran asap
             </button>
           </div>
 
