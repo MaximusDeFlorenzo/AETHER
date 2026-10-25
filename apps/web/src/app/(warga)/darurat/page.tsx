@@ -1,12 +1,13 @@
 'use client';
 
-import { ExternalLink, Flag, MapPin, Phone, Tent } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ExternalLink, Flag, Loader2, LocateFixed, MapPin, Phone, Tent } from 'lucide-react';
 import { useLocationPicker } from '@/components/citizen/citizen-shell';
 import { card, EmergencyNumbers } from '@/components/citizen/home-widgets';
 import { PageContainer, PageHeading, SectionTitle } from '@/components/citizen/page-container';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useShelters } from '@/hooks/use-resource-plans';
-import { googleMapsDirectionsUrl, locationSummary } from '@/lib/citizen/geo';
+import { distanceKm, formatDistance, googleMapsDirectionsUrl, locationLatLng, locationSummary } from '@/lib/citizen/geo';
 import { shelterLatLng, SHELTER_KIND_LABELS } from '@/lib/citizen/shelters';
 import { cn } from '@/lib/utils';
 import { useCitizenStore } from '@/stores/citizen-store';
@@ -15,6 +16,41 @@ function Shelters() {
   const location = useCitizenStore((state) => state.location);
   const { openPicker } = useLocationPicker();
   const shelters = useShelters(location?.districtId);
+  // Distances start from the picked area's reference point; "Pakai lokasi
+  // saya" swaps in the phone's GPS for a true nearest-first order.
+  const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [gpsFailed, setGpsFailed] = useState(false);
+  const origin = gps ?? locationLatLng(location);
+
+  const sorted = useMemo(() => {
+    const rows = (shelters.data ?? []).map((shelter) => {
+      const point = shelterLatLng(shelter);
+      const km = point && origin ? distanceKm(origin.lat, origin.lng, point.lat, point.lng) : null;
+      return { shelter, point, km };
+    });
+    return rows.sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity));
+  }, [shelters.data, origin]);
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation) {
+      setGpsFailed(true);
+      return;
+    }
+    setLocating(true);
+    setGpsFailed(false);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGps({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocating(false);
+      },
+      () => {
+        setGpsFailed(true);
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+    );
+  };
 
   if (!location) {
     return (
@@ -31,8 +67,7 @@ function Shelters() {
     );
   }
   if (shelters.isLoading) return <Skeleton className="h-32 rounded-3xl" />;
-  const list = shelters.data ?? [];
-  if (list.length === 0) {
+  if (sorted.length === 0) {
     return (
       <p className={cn(card, 'text-muted-foreground')}>
         Belum ada posko atau titik kumpul terdaftar untuk {locationSummary(location)}. Saat keadaan darurat, ikuti arahan petugas atau papan jalur
@@ -40,14 +75,37 @@ function Shelters() {
       </p>
     );
   }
+  const nearestId = sorted[0]?.km !== null ? sorted[0]?.shelter.id : null;
   return (
+    <div className="grid gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <span className="text-muted-foreground">
+          {gps
+            ? 'Diurutkan dari yang terdekat dengan posisi Anda sekarang.'
+            : `Diurutkan dari yang terdekat dengan pusat ${locationSummary(location)}.`}
+          {gpsFailed && ' Lokasi HP tidak bisa dibaca; izinkan akses lokasi lalu coba lagi.'}
+        </span>
+        {!gps && (
+          <button
+            type="button"
+            onClick={useMyLocation}
+            disabled={locating}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 font-extrabold text-primary hover:bg-accent"
+          >
+            {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />} Pakai lokasi saya
+          </button>
+        )}
+      </div>
     <ul className="grid gap-3 md:grid-cols-2">
-      {list.map((shelter) => {
-        const point = shelterLatLng(shelter);
+      {sorted.map(({ shelter, point, km }) => {
+        const nearest = shelter.id === nearestId;
         const occupied = shelter.currentOccupancy ?? 0;
         const remaining = Math.max(0, shelter.capacity - occupied);
         return (
-          <li key={shelter.id} className={cn(card, 'citizen-lift flex items-start gap-3 p-4')}>
+          <li
+            key={shelter.id}
+            className={cn(card, 'citizen-lift flex items-start gap-3 p-4', nearest && 'ring-2 ring-lv-normal/60 md:col-span-2')}
+          >
             <span
               className={cn(
                 'grid h-11 w-11 shrink-0 place-items-center rounded-2xl',
@@ -57,8 +115,10 @@ function Shelters() {
               {shelter.kind === 'assembly_point' ? <Flag className="h-5 w-5" /> : <Tent className="h-5 w-5" />}
             </span>
             <span className="grid min-w-0 flex-1 gap-1">
-              <span className="text-xs font-extrabold tracking-wide text-muted-foreground uppercase">
+              <span className="flex flex-wrap items-center gap-2 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">
+                {nearest && <span className="rounded-full bg-lv-normal px-2 py-0.5 text-white">Terdekat</span>}
                 {SHELTER_KIND_LABELS[shelter.kind]}
+                {km !== null && <span className="normal-case">· ± {formatDistance(km)}</span>}
               </span>
               <span className="font-extrabold">{shelter.name}</span>
               {shelter.address && <span className="text-sm text-muted-foreground">{shelter.address}</span>}
@@ -90,9 +150,14 @@ function Shelters() {
                   href={googleMapsDirectionsUrl(point.lat, point.lng)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm font-extrabold text-primary"
+                  className={cn(
+                    'inline-flex items-center gap-1 text-sm font-extrabold',
+                    nearest
+                      ? 'mt-1 justify-self-start rounded-xl bg-lv-normal px-3.5 py-2 text-white'
+                      : 'text-primary',
+                  )}
                 >
-                  Rute ke sini <ExternalLink className="h-3.5 w-3.5" />
+                  Rute jalan kaki ke sini <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               )}
             </span>
@@ -100,6 +165,7 @@ function Shelters() {
         );
       })}
     </ul>
+    </div>
   );
 }
 

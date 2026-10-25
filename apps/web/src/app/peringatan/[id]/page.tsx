@@ -37,5 +37,9 @@ export default function AlarmPage({ params }: { params: Promise<{ id: string }> 
     );
   }
 
-  return <AlarmOverlay alert={data} variant="page" onDismiss={() => window.location.assign('/')} />;
+  const startWithHelp =
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('bantuan') === '1';
+  return (
+    <AlarmOverlay alert={data} variant="page" startWithHelp={startWithHelp} onDismiss={() => window.location.assign('/')} />
+  );
 }

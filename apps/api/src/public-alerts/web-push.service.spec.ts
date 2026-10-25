@@ -1,5 +1,5 @@
 import * as webpush from 'web-push';
-import { WebPushService } from './web-push.service';
+import { notificationBody, WebPushService } from './web-push.service';
 import { PublicAlertHazard, PublicAlertStatus } from './public-alert.enums';
 import type { PublicAlert } from '../database/entities';
 
@@ -159,5 +159,30 @@ describe('WebPushService.sendAlert', () => {
       { id: 'alert-1234-5678' },
       { pushSentCount: 1, pushFailedCount: 2 },
     );
+  });
+});
+
+describe('notificationBody', () => {
+  it("carries the action, destination and the officer's message", () => {
+    expect(
+      notificationBody({
+        action: 'Segera menuju Titik Kumpul A.',
+        destinationName: 'Titik Kumpul A',
+        message: 'Bawa pasokan makanan dan dokumen penting.',
+      }),
+    ).toBe(
+      'Segera menuju Titik Kumpul A. Tujuan: Titik Kumpul A. Bawa pasokan makanan dan dokumen penting.',
+    );
+  });
+
+  it('trims a long message to keep the push payload small', () => {
+    const body = notificationBody({
+      action: 'Mengungsi',
+      destinationName: null,
+      message: 'a'.repeat(1000),
+    });
+    expect(body.startsWith('Mengungsi. ')).toBe(true);
+    expect(body.endsWith('…')).toBe(true);
+    expect(body.length).toBeLessThan(420);
   });
 });

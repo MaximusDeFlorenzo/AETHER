@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -8,6 +9,7 @@ import {
   User,
 } from '../database/entities';
 import {
+  PublicAlertLevel,
   PublicAlertResponseStatus,
   PublicAlertStatus,
 } from './public-alert.enums';
@@ -18,12 +20,17 @@ import type {
   CreateAlertResponseDto,
   CreatePublicAlertDto,
 } from './dto/public-alert.dto';
+import {
+  DomainEvents,
+  type CitizenHelpRequestedEvent,
+} from '../common/events/domain-events';
 
 const HOUR_MS = 60 * 60 * 1000;
 
 export interface PublicAlertView {
   id: string;
   hazard: PublicAlert['hazard'];
+  level: PublicAlert['level'];
   status: PublicAlertStatus;
   isActive: boolean;
   title: string;
@@ -49,6 +56,7 @@ export interface PublicAlertView {
 
 export interface AutomaticAlertInput {
   hazard: PublicAlert['hazard'];
+  level: PublicAlert['level'];
   title: string;
   action: string;
   message: string;
@@ -75,6 +83,7 @@ export class PublicAlertsService {
     private readonly responseRepository: Repository<PublicAlertResponse>,
     private readonly areaResolver: PublicAreaResolver,
     private readonly webPushService: WebPushService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   static isActive(alert: PublicAlert, now = new Date()): boolean {
@@ -85,6 +94,7 @@ export class PublicAlertsService {
     return {
       id: alert.id,
       hazard: alert.hazard,
+      level: alert.level,
       status: alert.status,
       isActive: PublicAlertsService.isActive(alert),
       title: alert.title,
@@ -120,6 +130,7 @@ export class PublicAlertsService {
     );
     const alert = this.alertRepository.create({
       hazard: dto.hazard,
+      level: dto.level ?? PublicAlertLevel.AWAS,
       status: PublicAlertStatus.ACTIVE,
       title: dto.title.trim(),
       action: dto.action.trim(),
@@ -152,6 +163,7 @@ export class PublicAlertsService {
     const area = await this.areaResolver.resolve(input.districtId);
     const alert = this.alertRepository.create({
       hazard: input.hazard,
+      level: input.level,
       status: PublicAlertStatus.ACTIVE,
       title: input.title,
       action: input.action,
@@ -269,13 +281,31 @@ export class PublicAlertsService {
     const row =
       existing ??
       this.responseRepository.create({ alert, deviceId: dto.deviceId });
+    const newHelpRequest =
+      dto.status === PublicAlertResponseStatus.NEEDS_HELP &&
+      existing?.status !== PublicAlertResponseStatus.NEEDS_HELP;
     row.status = dto.status;
-    // Keep a previously shared location if a later answer omits it.
+    // Keep previously shared location/details if a later answer omits them
+    // (live location updates resend only the coordinates).
     if (dto.latitude !== undefined && dto.longitude !== undefined) {
       row.latitude = dto.latitude;
       row.longitude = dto.longitude;
     }
+    if (dto.peopleCount !== undefined) row.peopleCount = dto.peopleCount;
+    if (dto.note !== undefined) row.note = dto.note.trim() || null;
+    if (dto.contactPhone !== undefined)
+      row.contactPhone = dto.contactPhone.trim() || null;
     await this.responseRepository.save(row);
+    if (newHelpRequest) {
+      const event: CitizenHelpRequestedEvent = {
+        alertId: alert.id,
+        alertTitle: alert.title,
+        areaName:
+          alert.village?.name ?? alert.subdistrict?.name ?? alert.district.name,
+        hasLocation: row.latitude !== null && row.longitude !== null,
+      };
+      this.eventEmitter.emit(DomainEvents.CITIZEN_HELP_REQUESTED, event);
+    }
     return { status: row.status };
   }
 
@@ -297,6 +327,10 @@ export class PublicAlertsService {
           id: row.id,
           latitude: row.latitude,
           longitude: row.longitude,
+          peopleCount: row.peopleCount,
+          note: row.note,
+          contactPhone: row.contactPhone,
+          createdAt: row.createdAt,
           updatedAt: row.updatedAt,
         })),
     };

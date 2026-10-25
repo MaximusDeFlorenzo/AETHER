@@ -56,6 +56,21 @@ export class PublicAlertResponse {
   })
   longitude: number | null;
 
+  // Optional details a citizen asking for help can add, for the rescue team.
+  @Column({ type: 'smallint', nullable: true, name: 'people_count' })
+  peopleCount: number | null;
+
+  @Column({ type: 'varchar', length: 300, nullable: true })
+  note: string | null;
+
+  @Column({
+    type: 'varchar',
+    length: 30,
+    nullable: true,
+    name: 'contact_phone',
+  })
+  contactPhone: string | null;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

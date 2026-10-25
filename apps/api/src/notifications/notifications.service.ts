@@ -8,6 +8,7 @@ import { Notification } from '../database/entities';
 import { NotificationType, PriorityLevel } from '../common/enums/domain.enum';
 import { DomainEvents } from '../common/events/domain-events';
 import type {
+  CitizenHelpRequestedEvent,
   DecisionRecommendationCreatedEvent,
   HazardEventCreatedEvent,
   HazardRelationshipDetectedEvent,
@@ -106,6 +107,17 @@ export class NotificationsService {
       title: `Resource plan drafted — ${event.districtName}`,
       body: `A ${event.planType} resource optimization plan was auto-generated and is ready for review.`,
       relatedHazardEventId: event.hazardEventId ?? undefined,
+    });
+  }
+
+  @OnEvent(DomainEvents.CITIZEN_HELP_REQUESTED, { async: true })
+  async handleCitizenHelpRequested(
+    event: CitizenHelpRequestedEvent,
+  ): Promise<void> {
+    await this.createAndPublish({
+      type: NotificationType.CITIZEN_HELP_REQUEST,
+      title: `Warga butuh bantuan — ${event.areaName}`,
+      body: `${event.alertTitle}: ${event.hasLocation ? 'lokasi terlampir' : 'tanpa lokasi'}. Buka Peringatan Warga untuk detail dan rute.`,
     });
   }
 

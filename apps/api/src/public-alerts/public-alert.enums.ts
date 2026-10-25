@@ -12,6 +12,14 @@ export enum PublicAlertHazard {
   OTHER = 'other',
 }
 
+// BNPB status level of an alarm — sets the alarm screen's colour (Waspada
+// yellow, Siaga orange, Awas red) and how insistently the siren sounds.
+export enum PublicAlertLevel {
+  WASPADA = 'waspada',
+  SIAGA = 'siaga',
+  AWAS = 'awas',
+}
+
 export enum PublicAlertStatus {
   ACTIVE = 'active',
   ENDED = 'ended',

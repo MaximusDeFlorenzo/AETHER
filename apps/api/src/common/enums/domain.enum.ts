@@ -30,6 +30,7 @@ export enum NotificationType {
   HIGH_RISK_ASSESSMENT = 'high_risk_assessment',
   HAZARD_RELATIONSHIP_DETECTED = 'hazard_relationship_detected',
   RESOURCE_PLAN_GENERATED = 'resource_plan_generated',
+  CITIZEN_HELP_REQUEST = 'citizen_help_request',
   SYSTEM = 'system',
 }
 

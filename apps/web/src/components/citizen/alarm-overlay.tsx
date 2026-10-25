@@ -9,6 +9,7 @@ import {
   CircleCheck,
   ExternalLink,
   LifeBuoy,
+  MapPin,
   Loader2,
   Navigation,
   TriangleAlert,
@@ -19,6 +20,7 @@ import {
 import { useRespondToAlert } from '@/hooks/use-public-alerts';
 import { bearingDeg, compassName, distanceKm, formatDistance, googleMapsDirectionsUrl } from '@/lib/citizen/geo';
 import { guideKeyForAlertHazard, GUIDES } from '@/lib/citizen/guides';
+import { ALERT_LEVEL_TONE, alertLevelOf } from '@/lib/citizen/alert-level';
 import { startSiren, stopSiren } from '@/lib/citizen/siren';
 import type { PublicAlert } from '@/lib/citizen/types';
 import { cn } from '@/lib/utils';
@@ -46,6 +48,11 @@ function getPosition(timeoutMs = 8_000): Promise<Position | null> {
   });
 }
 
+// While "Butuh bantuan" is open the location keeps going to the officers, but
+// only as often as is useful: every minute, or sooner after moving 50 m.
+const HELP_LOCATION_EVERY_MS = 60_000;
+const HELP_LOCATION_MOVE_M = 50;
+
 function areaLabel(alert: PublicAlert) {
   return alert.area.villageName ?? (alert.area.subdistrictName ? `Kec. ${alert.area.subdistrictName}` : alert.area.districtName);
 }
@@ -61,10 +68,14 @@ export function AlarmOverlay({
   alert,
   variant,
   onDismiss,
+  startWithHelp = false,
 }: {
   alert: PublicAlert;
   variant: 'overlay' | 'page';
   onDismiss?: () => void;
+  /** Opened from the "Butuh bantuan" shortcut: send the help request (with
+   * location) straight away instead of showing the alarm first. */
+  startWithHelp?: boolean;
 }) {
   const [step, setStep] = useState<Step>('alert');
   const [sirenOn, setSirenOn] = useState(false);
@@ -75,16 +86,27 @@ export function AlarmOverlay({
   const deviceId = useCitizenStore((state) => state.deviceId);
   const markAlertHandled = useCitizenStore((state) => state.markAlertHandled);
   const respond = useRespondToAlert();
+  // Separate mutation for live location updates, so they don't flip the help
+  // screen back to "Mengirim…" every minute.
+  const locationUpdate = useRespondToAlert();
+  const [shareLocation, setShareLocation] = useState(true);
+  const [locationSharedAt, setLocationSharedAt] = useState<Date | null>(null);
+  const [locationDenied, setLocationDenied] = useState(false);
+  const lastShared = useRef<{ at: number; position: Position } | null>(null);
+  const detailsUpdate = useRespondToAlert();
+  const [details, setDetails] = useState({ peopleCount: '', note: '', contactPhone: '' });
   const primaryRef = useRef<HTMLButtonElement>(null);
 
   const guideKey = guideKeyForAlertHazard(alert.hazard);
+  const level = alertLevelOf(alert);
+  const tone = ALERT_LEVEL_TONE[level];
   const hasDestination = alert.destinationLatitude !== null && alert.destinationLongitude !== null;
 
   const trySiren = useCallback(async () => {
-    const ok = await startSiren();
+    const ok = await startSiren(level);
     setSirenOn(ok);
     setSirenBlocked(!ok);
-  }, []);
+  }, [level]);
 
   const silence = useCallback(() => {
     stopSiren();
@@ -130,18 +152,73 @@ export function AlarmOverlay({
     });
   };
 
+  // Live location while asking for help: someone who moves (rising water,
+  // walking to higher ground) stays findable. Stops on "Saya sudah aman",
+  // when the screen closes, or when the citizen turns it off.
+  useEffect(() => {
+    if (step !== 'help' || !alert.isActive || !shareLocation) return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setLocationDenied(false);
+        const position = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        const last = lastShared.current;
+        const movedM = last
+          ? distanceKm(last.position.latitude, last.position.longitude, position.latitude, position.longitude) * 1000
+          : Infinity;
+        if (last && Date.now() - last.at < HELP_LOCATION_EVERY_MS && movedM < HELP_LOCATION_MOVE_M) return;
+        lastShared.current = { at: Date.now(), position };
+        locationUpdate.mutate(
+          { alertId: alert.id, deviceId, status: 'needs_help', ...position },
+          { onSuccess: () => setLocationSharedAt(new Date()) },
+        );
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) setLocationDenied(true);
+      },
+      { enableHighAccuracy: true, maximumAge: 30_000, timeout: 20_000 },
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the mutation object changes every render
+  }, [step, alert.id, alert.isActive, shareLocation, deviceId]);
+
   const answer = async (status: 'safe' | 'needs_help') => {
     goTo(status === 'safe' ? 'safe' : 'help');
     markAlertHandled(alert.id);
     // Location only for "needs help", and only if the browser allows it —
     // the request still goes through without it.
     const position = status === 'needs_help' ? await getPosition() : null;
+    if (position) {
+      lastShared.current = { at: Date.now(), position };
+      setLocationSharedAt(new Date());
+    }
     respond.mutate({
       alertId: alert.id,
       deviceId,
       status,
       latitude: position?.latitude,
       longitude: position?.longitude,
+    });
+  };
+
+  const helpStarted = useRef(false);
+  useEffect(() => {
+    if (!startWithHelp || helpStarted.current || !alert.isActive) return;
+    helpStarted.current = true;
+    void answer('needs_help');
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on open
+  }, [startWithHelp, alert.isActive]);
+
+  const sendDetails = (event: React.FormEvent) => {
+    event.preventDefault();
+    const people = Number(details.peopleCount);
+    detailsUpdate.mutate({
+      alertId: alert.id,
+      deviceId,
+      status: 'needs_help',
+      peopleCount: Number.isInteger(people) && people >= 1 ? Math.min(people, 999) : undefined,
+      note: details.note.trim() || undefined,
+      contactPhone: details.contactPhone.trim() || undefined,
     });
   };
 
@@ -154,8 +231,9 @@ export function AlarmOverlay({
   const shell = cn(
     'font-citizen text-white',
     variant === 'overlay' ? 'fixed inset-0 z-[100] overflow-y-auto' : 'min-h-svh',
-    step === 'safe' ? 'bg-lv-normal dark:bg-[#17663a]' : step === 'help' ? 'bg-[#1d3a6e]' : 'bg-alarm',
-    step === 'alert' && alert.isActive && 'alarm-flash',
+    step === 'safe' ? 'bg-lv-normal dark:bg-[#17663a]' : step === 'help' ? 'bg-[#1d3a6e]' : tone.bg,
+    // Only Awas flashes; Siaga/Waspada stay a steady colour.
+    step === 'alert' && alert.isActive && level === 'awas' && 'alarm-flash',
   );
   const whiteButton =
     'flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-4 text-lg font-black shadow-lg transition-transform active:scale-[0.99] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white';
@@ -187,7 +265,7 @@ export function AlarmOverlay({
           <span
             className={cn(
               'grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white sm:h-14 sm:w-14',
-              step === 'safe' ? 'text-lv-normal' : step === 'help' ? 'text-[#1d3a6e]' : 'alarm-ring text-alarm',
+              step === 'safe' ? 'text-lv-normal' : step === 'help' ? 'text-[#1d3a6e]' : cn(level === 'awas' && 'alarm-ring', tone.text),
             )}
           >
             {step === 'safe' ? (
@@ -229,7 +307,7 @@ export function AlarmOverlay({
               <div className="grid gap-3 rounded-2xl bg-white p-4 text-[#1b2640]">
                 {alert.destinationName && (
                   <div className="flex items-center gap-3">
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#fde3e3] text-alarm">
+                    <span className={cn('grid h-12 w-12 shrink-0 place-items-center rounded-full', tone.soft, tone.text)}>
                       <Navigation className="h-6 w-6" />
                     </span>
                     <div className="min-w-0">
@@ -257,7 +335,7 @@ export function AlarmOverlay({
                 ref={primaryRef}
                 type="button"
                 onClick={() => goTo('route')}
-                className={cn(whiteButton, 'text-alarm')}
+                className={cn(whiteButton, tone.text)}
               >
                 <Navigation className="h-5 w-5" />
                 {alert.destinationName ? 'Tunjukkan jalan' : 'Apa yang harus saya lakukan?'}
@@ -284,7 +362,7 @@ export function AlarmOverlay({
                 <>
                   {heading ? (
                     <div className="flex items-center gap-4">
-                      <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#fde3e3] text-alarm">
+                      <span className={cn('grid h-16 w-16 shrink-0 place-items-center rounded-full', tone.soft, tone.text)}>
                         <ArrowUp className="h-9 w-9" style={{ transform: `rotate(${heading.bearing}deg)` }} />
                       </span>
                       <div>
@@ -298,7 +376,7 @@ export function AlarmOverlay({
                       type="button"
                       onClick={showDirection}
                       disabled={locating}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-[#fde3e3] px-3 py-3 font-black text-alarm"
+                      className={cn('flex items-center justify-center gap-2 rounded-xl px-3 py-3 font-black', tone.soft, tone.text)}
                     >
                       {locating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Navigation className="h-5 w-5" />}
                       Tunjukkan arah dari posisi saya
@@ -344,7 +422,7 @@ export function AlarmOverlay({
                 </div>
               )}
             </div>
-            <button ref={primaryRef} type="button" onClick={() => answer('safe')} className={cn(whiteButton, 'text-alarm')}>
+            <button ref={primaryRef} type="button" onClick={() => answer('safe')} className={cn(whiteButton, tone.text)}>
               Saya sudah sampai dan aman
             </button>
             <div className="grid grid-cols-2 gap-2.5">
@@ -390,6 +468,63 @@ export function AlarmOverlay({
                 ? 'Sinyal bermasalah. Telepon 112 sekarang jika bisa.'
                 : 'Petugas BPBD menerima permintaan Anda, beserta lokasi jika Anda mengizinkannya. Tetap di tempat paling tinggi dan aman yang bisa Anda capai.'}
             </p>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white/15 px-4 py-3 text-sm font-bold">
+              <span className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 shrink-0" />
+                {!shareLocation
+                  ? 'Lokasi tidak lagi dibagikan.'
+                  : locationDenied
+                    ? 'Lokasi belum bisa dibaca. Izinkan akses lokasi di pengaturan browser.'
+                    : locationSharedAt
+                      ? `Lokasi Anda dibagikan langsung ke petugas · diperbarui ${locationSharedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
+                      : 'Mencari lokasi Anda…'}
+              </span>
+              <button type="button" onClick={() => setShareLocation((on) => !on)} className="underline underline-offset-2">
+                {shareLocation ? 'Berhenti bagikan' : 'Bagikan lagi'}
+              </button>
+            </div>
+            <form onSubmit={sendDetails} className="grid gap-2 rounded-2xl bg-white/15 p-4 text-sm">
+              <p className="font-black">Tambah info untuk petugas (opsional)</p>
+              <textarea
+                value={details.note}
+                maxLength={300}
+                onChange={(event) => setDetails((current) => ({ ...current, note: event.target.value }))}
+                placeholder="Alasan / kondisi, mis. ada lansia, terjebak di lantai 2, kaki terluka"
+                className="min-h-20 rounded-xl bg-white px-3 py-2 font-semibold text-[#1b2640] placeholder:text-[#1b2640]/50"
+              />
+              <div className="grid grid-cols-[6.5rem_1fr] gap-2">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={999}
+                  value={details.peopleCount}
+                  onChange={(event) => setDetails((current) => ({ ...current, peopleCount: event.target.value }))}
+                  placeholder="Jumlah orang"
+                  aria-label="Jumlah orang"
+                  className="rounded-xl bg-white px-3 py-2 font-semibold text-[#1b2640] placeholder:text-[#1b2640]/50"
+                />
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  maxLength={30}
+                  value={details.contactPhone}
+                  onChange={(event) => setDetails((current) => ({ ...current, contactPhone: event.target.value }))}
+                  placeholder="No. HP yang bisa dihubungi"
+                  aria-label="Nomor HP"
+                  className="rounded-xl bg-white px-3 py-2 font-semibold text-[#1b2640] placeholder:text-[#1b2640]/50"
+                />
+              </div>
+              <button type="submit" disabled={detailsUpdate.isPending} className={cn(ghostButton, 'py-2.5')}>
+                {detailsUpdate.isPending
+                  ? 'Mengirim…'
+                  : detailsUpdate.isSuccess
+                    ? 'Info terkirim · kirim ulang jika berubah'
+                    : detailsUpdate.isError
+                      ? 'Gagal terkirim, coba lagi'
+                      : 'Kirim info ke petugas'}
+              </button>
+            </form>
             <ul className="grid gap-2 text-base font-bold">
               <li>• Telepon 112 jika sinyal ada. Layanan ini gratis.</li>
               <li>• Nyalakan senter HP atau lambaikan kain terang supaya mudah terlihat.</li>

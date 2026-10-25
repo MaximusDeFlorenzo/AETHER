@@ -13,9 +13,13 @@ export type PublicAlertHazard =
   | 'wildfire_smoke'
   | 'other';
 
+export type PublicAlertLevel = 'waspada' | 'siaga' | 'awas';
+
 export interface PublicAlert {
   id: string;
   hazard: PublicAlertHazard;
+  /** BNPB level: sets the alarm screen colour. Absent from older APIs → 'awas'. */
+  level?: PublicAlertLevel;
   status: 'active' | 'ended';
   isActive: boolean;
   title: string;
@@ -52,6 +56,10 @@ export interface PublicAlertResponses {
     id: string;
     latitude: number | null;
     longitude: number | null;
+    peopleCount: number | null;
+    note: string | null;
+    contactPhone: string | null;
+    createdAt: string;
     updatedAt: string;
   }>;
 }

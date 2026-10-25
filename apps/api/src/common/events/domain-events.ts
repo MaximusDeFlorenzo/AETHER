@@ -18,7 +18,16 @@ export const DomainEvents = {
   DECISION_RECOMMENDATION_CREATED: 'decision_recommendation.created',
   HAZARD_RELATIONSHIP_DETECTED: 'hazard_relationship.detected',
   RESOURCE_PLAN_GENERATED: 'resource_plan.generated',
+  CITIZEN_HELP_REQUESTED: 'citizen_help.requested',
 } as const;
+
+/** A citizen pressed "Butuh bantuan" on an alarm (first time per device). */
+export interface CitizenHelpRequestedEvent {
+  alertId: string;
+  alertTitle: string;
+  areaName: string;
+  hasLocation: boolean;
+}
 
 export interface HazardEventCreatedEvent {
   hazardEventId: string;

@@ -66,14 +66,17 @@ function buildService() {
   const webPushService = {
     sendAlert: jest.fn().mockResolvedValue({ sent: 0, failed: 0, removed: 0 }),
   };
+  const eventEmitter = { emit: jest.fn() };
   const service = new PublicAlertsService(
     alertRepository as any,
     responseRepository as any,
     areaResolver as any,
     webPushService as any,
+    eventEmitter as any,
   );
   return {
     service,
+    eventEmitter,
     alertRepository,
     responseRepository,
     areaResolver,
@@ -194,6 +197,56 @@ describe('PublicAlertsService.respond', () => {
         // A later "safe" without coordinates keeps the location shared earlier.
         latitude: -6.9,
         longitude: 106.8,
+      }),
+    );
+  });
+
+  it('notifies officers on a new help request, but not on later location updates', async () => {
+    const { service, alertRepository, responseRepository, eventEmitter } =
+      buildService();
+    alertRepository.findOne.mockResolvedValue(buildAlert());
+    responseRepository.findOne.mockResolvedValueOnce(null);
+    responseRepository.create.mockImplementation((row: object) => ({
+      latitude: null,
+      longitude: null,
+      ...row,
+    }));
+
+    await service.respond('alert-1', {
+      deviceId: 'device-2',
+      status: PublicAlertResponseStatus.NEEDS_HELP,
+      latitude: -6.9,
+      longitude: 106.8,
+      peopleCount: 4,
+      note: 'Ada lansia',
+    });
+    expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+    expect(responseRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ peopleCount: 4, note: 'Ada lansia' }),
+    );
+
+    responseRepository.findOne.mockResolvedValueOnce({
+      id: 'resp-2',
+      deviceId: 'device-2',
+      status: PublicAlertResponseStatus.NEEDS_HELP,
+      latitude: -6.9,
+      longitude: 106.8,
+      peopleCount: 4,
+      note: 'Ada lansia',
+    });
+    await service.respond('alert-1', {
+      deviceId: 'device-2',
+      status: PublicAlertResponseStatus.NEEDS_HELP,
+      latitude: -6.91,
+      longitude: 106.81,
+    });
+    expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+    // Location-only update keeps the details given earlier.
+    expect(responseRepository.save).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        latitude: -6.91,
+        peopleCount: 4,
+        note: 'Ada lansia',
       }),
     );
   });

@@ -50,5 +50,6 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   hazard_event_created: 'New Hazard Event',
   decision_recommendation_created: 'Decision Recommendation',
   hazard_relationship_detected: 'Cascading Hazard',
+  citizen_help_request: 'Permintaan bantuan warga',
   system: 'System',
 };

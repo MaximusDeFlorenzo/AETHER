@@ -39,14 +39,16 @@ function isIos(): boolean {
   return /iPad|iPhone|iPod/.test(ua) || (ua.includes('Macintosh') && navigator.maxTouchPoints > 1);
 }
 
-/** Round install icon (top-right of the welcome card), hidden once AETHER runs installed. Uses the
- * browser's install prompt where there is one (Chrome/Edge/Android on
- * HTTPS); otherwise — Safari, Firefox, or before Chrome offers the prompt —
- * it shows how to add AETHER to the home screen by hand. */
-export function InstallAppButton({ className }: { className?: string }) {
-  const [state, setState] = useState<{ installed: boolean; canPrompt: boolean; ios: boolean } | null>(null);
-  const [showSteps, setShowSteps] = useState(false);
+export interface InstallState {
+  installed: boolean;
+  /** The browser offered its own install prompt (Chrome/Edge/Android, HTTPS). */
+  canPrompt: boolean;
+  ios: boolean;
+}
 
+/** Live install state; null during the server render. */
+export function useInstallState(): InstallState | null {
+  const [state, setState] = useState<InstallState | null>(null);
   useEffect(() => {
     const update = () => setState({ installed: isStandalone(), canPrompt: deferredPrompt !== null, ios: isIos() });
     update();
@@ -55,21 +57,35 @@ export function InstallAppButton({ className }: { className?: string }) {
       listeners.delete(update);
     };
   }, []);
+  return state;
+}
+
+/** Shows the browser's install prompt. false when there is none to show
+ * (the caller then explains the manual Add-to-Home-Screen steps). */
+export async function promptInstall(): Promise<boolean> {
+  const prompt = deferredPrompt;
+  if (!prompt) return false;
+  await prompt.prompt();
+  await prompt.userChoice.catch(() => undefined);
+  // A prompt can only be used once; the browser fires a new event if it may ask again.
+  deferredPrompt = null;
+  notify();
+  return true;
+}
+
+/** Round install icon (top-right of the welcome card), hidden once AETHER runs installed. Uses the
+ * browser's install prompt where there is one (Chrome/Edge/Android on
+ * HTTPS); otherwise — Safari, Firefox, or before Chrome offers the prompt —
+ * it shows how to add AETHER to the home screen by hand. */
+export function InstallAppButton({ className }: { className?: string }) {
+  const state = useInstallState();
+  const [showSteps, setShowSteps] = useState(false);
 
   // Server render / already installed: nothing to offer.
   if (!state || state.installed) return null;
 
   const install = async () => {
-    const prompt = deferredPrompt;
-    if (!prompt) {
-      setShowSteps((open) => !open);
-      return;
-    }
-    await prompt.prompt();
-    await prompt.userChoice.catch(() => undefined);
-    // A prompt can only be used once; the browser fires a new event if it may ask again.
-    deferredPrompt = null;
-    notify();
+    if (!(await promptInstall())) setShowSteps((open) => !open);
   };
 
   return (

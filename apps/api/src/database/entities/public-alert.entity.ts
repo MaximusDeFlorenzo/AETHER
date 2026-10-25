@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import {
   PublicAlertHazard,
+  PublicAlertLevel,
   PublicAlertStatus,
 } from '../../public-alerts/public-alert.enums';
 import { numericTransformer } from '../transformers/numeric.transformer';
@@ -45,6 +46,14 @@ export class PublicAlert {
     default: PublicAlertStatus.ACTIVE,
   })
   status: PublicAlertStatus;
+
+  @Column({
+    type: 'enum',
+    enum: PublicAlertLevel,
+    enumName: 'public_alert_level',
+    default: PublicAlertLevel.AWAS,
+  })
+  level: PublicAlertLevel;
 
   // Short level label shown above the action, e.g. "Awas banjir".
   @Column({ type: 'varchar', length: 120 })

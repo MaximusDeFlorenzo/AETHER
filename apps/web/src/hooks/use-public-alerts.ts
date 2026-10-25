@@ -5,6 +5,7 @@ import type {
   OperatorPublicAlert,
   PublicAlert,
   PublicAlertHazard,
+  PublicAlertLevel,
   PublicAlertResponses,
   PublicWeather,
 } from '@/lib/citizen/types';
@@ -53,6 +54,9 @@ export function useRespondToAlert() {
       status: 'safe' | 'needs_help';
       latitude?: number;
       longitude?: number;
+      peopleCount?: number;
+      note?: string;
+      contactPhone?: string;
     }) => {
       const { alertId, ...body } = input;
       const { data } = await apiClient.post<{ status: string }>(`/public/alerts/${alertId}/responses`, body);
@@ -80,6 +84,7 @@ export function usePublicWeather(districtId: string | undefined) {
 
 export interface CreatePublicAlertInput {
   hazard: PublicAlertHazard;
+  level: PublicAlertLevel;
   title: string;
   action: string;
   message: string;

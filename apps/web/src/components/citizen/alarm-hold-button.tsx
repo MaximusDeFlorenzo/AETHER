@@ -1,17 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { BellRing, Hand, Loader2 } from 'lucide-react';
-import { HoldButton } from '@/components/ui/hold-button';
+import { BellRing, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const HOLD_MS = 1500;
-
 /**
- * "Tahan untuk mengaktifkan" for emergency alarms: a deliberate hold rather
- * than a tap, so turning on a siren-level notification is never accidental.
- * `onConfirm` runs the async enable; on failure the button rewinds (remount
- * via `attempt`) so the citizen can hold again.
+ * "Aktifkan peringatan darurat": a plain tap. It used to need a 1.5 s hold so
+ * it could never be switched on by accident, but the browser's own
+ * "Allow notifications?" prompt that follows already is that confirmation.
+ * `onConfirm` runs the async enable; the button shows progress meanwhile.
+ * (Name kept so existing imports stay valid.)
  */
 export function AlarmHoldButton({
   label,
@@ -21,50 +19,34 @@ export function AlarmHoldButton({
 }: {
   label: string;
   onConfirm: () => Promise<boolean>;
-  /** Hint text on a dark/brand background (the welcome hero). */
+  /** On a dark/brand background (the welcome hero). */
   onDark?: boolean;
   className?: string;
 }) {
-  const [attempt, setAttempt] = useState(0);
-  const [nudge, setNudge] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const confirm = async () => {
-    setNudge(false);
-    const ok = await onConfirm();
-    if (!ok) setAttempt((n) => n + 1);
+    setBusy(true);
+    try {
+      await onConfirm();
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
-    <div className={cn('grid gap-1.5', className)}>
-      <HoldButton
-        key={attempt}
-        size="lg"
-        radius={18}
-        holdTime={HOLD_MS}
-        resetAfter={0}
-        backgroundColor="var(--lv-awas-soft)"
-        textColor="var(--lv-awas)"
-        fillColor="var(--alarm)"
-        fillTextColor="#ffffff"
-        icon={<BellRing className="h-5 w-5" />}
-        doneIcon={<Loader2 className="h-5 w-5 animate-spin" />}
-        doneLabel="Mengaktifkan…"
-        onHold={confirm}
-        onTap={() => setNudge(true)}
-        className="h-14 w-full px-4 text-base font-black ring-2 ring-lv-awas/30 sm:text-[17px]"
-      >
-        {label}
-      </HoldButton>
-      <p
-        className={cn(
-          'flex items-center justify-center gap-1.5 text-center text-xs font-bold transition-colors',
-          nudge ? (onDark ? 'text-[#ffb3b3]' : 'text-lv-awas') : onDark ? 'text-white/70' : 'text-muted-foreground',
-        )}
-        aria-live="polite"
-      >
-        <Hand className="h-3.5 w-3.5" />
-        {nudge ? 'Tahan tombolnya sampai penuh, jangan hanya diketuk' : 'Tekan dan tahan ± 1,5 detik untuk mengaktifkan'}
-      </p>
-    </div>
+    <button
+      type="button"
+      onClick={confirm}
+      disabled={busy}
+      className={cn(
+        'inline-flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-lv-awas-soft px-4 text-base font-black text-lv-awas ring-2 ring-lv-awas/30 transition-transform active:scale-[0.99] disabled:opacity-80 sm:text-[17px]',
+        onDark && 'shadow-[0_12px_30px_-12px_rgba(193,18,31,0.6)]',
+        className,
+      )}
+    >
+      {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <BellRing className="h-5 w-5" />}
+      {busy ? 'Mengaktifkan…' : label}
+    </button>
   );
 }

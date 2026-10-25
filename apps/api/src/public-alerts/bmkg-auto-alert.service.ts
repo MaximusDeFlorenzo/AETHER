@@ -10,7 +10,7 @@ import {
 } from '../common/events/domain-events';
 import { HazardEvent } from '../database/entities';
 import { GeoService } from '../geo/geo.service';
-import { PublicAlertHazard } from './public-alert.enums';
+import { PublicAlertHazard, PublicAlertLevel } from './public-alert.enums';
 import { PublicAlertsService } from './public-alerts.service';
 
 const BMKG_SOURCE = 'bmkg_gempaterkini';
@@ -121,6 +121,7 @@ export class BmkgAutoAlertService {
         tsunami
           ? {
               hazard: PublicAlertHazard.TSUNAMI,
+              level: PublicAlertLevel.AWAS,
               title: `Gempa M${magnitude} berpotensi tsunami`,
               action: 'Jauhi pantai, segera ke tempat tinggi',
               message: `${quake} BMKG menyatakan gempa ini berpotensi tsunami. Jika Anda berada di dekat pantai atau muara sungai, segera menjauh ke tempat tinggi atau ke dalam daratan. Jangan menunggu air laut surut. Ikuti arahan BMKG dan BPBD setempat.`,
@@ -132,6 +133,7 @@ export class BmkgAutoAlertService {
             }
           : {
               hazard: PublicAlertHazard.EARTHQUAKE,
+              level: PublicAlertLevel.SIAGA,
               title: `Gempa M${magnitude}`,
               action: 'Waspada gempa susulan',
               message: `${quake} Periksa keadaan keluarga, keluar dari bangunan yang retak, dan waspadai gempa susulan. Jangan mudah percaya kabar yang bukan dari BMKG.`,

@@ -18,6 +18,7 @@ import {
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import {
   PublicAlertHazard,
+  PublicAlertLevel,
   PublicAlertResponseStatus,
 } from '../public-alert.enums';
 
@@ -37,6 +38,10 @@ export class AreaQueryDto {
 export class CreatePublicAlertDto {
   @IsEnum(PublicAlertHazard)
   hazard: PublicAlertHazard;
+
+  @IsOptional()
+  @IsEnum(PublicAlertLevel)
+  level?: PublicAlertLevel = PublicAlertLevel.AWAS;
 
   @IsString()
   @IsNotEmpty()
@@ -172,6 +177,25 @@ export class CreateAlertResponseDto {
   @Type(() => Number)
   @IsLongitude()
   longitude?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(999)
+  peopleCount?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  note?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+?[0-9 ()-]{6,30}$/, {
+    message: 'contactPhone must be a phone number',
+  })
+  contactPhone?: string;
 }
 
 // `lat,lng;lat,lng;…` — one query string keeps the request cacheable and

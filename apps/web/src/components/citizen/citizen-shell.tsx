@@ -16,6 +16,8 @@ import { useCitizenStore } from '@/stores/citizen-store';
 import { AlarmWatcher } from './alarm-watcher';
 import { LocationPicker } from './location-picker';
 import { Onboarding } from './onboarding';
+import { ActiveAlertBar } from './active-alert-bar';
+import { InstallPrompt } from './install-prompt';
 
 interface CitizenNavItem {
   href: string;
@@ -61,6 +63,8 @@ export function useLocationPicker() {
  * five destinations in the top bar, with pages widening into multi-column
  * layouts. Hosts the alarm watcher so a red screen can interrupt any page.
  */
+const LAUNCH_INTRO_KEY = 'aether-app-intro-played';
+
 export function CitizenShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const location = useCitizenStore((state) => state.location);
@@ -70,13 +74,39 @@ export function CitizenShell({ children }: { children: React.ReactNode }) {
   const autoLocate = useCitizenStore((state) => state.autoLocate);
   // The intro auto-plays until the citizen skips or finishes it once
   // (persisted as introSeen); after that it only opens on request.
+  // The installed app instead plays it as its opening on every launch
+  // (once per app session — sessionStorage lasts until the app is closed).
   const introSeen = useCitizenStore((state) => state.introSeen);
   const markIntroSeen = useCitizenStore((state) => state.markIntroSeen);
   const [introRequested, setIntroRequested] = useState(false);
-  const introOpen = introRequested || !introSeen;
+  const [launchIntro, setLaunchIntro] = useState(false);
+  // Until that's decided, the installed app shows a navy cover (CSS-only
+  // in standalone mode) so the home page doesn't flash between Android's
+  // splash and the animation.
+  const [launchDecided, setLaunchDecided] = useState(false);
+  useEffect(() => {
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    let play = standalone;
+    if (standalone) {
+      try {
+        if (sessionStorage.getItem(LAUNCH_INTRO_KEY) === '1') play = false;
+        else sessionStorage.setItem(LAUNCH_INTRO_KEY, '1');
+      } catch {
+        // Storage blocked — still play it this launch.
+      }
+    }
+    setLaunchIntro(play);
+    setLaunchDecided(true);
+  }, []);
+  const introOpen = introRequested || !introSeen || launchIntro;
   const setIntroOpen = (open: boolean) => {
     setIntroRequested(open);
-    if (!open) markIntroSeen();
+    if (!open) {
+      setLaunchIntro(false);
+      markIntroSeen();
+    }
   };
   const setAutoLocate = useCitizenStore((state) => state.setAutoLocate);
   const hasHydrated = useCitizenStore((state) => state.hasHydrated);
@@ -180,6 +210,8 @@ export function CitizenShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
+        <ActiveAlertBar />
+
         <main className="flex-1 pb-28 md:pb-12">
           {redirectToWorkspace ? (
             <div className="flex justify-center py-24">
@@ -280,6 +312,8 @@ export function CitizenShell({ children }: { children: React.ReactNode }) {
         />
         <AlarmWatcher />
         {hasHydrated && introOpen && !signedIn && <Onboarding onClose={() => setIntroOpen(false)} />}
+        <InstallPrompt ready={hasHydrated && !introOpen && !signedIn} />
+        {!(launchDecided && hasHydrated) && <div aria-hidden className="app-launch-cover" />}
       </div>
     </LocationPickerContext.Provider>
   );

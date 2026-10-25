@@ -31,6 +31,8 @@ self.addEventListener('push', (event) => {
         body: data.body || 'Buka untuk melihat langkah penyelamatan.',
         icon: '/icons/icon-192.png',
         badge: '/icons/badge-96.png',
+        // Level-coloured banner (Siaga orange, Awas red) in the expanded notification.
+        image: data.image || (data.level ? `/icons/alert-${data.level}.png` : '/icons/alert-awas.png'),
         tag: data.alertId ? `aether-alert-${data.alertId}` : 'aether-alert',
         renotify: true,
         requireInteraction: true,

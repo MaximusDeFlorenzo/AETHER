@@ -25,6 +25,27 @@ export interface PushSendResult {
  * /public/alerts/active), only the "arrives while the site is closed" path
  * needs push.
  */
+const NOTIFICATION_MESSAGE_CHARS = 400;
+
+/** Action, destination and the officer's own message, so the notification
+ * itself carries the instructions even if it is never opened. Push services
+ * cap payloads (~4 KB), so the message is trimmed. */
+export function notificationBody(
+  alert: Pick<PublicAlert, 'action' | 'destinationName' | 'message'>,
+): string {
+  const parts = [`${alert.action.replace(/[.!]+$/, '')}.`];
+  if (alert.destinationName) parts.push(`Tujuan: ${alert.destinationName}.`);
+  const message = alert.message.trim();
+  if (message) {
+    parts.push(
+      message.length > NOTIFICATION_MESSAGE_CHARS
+        ? `${message.slice(0, NOTIFICATION_MESSAGE_CHARS - 1).trimEnd()}…`
+        : message,
+    );
+  }
+  return parts.join(' ');
+}
+
 @Injectable()
 export class WebPushService implements OnModuleInit {
   private readonly logger = new Logger(WebPushService.name);
@@ -118,10 +139,12 @@ export class WebPushService implements OnModuleInit {
     const payload = JSON.stringify({
       alertId: alert.id,
       hazard: alert.hazard,
+      level: alert.level,
       title: alert.title.toUpperCase(),
-      body: alert.destinationName
-        ? `${alert.action}. Tujuan: ${alert.destinationName}.`
-        : `${alert.action}.`,
+      body: notificationBody(alert),
+      // Level-coloured banner (Siaga orange, Awas red) shown in the expanded
+      // notification — the closest a web push gets to a full-screen colour.
+      image: `/icons/alert-${alert.level}.png`,
       url: `/peringatan/${alert.id}`,
     });
 

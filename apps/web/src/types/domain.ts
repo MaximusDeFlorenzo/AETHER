@@ -31,6 +31,7 @@ export type NotificationType =
   | 'hazard_event_created'
   | 'decision_recommendation_created'
   | 'hazard_relationship_detected'
+  | 'citizen_help_request'
   | 'system';
 
 // --- Hazard events -----------------------------------------------------

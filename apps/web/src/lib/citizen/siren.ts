@@ -1,3 +1,5 @@
+import type { PublicAlertLevel } from './types';
+
 // Looping emergency siren for the citizen alarm screen. Reuses the
 // "ongoing hazard" clip the analyst alerts already ship
 // (lib/alert-sound.ts), looped rather than played once. Browsers block
@@ -9,7 +11,12 @@ const VIBRATION_PATTERN = [600, 250, 600, 250, 600, 250, 1000];
 
 let clip: HTMLAudioElement | null = null;
 
-export async function startSiren(): Promise<boolean> {
+// How many times the clip plays per level: Awas loops until silenced,
+// Siaga sounds a few times, Waspada once.
+const PLAYS: Record<PublicAlertLevel, number> = { awas: Infinity, siaga: 3, waspada: 1 };
+let playsLeft = 0;
+
+export async function startSiren(level: PublicAlertLevel = 'awas'): Promise<boolean> {
   if (typeof window === 'undefined') return false;
   try {
     navigator.vibrate?.(VIBRATION_PATTERN);
@@ -17,9 +24,17 @@ export async function startSiren(): Promise<boolean> {
     // Vibration unsupported (desktop, iOS) — visual + audio still carry it.
   }
   try {
-    clip ??= new Audio(SIREN_SRC);
-    clip.loop = true;
+    if (!clip) {
+      clip = new Audio(SIREN_SRC);
+      clip.addEventListener('ended', () => {
+        playsLeft -= 1;
+        if (playsLeft > 0 && clip) void clip.play().catch(() => undefined);
+      });
+    }
+    playsLeft = PLAYS[level];
+    clip.loop = playsLeft === Infinity;
     clip.volume = 1;
+    clip.currentTime = 0;
     await clip.play();
     return true;
   } catch {
