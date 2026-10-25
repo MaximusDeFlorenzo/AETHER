@@ -39,7 +39,7 @@ function isIos(): boolean {
   return /iPad|iPhone|iPod/.test(ua) || (ua.includes('Macintosh') && navigator.maxTouchPoints > 1);
 }
 
-/** Small "install the app" pill, hidden once AETHER runs installed. Uses the
+/** Round install icon (top-right of the welcome card), hidden once AETHER runs installed. Uses the
  * browser's install prompt where there is one (Chrome/Edge/Android on
  * HTTPS); otherwise — Safari, Firefox, or before Chrome offers the prompt —
  * it shows how to add AETHER to the home screen by hand. */
@@ -73,17 +73,23 @@ export function InstallAppButton({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn('grid justify-items-center gap-2', className)}>
+    <div className={cn('z-10', className)}>
       <button
         type="button"
         onClick={install}
+        aria-label="Pasang aplikasi AETHER"
+        title="Pasang aplikasi AETHER"
         aria-expanded={state.canPrompt ? undefined : showSteps}
-        className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-white ring-1 ring-white/20 transition-colors hover:bg-white/20"
+        className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/20 backdrop-blur transition-colors hover:bg-white/20 sm:h-10 sm:w-10"
       >
-        <Download className="h-3.5 w-3.5 text-cyan" /> Pasang aplikasi AETHER
+        <Download className="h-4 w-4 sm:h-5 sm:w-5" />
       </button>
       {showSteps && !state.canPrompt && (
-        <p role="note" className="max-w-xs text-center text-xs text-white/80">
+        <p
+          role="note"
+          className="absolute top-full right-0 mt-2 w-60 rounded-2xl bg-navy-dark/95 p-3 text-xs text-white/85 shadow-lg ring-1 ring-white/15 backdrop-blur"
+        >
+          <strong className="mb-1 block text-white">Pasang aplikasi AETHER</strong>
           {state.ios ? (
             <>
               Di Safari, ketuk <Share className="inline h-3.5 w-3.5 align-text-bottom" /> <strong className="text-white">Bagikan</strong> →{' '}

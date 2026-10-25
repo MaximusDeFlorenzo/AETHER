@@ -198,9 +198,10 @@ function NationalFit({ refitOnResize }: { refitOnResize: boolean }) {
     if (refitOnResize) map.on('resize', fit);
     return () => {
       map.off('resize', fit);
-      // Opening/closing the full-screen map unmounts this one; a fly-to still
-      // running would then touch the removed panes.
-      map.stop();
+      // Opening/closing the full-screen map unmounts this one; stop a fly-to
+      // still running — but only while the map still exists: once Leaflet has
+      // removed it (getPane() is empty), stop() itself hits the gone panes.
+      if (map.getPane('mapPane')) map.stop();
     };
   }, [map, refitOnResize]);
   return null;
@@ -210,7 +211,7 @@ function NationalFit({ refitOnResize }: { refitOnResize: boolean }) {
 function MapFocus({ focus }: { focus: { lat: number; lng: number; zoom: number; key: string } | null }) {
   const map = useMap();
   useEffect(() => {
-    if (focus) map.flyTo([focus.lat, focus.lng], focus.zoom, { duration: 0.8 });
+    if (focus && map.getPane('mapPane')) map.flyTo([focus.lat, focus.lng], focus.zoom, { duration: 0.8 });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-fly only when the focus target changes
   }, [focus?.key, map]);
   return null;

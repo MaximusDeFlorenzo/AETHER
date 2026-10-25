@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { BellRing, Loader2, MapPin, MessageSquareText, Share, ShieldCheck, SquarePlus } from 'lucide-react';
+import { BellRing, Loader2, MapPin, Share, ShieldCheck, SquarePlus } from 'lucide-react';
 import { useLocationPicker } from '@/components/citizen/citizen-shell';
 import {
   AlarmEnableCard,
@@ -113,7 +113,6 @@ function NationalPreview() {
 
 const WELCOME_POINTS = [
   { icon: ShieldCheck, text: 'Status bahaya wilayah Anda' },
-  { icon: MessageSquareText, text: 'Bahasa sehari-hari' },
   { icon: BellRing, text: 'Peringatan darurat' },
 ];
 
@@ -148,9 +147,11 @@ function Welcome() {
       <div aria-hidden className="absolute -top-24 -right-24 -z-10 h-72 w-72 rounded-full bg-cyan/30 blur-3xl" />
       <div aria-hidden className="absolute -bottom-32 left-1/3 -z-10 h-72 w-72 rounded-full bg-primary/40 blur-3xl" />
 
+      <InstallAppButton className="absolute top-4 right-4 sm:top-6 sm:right-6" />
+
       <div className="grid gap-5 sm:gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
         <div className="grid gap-3 sm:gap-4">
-          <h1 className="text-2xl leading-[1.1] font-black tracking-tight text-balance sm:text-5xl">
+          <h1 className="pr-11 text-2xl sm:pr-14 leading-[1.1] font-black tracking-tight text-balance sm:text-5xl">
             Info bencana untuk{' '}
             <span className="bg-gradient-to-r from-cyan to-white bg-clip-text text-transparent">wilayah Anda</span>
           </h1>
@@ -198,7 +199,6 @@ function Welcome() {
           ) : (
             <AlarmHoldButton label="Aktifkan peringatan darurat" onConfirm={enableAlarms} onDark className="w-full sm:w-80" />
           )}
-          <InstallAppButton />
         </div>
       </div>
     </section>

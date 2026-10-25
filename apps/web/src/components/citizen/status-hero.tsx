@@ -9,6 +9,7 @@ import type { CitizenLevel } from '@/lib/citizen/types';
 import { cn } from '@/lib/utils';
 import { ContourCanvas } from './contour-canvas';
 import { HazardIcon } from './hazard-icon';
+import { InstallAppButton } from './install-app-button';
 
 /** 1.13, 104.05 → "1°08′ LU · 104°03′ BT" — how Indonesian maps label a spot. */
 function formatPoint([lng, lat]: [number, number]) {
@@ -143,8 +144,10 @@ export function StatusHero({
         className={cn('absolute -top-40 -right-32 -z-10 h-[26rem] w-[26rem] rounded-full opacity-30 blur-[80px] transition-colors duration-700', meta.solid)}
       />
 
+      <InstallAppButton className="absolute top-3 right-3 sm:top-5 sm:right-5" />
+
       <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_240px] sm:items-center">
-        <div className="grid min-w-0 content-start gap-3 sm:gap-4">
+        <div className="grid min-w-0 content-start gap-3 pr-11 sm:gap-4 sm:pr-0">
           <span className="inline-flex items-center gap-2 justify-self-start rounded-full bg-white/10 px-3 py-1 text-xs font-extrabold text-white/80">
             <span className="relative flex h-2 w-2">
               <span className={cn('absolute inline-flex h-full w-full animate-ping rounded-full opacity-60', meta.solid)} />
