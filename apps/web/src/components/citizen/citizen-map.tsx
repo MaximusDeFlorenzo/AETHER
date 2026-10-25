@@ -16,6 +16,7 @@ import {
 import { MapViewSync } from '@/components/map/map-view-sync';
 import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import '@/lib/leaflet-attribution';
 import { useHotspotPoints } from '@/hooks/use-hotspots';
 import type { NationalEvent } from '@/hooks/use-national-events';
 import {
@@ -190,12 +191,16 @@ const INDONESIA_BOUNDS: [[number, number], [number, number]] = [
 function NationalFit({ refitOnResize }: { refitOnResize: boolean }) {
   const map = useMap();
   useEffect(() => {
-    const fit = () => map.fitBounds(INDONESIA_BOUNDS, { padding: [8, 8], animate: false });
+    const fit = () => {
+      if (map.getPane('mapPane')) map.fitBounds(INDONESIA_BOUNDS, { padding: [8, 8], animate: false });
+    };
     fit();
-    if (!refitOnResize) return;
-    map.on('resize', fit);
+    if (refitOnResize) map.on('resize', fit);
     return () => {
       map.off('resize', fit);
+      // Opening/closing the full-screen map unmounts this one; a fly-to still
+      // running would then touch the removed panes.
+      map.stop();
     };
   }, [map, refitOnResize]);
   return null;
@@ -334,7 +339,8 @@ export function CitizenMap({
       style={{ height: '100%', width: '100%' }}
       className="z-0 rounded-[inherit]"
     >
-      <MapViewSync center={center} zoom={zoom} />
+      {/* The national view is placed by NationalFit; syncing would fight it. */}
+      {!nationalView && <MapViewSync center={center} zoom={zoom} />}
       <TileLayer
         url={SATELLITE_TILES.url}
         attribution={SATELLITE_TILES.attribution}

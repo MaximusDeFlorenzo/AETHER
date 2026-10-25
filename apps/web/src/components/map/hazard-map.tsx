@@ -6,6 +6,7 @@ import { HAZARD_GLYPH_SVG, hazardPinIcon } from './hazard-pin';
 import { MapViewSync } from './map-view-sync';
 import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import '@/lib/leaflet-attribution';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import { hazardTypeToColor, riskLevelToColor } from '@/lib/chart-colors';

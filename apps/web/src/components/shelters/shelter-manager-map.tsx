@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { MapContainer, Marker, TileLayer, Tooltip, ZoomControl, useMap, useMapEvents } from 'react-leaflet';
 import leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import '@/lib/leaflet-attribution';
 import { SATELLITE_TILES } from '@/lib/map-tiles';
 import { shelterLatLng, SHELTER_KIND_COLORS, SHELTER_KIND_LABELS } from '@/lib/citizen/shelters';
 import type { Shelter, ShelterKind } from '@/types/domain';

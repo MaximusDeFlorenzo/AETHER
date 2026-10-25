@@ -147,9 +147,9 @@ export function IndonesiaEventMap({
           <CloudFog className="h-4 w-4" /> Sebaran asap
         </button>
       </div>
-      {showSmoke && hasFires && <SmokeTimeSelector hours={smokeHours} onChange={setSmokeHours} />}
     </>
   );
+  const timeSelector = showSmoke && hasFires && <SmokeTimeSelector hours={smokeHours} onChange={setSmokeHours} />;
 
   const map = (interactive: boolean) => (
     <>
@@ -198,19 +198,19 @@ export function IndonesiaEventMap({
     <div className={cn('grid min-w-0 gap-3', className)}>
       {controls}
 
-      <div className="relative h-[46svh] min-h-[300px] overflow-hidden rounded-3xl border border-border/70 lg:h-[440px]">
+      <div className="relative aspect-[2.2/1] overflow-hidden rounded-2xl border border-border/70 sm:aspect-auto sm:h-80 sm:rounded-3xl lg:h-[400px]">
         {!fullscreen && map(false)}
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="absolute right-3 bottom-3 z-[400] inline-flex items-center gap-1.5 rounded-full bg-card/95 px-3 py-1.5 text-xs font-extrabold shadow"
+          className="absolute right-2 bottom-2 z-[400] inline-flex items-center gap-1.5 rounded-full bg-card/95 px-2.5 py-1 text-xs font-extrabold shadow sm:right-3 sm:bottom-3 sm:px-3 sm:py-1.5"
         >
           <Maximize2 className="h-3.5 w-3.5" /> Perbesar peta
         </button>
       </div>
-      <p className="text-xs text-muted-foreground">Ketuk kartu kejadian di bawah untuk melihat lokasinya dari dekat.</p>
-
-      {legend}
+      <p className="text-xs text-muted-foreground">
+        Ketuk kartu kejadian di bawah untuk melihat lokasinya dari dekat{showSmoke && hasFires ? ' dan mengatur perkiraan asap' : ''}.
+      </p>
 
       {fullscreen && (
         <div
@@ -231,6 +231,7 @@ export function IndonesiaEventMap({
             </button>
           </div>
           {controls}
+          {timeSelector}
           <div className="relative min-h-0 flex-1 overflow-hidden rounded-3xl border border-border/70">{map(true)}</div>
           {legend}
         </div>

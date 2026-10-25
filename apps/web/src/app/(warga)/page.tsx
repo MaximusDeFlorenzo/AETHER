@@ -17,6 +17,7 @@ import {
 import { AirQualityCard } from '@/components/citizen/air-quality-card';
 import { AlarmHoldButton } from '@/components/citizen/alarm-hold-button';
 import { FamilyAreas } from '@/components/citizen/family-areas';
+import { InstallAppButton } from '@/components/citizen/install-app-button';
 import { IndonesiaEventMap, type MapSelection } from '@/components/citizen/indonesia-event-map';
 import { NationalEventCard } from '@/components/citizen/national-event-card';
 import { PageContainer, SectionTitle } from '@/components/citizen/page-container';
@@ -197,6 +198,7 @@ function Welcome() {
           ) : (
             <AlarmHoldButton label="Aktifkan peringatan darurat" onConfirm={enableAlarms} onDark className="w-full sm:w-80" />
           )}
+          <InstallAppButton />
         </div>
       </div>
     </section>

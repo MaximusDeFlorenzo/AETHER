@@ -3,6 +3,7 @@
 import { CircleMarker, MapContainer, TileLayer, Tooltip, ZoomControl } from 'react-leaflet';
 import { MapViewSync } from '@/components/map/map-view-sync';
 import 'leaflet/dist/leaflet.css';
+import '@/lib/leaflet-attribution';
 import type { DistrictOutlook } from '@/types/rainfall';
 import { SEVERITY_LABEL, SEVERITY_RANK, severityColor } from './rainfall-utils';
 import { SATELLITE_TILES } from '@/lib/map-tiles';

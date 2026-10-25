@@ -5,6 +5,7 @@ import { Layers } from 'lucide-react';
 import { CircleMarker, GeoJSON, MapContainer, Polyline, TileLayer, Tooltip, ZoomControl } from 'react-leaflet';
 import { MapViewSync } from '@/components/map/map-view-sync';
 import 'leaflet/dist/leaflet.css';
+import '@/lib/leaflet-attribution';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { GeoPolygon, KarhutlaForecast, SurfaceWeatherHour } from '@/types/karhutla';

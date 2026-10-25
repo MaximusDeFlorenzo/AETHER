@@ -239,6 +239,14 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Citizen portal: a `grid` with no grid-cols-* utility gets one implicit
+     `auto` column, which grows to its widest child's min-content — e.g. the
+     horizontally scrolling event-card row — and pushes the whole page past
+     the phone's right edge. minmax(0, 1fr) keeps it at the container width.
+     Base layer, so any grid-cols-* / sm:grid-cols-* utility still wins. */
+  .font-citizen .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
   body {
     @apply bg-background text-foreground;
   }
@@ -520,4 +528,21 @@
 @keyframes citizen-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
+}
+
+/* Tile credits (Esri/CARTO/OSM) must stay visible but needn't dominate a
+   phone-sized map: smaller, translucent, single line until hovered. */
+.leaflet-container .leaflet-control-attribution {
+  font-size: 9px;
+  line-height: 1.4;
+  max-width: 70%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: rgb(255 255 255 / 0.55);
+}
+.leaflet-container .leaflet-control-attribution:hover,
+.leaflet-container .leaflet-control-attribution:focus-within {
+  white-space: normal;
+  background: rgb(255 255 255 / 0.9);
 }
