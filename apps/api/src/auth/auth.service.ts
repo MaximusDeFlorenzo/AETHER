@@ -31,7 +31,12 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ tokens: TokenPair; user: User }> {
-    const user = await this.userRepository.findOne({ where: { email } });
+    // Case-insensitive: "Admin@…" typed on a phone is the same account.
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .where('LOWER(user.email) = LOWER(:email)', { email: email.trim() })
+      .getOne();
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Invalid credentials');
     }

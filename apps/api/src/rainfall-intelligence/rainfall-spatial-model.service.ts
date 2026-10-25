@@ -273,6 +273,16 @@ export class RainfallSpatialModelService {
     }
     return run;
   }
+
+  /** When the newest training run (any status) was issued, or null. */
+  async lastIssuedAt(): Promise<Date | null> {
+    const run = await this.runRepository.findOne({
+      select: { id: true, issuedAt: true },
+      where: { task: SPATIAL_NOWCAST_TASK },
+      order: { issuedAt: 'DESC' },
+    });
+    return run?.issuedAt ?? null;
+  }
 }
 
 function observedAt(

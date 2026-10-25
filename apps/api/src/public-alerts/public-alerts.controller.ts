@@ -13,6 +13,7 @@ import { PublicAlertsService } from './public-alerts.service';
 import {
   CreatePublicAlertDto,
   QueryPublicAlertsDto,
+  HandleHelpRequestDto,
 } from './dto/public-alert.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RoleName } from '../common/enums/roles.enum';
@@ -73,6 +74,29 @@ export class PublicAlertsController {
       targetId: alert.id,
     });
     return alert;
+  }
+
+  @Post(':id/responses/:responseId/handling')
+  async setHelpHandling(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('responseId', ParseUUIDPipe) responseId: string,
+    @Body() dto: HandleHelpRequestDto,
+    @CurrentUser() actor: AuthenticatedUser,
+  ) {
+    const result = await this.publicAlertsService.setHelpHandling(
+      id,
+      responseId,
+      dto.handling,
+      actor.id,
+    );
+    await this.auditService.log({
+      actorUserId: actor.id,
+      action: 'public_alerts.help_handling',
+      targetType: 'public_alert_response',
+      targetId: responseId,
+      metadata: { alertId: id, handling: dto.handling },
+    });
+    return result;
   }
 
   @Get(':id/responses')

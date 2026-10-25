@@ -9,9 +9,13 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { PublicAlertResponseStatus } from '../../public-alerts/public-alert.enums';
+import {
+  HelpRequestHandling,
+  PublicAlertResponseStatus,
+} from '../../public-alerts/public-alert.enums';
 import { numericTransformer } from '../transformers/numeric.transformer';
 import { PublicAlert } from './public-alert.entity';
+import { User } from './user.entity';
 
 // A citizen's "Saya sudah aman" / "Butuh bantuan" answer to an alarm. One
 // row per device per alert (the anonymous `deviceId` is generated and kept
@@ -70,6 +74,18 @@ export class PublicAlertResponse {
     name: 'contact_phone',
   })
   contactPhone: string | null;
+
+  // Officer progress on a help request: dispatched → resolved. Cleared if
+  // the citizen asks for help again.
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  handling: HelpRequestHandling | null;
+
+  @Column({ type: 'timestamptz', nullable: true, name: 'handled_at' })
+  handledAt: Date | null;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'handled_by_id' })
+  handledBy: User | null;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;

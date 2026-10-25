@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import dynamic from 'next/dynamic';
-import { format, formatDistanceToNowStrict } from 'date-fns';
+import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { ExternalLink, Loader2, Navigation, Siren, TriangleAlert } from 'lucide-react';
+import { Loader2, Navigation, Siren, TriangleAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +13,6 @@ import { Label } from '@/components/ui/label';
 import { HazardIcon } from '@/components/citizen/hazard-icon';
 import { useDistrict, useDistricts, useProvinces, useSubdistricts, useVillages } from '@/hooks/use-geo';
 import {
-  useAlertResponses,
   useCreatePublicAlert,
   useEndPublicAlert,
   useOperatorAlerts,
@@ -22,7 +20,6 @@ import {
 } from '@/hooks/use-public-alerts';
 import { useShelters } from '@/hooks/use-resource-plans';
 import { useRiskAssessments } from '@/hooks/use-risk-assessments';
-import { googleMapsDirectionsUrl } from '@/lib/citizen/geo';
 import { shelterLatLng, SHELTER_KIND_LABELS } from '@/lib/citizen/shelters';
 import { ALERT_HAZARD_LABEL, HAZARD_LABEL_ID, isRecent } from '@/lib/citizen/status';
 import { ALERT_LEVEL_TONE, ALERT_LEVELS, alertLevelOf } from '@/lib/citizen/alert-level';
@@ -31,13 +28,8 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
 import type { HazardType } from '@/types/domain';
 import { PageHeader } from '@/components/shared/page-header';
+import { HelpRequests } from '@/components/public-alerts/help-requests';
 
-
-// react-leaflet touches `window` at import time — client-only.
-const HelpRequestsMap = dynamic(
-  () => import('@/components/public-alerts/help-requests-map').then((mod) => mod.HelpRequestsMap),
-  { ssr: false, loading: () => <div className="h-full w-full animate-pulse bg-muted" /> },
-);
 const HAZARDS: PublicAlertHazard[] = ['flood', 'tsunami', 'volcano', 'landslide', 'earthquake', 'wildfire_smoke', 'other'];
 
 // Starting text per hazard — the operator edits it; these only exist so the
@@ -185,63 +177,6 @@ function AlarmPreview({ form, areaName }: { form: FormState; areaName: string })
   );
 }
 
-function HelpRequests({ alert }: { alert: OperatorPublicAlert }) {
-  const { data, isLoading } = useAlertResponses(alert.id);
-  if (isLoading) return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
-  if (!data || data.needsHelp.length === 0) {
-    return <p className="text-sm text-muted-foreground">Belum ada permintaan bantuan.</p>;
-  }
-  const destination =
-    alert.destinationLatitude !== null && alert.destinationLongitude !== null
-      ? { name: alert.destinationName ?? 'Tujuan evakuasi', lat: alert.destinationLatitude, lng: alert.destinationLongitude }
-      : null;
-  const anyLocated = data.needsHelp.some((request) => request.latitude !== null && request.longitude !== null);
-  return (
-    <div className="grid gap-3">
-      {anyLocated && (
-        <div className="h-72 overflow-hidden rounded-xl border border-border">
-          <HelpRequestsMap requests={data.needsHelp} destination={destination} />
-        </div>
-      )}
-      <ol className="grid gap-1.5 text-sm">
-        {data.needsHelp.map((request, index) => (
-          <li key={request.id} className="grid gap-1 rounded-lg bg-muted px-3 py-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-semibold">
-                #{index + 1}
-                {request.peopleCount !== null && ` · ${request.peopleCount} orang`}
-                <span className="font-normal text-muted-foreground">
-                  {' '}
-                  · minta bantuan {formatDistanceToNowStrict(new Date(request.createdAt), { addSuffix: true, locale: localeId })}
-                </span>
-              </span>
-              {request.latitude !== null && request.longitude !== null ? (
-                <a
-                  href={googleMapsDirectionsUrl(request.latitude, request.longitude)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-medium text-primary"
-                >
-                  Rute · lokasi {formatDistanceToNowStrict(new Date(request.updatedAt), { addSuffix: true, locale: localeId })}{' '}
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              ) : (
-                <span className="text-muted-foreground">Lokasi tidak dibagikan</span>
-              )}
-            </div>
-            {request.note && <p>{request.note}</p>}
-            {request.contactPhone && (
-              <a href={`tel:${request.contactPhone.replace(/[^\d+]/g, '')}`} className="font-medium text-primary">
-                {request.contactPhone}
-              </a>
-            )}
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
 function AlertRow({ alert, canIssue }: { alert: OperatorPublicAlert; canIssue: boolean }) {
   const endAlert = useEndPublicAlert();
   const [confirmEnd, setConfirmEnd] = useState(false);
@@ -290,6 +225,8 @@ function AlertRow({ alert, canIssue }: { alert: OperatorPublicAlert; canIssue: b
             className="rounded-md bg-lv-awas-soft px-2 py-1 text-lv-awas"
           >
             Butuh bantuan: <strong>{alert.responses.needsHelp}</strong>
+            {(alert.responses.helpDispatched ?? 0) > 0 && ` · ${alert.responses.helpDispatched} dikerahkan`}
+            {(alert.responses.helpResolved ?? 0) > 0 && ` · ${alert.responses.helpResolved} aman`}
           </button>
         </div>
       </div>

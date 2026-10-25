@@ -77,14 +77,10 @@ export function useRealtimeSync() {
     const handleNotificationCreated = (notification: Notification) => {
       void queryClient.invalidateQueries({ queryKey: ['notifications'] });
       if (notification.type === 'citizen_help_request') {
-        // A person asking to be rescued: sound + a toast that stays until handled.
+        // A person asking to be rescued: sound now; refetching the alarm
+        // counts raises HelpRequestPopup and the red sidebar badge.
         void queryClient.invalidateQueries({ queryKey: ['public-alerts'] });
         playAlertSound('new');
-        toast.error(notification.title, {
-          description: notification.body ?? undefined,
-          duration: Infinity,
-          action: { label: 'Buka', onClick: () => router.push('/public-alerts') },
-        });
         return;
       }
       toast(notification.title, { description: notification.body ?? undefined });

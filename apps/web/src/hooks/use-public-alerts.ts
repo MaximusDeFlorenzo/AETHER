@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/auth-store';
 import type {
   CitizenLocation,
+  HelpRequestHandling,
   OperatorPublicAlert,
   PublicAlert,
   PublicAlertHazard,
@@ -100,8 +102,9 @@ export interface CreatePublicAlertInput {
   expiresInHours: number;
 }
 
-export function useOperatorAlerts(page = 1, limit = 20) {
+export function useOperatorAlerts(page = 1, limit = 20, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: ['public-alerts', 'operator', page, limit],
     queryFn: async () => {
       const { data } = await apiClient.get<PaginatedResponse<OperatorPublicAlert>>('/public-alerts', {
@@ -145,4 +148,29 @@ export function useAlertResponses(id: string | undefined) {
     enabled: !!id,
     refetchInterval: 15_000,
   });
+}
+
+export function useHelpHandling() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { alertId: string; responseId: string; handling: HelpRequestHandling }) => {
+      const { data } = await apiClient.post(`/public-alerts/${input.alertId}/responses/${input.responseId}/handling`, {
+        handling: input.handling,
+      });
+      return data;
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['public-alerts'] }),
+  });
+}
+
+/** Active alarms with help requests nobody has acted on yet (the red badge). */
+export function usePendingHelp() {
+  // Officers only: the shell also wraps public pages, where this would 401.
+  const signedIn = useAuthStore((state) => state.hasHydrated && !!state.accessToken);
+  const query = useOperatorAlerts(1, 20, signedIn);
+  const alerts = (query.data?.data ?? []).filter((alert) => alert.isActive && alert.responses.needsHelp > 0);
+  return {
+    alerts,
+    total: alerts.reduce((sum, alert) => sum + alert.responses.needsHelp, 0),
+  };
 }

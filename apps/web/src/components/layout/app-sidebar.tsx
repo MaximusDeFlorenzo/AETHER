@@ -13,12 +13,14 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { usePendingHelp } from '@/hooks/use-public-alerts';
 import { cn } from '@/lib/utils';
 import { NavUser } from './nav-user';
 import type { NavLink, NavSection } from './nav-items';
@@ -27,9 +29,30 @@ export function isActiveHref(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+const HELP_REQUESTS_HREF = '/help-requests';
+
+/** Red count of citizens still waiting for help (also a red dot on the
+ * collapsed icon rail). Only fetched for signed-in staff. */
+function HelpRequestBadge() {
+  const { total } = usePendingHelp();
+  if (total === 0) return null;
+  return (
+    <>
+      <SidebarMenuBadge className="rounded-full bg-alarm text-white peer-hover/menu-button:text-white peer-data-active/menu-button:text-white">
+        {total > 99 ? '99+' : total}
+      </SidebarMenuBadge>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute top-1 right-1 hidden h-2 w-2 rounded-full bg-alarm group-data-[collapsible=icon]:block"
+      />
+    </>
+  );
+}
+
 function NavMenuLink({ item, active }: { item: NavLink; active: boolean }) {
   const { isMobile, setOpenMobile } = useSidebar();
   const Icon = item.icon;
+  const badge = item.href === HELP_REQUESTS_HREF ? <HelpRequestBadge /> : null;
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -46,6 +69,7 @@ function NavMenuLink({ item, active }: { item: NavLink; active: boolean }) {
         <Icon />
         <span>{item.label}</span>
       </SidebarMenuButton>
+      {badge}
     </SidebarMenuItem>
   );
 }

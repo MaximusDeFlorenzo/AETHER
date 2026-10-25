@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
@@ -17,6 +17,7 @@ import {
 } from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import {
+  HelpRequestHandling,
   PublicAlertHazard,
   PublicAlertLevel,
   PublicAlertResponseStatus,
@@ -186,16 +187,30 @@ export class CreateAlertResponseDto {
   peopleCount?: number;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim().slice(0, 300) : value,
+  )
   @IsString()
   @MaxLength(300)
   note?: string;
 
+  // Someone asking for help types the number however they like ("0812.3456
+  // 7890", "+62 812-…", "HP: 0812…"): keep the digits (and a leading +)
+  // instead of rejecting the whole request over formatting.
   @IsOptional()
-  @IsString()
-  @Matches(/^\+?[0-9 ()-]{6,30}$/, {
-    message: 'contactPhone must be a phone number',
+  @Transform(({ value }: { value: unknown }) => {
+    if (typeof value !== 'string') return value;
+    const digits = value.replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '');
+    return digits.slice(0, 20);
   })
+  @IsString()
+  @MaxLength(30)
   contactPhone?: string;
+}
+
+export class HandleHelpRequestDto {
+  @IsEnum(HelpRequestHandling)
+  handling: HelpRequestHandling;
 }
 
 // `lat,lng;lat,lng;…` — one query string keeps the request cacheable and

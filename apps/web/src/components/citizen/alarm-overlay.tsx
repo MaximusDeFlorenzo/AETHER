@@ -9,7 +9,6 @@ import {
   CircleCheck,
   ExternalLink,
   LifeBuoy,
-  MapPin,
   Loader2,
   Navigation,
   TriangleAlert,
@@ -52,6 +51,14 @@ function getPosition(timeoutMs = 8_000): Promise<Position | null> {
 // only as often as is useful: every minute, or sooner after moving 50 m.
 const HELP_LOCATION_EVERY_MS = 60_000;
 const HELP_LOCATION_MOVE_M = 50;
+
+/** Why sending failed, in plain words: offline, or the server's own reason. */
+function sendErrorText(error: unknown): string {
+  const response = (error as { response?: { data?: { message?: string | string[] } } } | null)?.response;
+  if (!response) return 'Sinyal bermasalah.';
+  const message = response.data?.message;
+  return `Server menolak isian (${Array.isArray(message) ? message.join(', ') : (message ?? 'tidak diketahui')}).`;
+}
 
 function areaLabel(alert: PublicAlert) {
   return alert.area.villageName ?? (alert.area.subdistrictName ? `Kec. ${alert.area.subdistrictName}` : alert.area.districtName);
@@ -231,14 +238,18 @@ export function AlarmOverlay({
   const shell = cn(
     'font-citizen text-white',
     variant === 'overlay' ? 'fixed inset-0 z-[100] overflow-y-auto' : 'min-h-svh',
-    step === 'safe' ? 'bg-lv-normal dark:bg-[#17663a]' : step === 'help' ? 'bg-[#1d3a6e]' : tone.bg,
-    // Only Awas flashes; Siaga/Waspada stay a steady colour.
-    step === 'alert' && alert.isActive && level === 'awas' && 'alarm-flash',
+    step === 'safe' ? 'bg-lv-normal dark:bg-[#17663a]' : 'bg-[#f5f8fc] text-[#14213d]',
   );
+  // Light-background buttons for the alert/route steps.
+  const primaryButton = cn(
+    'flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-base font-black text-white shadow-sm transition-transform active:scale-[0.99]',
+    tone.bg,
+  );
+  const outlineButton =
+    'flex w-full items-center justify-center gap-2 rounded-xl border border-[#1b2640]/15 bg-white px-3 py-3 text-sm font-bold text-[#102a56] transition-colors hover:bg-[#1b2640]/5';
+  const cardClass = 'rounded-2xl bg-white p-4 text-[#1b2640] ring-1 ring-[#1b2640]/10';
   const whiteButton =
     'flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-4 text-lg font-black shadow-lg transition-transform active:scale-[0.99] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white';
-  const ghostButton =
-    'flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-white/80 bg-white/10 px-3 py-3.5 text-base font-black transition-colors hover:bg-white/20 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white';
 
   if (!alert.isActive) {
     return (
@@ -261,11 +272,11 @@ export function AlarmOverlay({
   return (
     <div role="alertdialog" aria-modal={variant === 'overlay'} aria-labelledby="alarm-action" className={shell}>
       <div className="mx-auto flex min-h-full w-full max-w-xl flex-col gap-4 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-10 lg:max-w-2xl">
-        <div className="flex items-center gap-3">
+        <div className={cn('flex items-center gap-3', step === 'alert' && 'hidden')}>
           <span
             className={cn(
               'grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white sm:h-14 sm:w-14',
-              step === 'safe' ? 'text-lv-normal' : step === 'help' ? 'text-[#1d3a6e]' : cn(level === 'awas' && 'alarm-ring', tone.text),
+              step === 'safe' ? 'text-lv-normal' : step === 'help' ? 'bg-[#1976d2]/10 text-[#1976d2]' : cn(tone.soft, tone.text),
             )}
           >
             {step === 'safe' ? (
@@ -280,84 +291,95 @@ export function AlarmOverlay({
             <p className="text-xs font-black tracking-[0.12em] uppercase sm:text-sm">
               {step === 'safe' ? 'Tercatat aman' : step === 'help' ? 'Permintaan bantuan' : alert.title}
             </p>
-            <p className="truncate text-xs font-bold opacity-90 sm:text-sm">
+            <p className="truncate text-xs font-bold opacity-70 sm:text-sm">
               {format(new Date(alert.createdAt), "HH.mm 'WIB' · d MMM", { locale: localeId })} · {areaLabel(alert)}
             </p>
           </div>
-          {step === 'alert' && (
-            <button
-              type="button"
-              onClick={sirenOn ? silence : trySiren}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/70 px-3 py-1.5 text-xs font-extrabold hover:bg-white/15"
-            >
-              {sirenOn ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-              {sirenOn ? 'Matikan suara' : 'Bunyikan sirine'}
-            </button>
-          )}
         </div>
 
         {step === 'alert' && (
-          <>
-            <h1 id="alarm-action" className="text-[2rem] leading-[1.05] font-black uppercase sm:text-5xl">
-              {alert.action}
-            </h1>
-            <p className="text-base font-semibold sm:text-lg">{alert.message}</p>
+          <div className="grid gap-3">
+            <section className={cn('grid gap-3 rounded-3xl p-5 text-white shadow-lg', tone.bg, level === 'awas' && 'alarm-flash')}>
+              <div className="flex items-center gap-2.5">
+                <span
+                  className={cn('grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white', tone.text, level === 'awas' && 'alarm-ring')}
+                >
+                  <HazardIcon alertHazard={alert.hazard} className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-black tracking-[0.14em]">{tone.label}</p>
+                  <p className="truncate text-xs font-semibold opacity-90">{alert.title}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={sirenOn ? silence : trySiren}
+                  aria-label={sirenOn ? 'Matikan suara' : 'Bunyikan sirine'}
+                  title={sirenOn ? 'Matikan suara' : 'Bunyikan sirine'}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/20 hover:bg-white/30"
+                >
+                  {sirenOn ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </button>
+              </div>
+              <h1 id="alarm-action" className="text-2xl leading-tight font-black sm:text-3xl">
+                {alert.action}
+              </h1>
+              <p className="text-xs font-semibold opacity-90">
+                {format(new Date(alert.createdAt), "HH.mm 'WIB' · d MMM", { locale: localeId })} · {areaLabel(alert)}
+              </p>
+            </section>
+
+            {alert.message && <p className={cn(cardClass, 'text-sm leading-relaxed sm:text-base')}>{alert.message}</p>}
 
             {(alert.destinationName || alert.avoidText) && (
-              <div className="grid gap-3 rounded-2xl bg-white p-4 text-[#1b2640]">
+              <div className={cn(cardClass, 'grid gap-3')}>
                 {alert.destinationName && (
                   <div className="flex items-center gap-3">
-                    <span className={cn('grid h-12 w-12 shrink-0 place-items-center rounded-full', tone.soft, tone.text)}>
-                      <Navigation className="h-6 w-6" />
+                    <span className={cn('grid h-10 w-10 shrink-0 place-items-center rounded-full', tone.soft, tone.text)}>
+                      <Navigation className="h-5 w-5" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-xs font-extrabold text-[#4a5670] uppercase">Tujuan</p>
-                      <p className="text-lg leading-tight font-black">{alert.destinationName}</p>
+                      <p className="text-xs font-bold text-[#1b2640]/55">Tujuan evakuasi</p>
+                      <p className="leading-tight font-black">{alert.destinationName}</p>
                     </div>
                   </div>
                 )}
                 {alert.avoidText && (
-                  <p className="flex gap-2 rounded-xl bg-[#fff3c9] px-3 py-2 text-sm font-extrabold text-[#6b4400]">
-                    <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" /> {alert.avoidText}
+                  <p className="flex gap-2 rounded-xl bg-[#fff3c9] px-3 py-2 text-sm font-semibold text-[#6b4400]">
+                    <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" /> Hindari: {alert.avoidText}
                   </p>
                 )}
               </div>
             )}
 
             {sirenBlocked && (
-              <p className="rounded-xl bg-black/20 px-3 py-2 text-sm font-bold">
-                Browser menahan suara sampai layar disentuh. Ketuk “Bunyikan sirine” di atas jika ingin suara alarm.
+              <p className="text-center text-xs text-[#1b2640]/60">
+                Browser menahan suara sampai layar disentuh. Ketuk ikon suara di atas untuk membunyikan sirine.
               </p>
             )}
 
-            <div className="grid gap-2.5 sm:gap-3">
-              <button
-                ref={primaryRef}
-                type="button"
-                onClick={() => goTo('route')}
-                className={cn(whiteButton, tone.text)}
-              >
+            <div className="grid gap-2">
+              <button ref={primaryRef} type="button" onClick={() => goTo('route')} className={primaryButton}>
                 <Navigation className="h-5 w-5" />
                 {alert.destinationName ? 'Tunjukkan jalan' : 'Apa yang harus saya lakukan?'}
               </button>
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                <button type="button" onClick={() => answer('safe')} className={ghostButton}>
-                  Saya sudah aman
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => answer('safe')} className={outlineButton}>
+                  <CircleCheck className="h-4 w-4 text-lv-normal" /> Saya sudah aman
                 </button>
-                <button type="button" onClick={() => answer('needs_help')} className={ghostButton}>
-                  Butuh bantuan
+                <button type="button" onClick={() => answer('needs_help')} className={cn(outlineButton, 'border-alarm/40 text-alarm')}>
+                  <LifeBuoy className="h-4 w-4" /> Butuh bantuan
                 </button>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {step === 'route' && (
           <>
-            <h1 id="alarm-action" className="text-3xl leading-tight font-black sm:text-4xl">
+            <h1 id="alarm-action" className="text-2xl leading-tight font-black text-[#102a56] sm:text-3xl">
               {alert.destinationName ? `Ke ${alert.destinationName}` : alert.action}
             </h1>
-            <div className="grid gap-3 rounded-2xl bg-white p-4 text-[#1b2640]">
+            <div className={cn(cardClass, 'grid gap-3')}>
               {hasDestination ? (
                 <>
                   {heading ? (
@@ -391,7 +413,7 @@ export function AlarmOverlay({
                     href={googleMapsDirectionsUrl(alert.destinationLatitude!, alert.destinationLongitude!)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 rounded-xl border-2 border-[#1b2640]/15 px-3 py-3 font-black"
+                    className="flex items-center justify-center gap-2 rounded-xl border border-[#1b2640]/15 px-3 py-3 text-sm font-bold"
                   >
                     Buka rute jalan kaki di Google Maps <ExternalLink className="h-4 w-4" />
                   </a>
@@ -411,7 +433,7 @@ export function AlarmOverlay({
               {guideKey && (
                 <div>
                   <p className="mb-1.5 text-xs font-extrabold text-[#4a5670] uppercase">Sambil bergerak</p>
-                  <ul className="grid gap-1.5 text-sm font-bold">
+                  <ul className="grid gap-1.5 text-sm">
                     {GUIDES[guideKey].during.slice(0, 3).map((tip) => (
                       <li key={tip} className="flex gap-2">
                         <span aria-hidden>•</span>
@@ -422,14 +444,14 @@ export function AlarmOverlay({
                 </div>
               )}
             </div>
-            <button ref={primaryRef} type="button" onClick={() => answer('safe')} className={cn(whiteButton, tone.text)}>
+            <button ref={primaryRef} type="button" onClick={() => answer('safe')} className={primaryButton}>
               Saya sudah sampai dan aman
             </button>
-            <div className="grid grid-cols-2 gap-2.5">
-              <button type="button" onClick={() => goTo('alert')} className={ghostButton}>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => goTo('alert')} className={outlineButton}>
                 Kembali
               </button>
-              <button type="button" onClick={() => answer('needs_help')} className={ghostButton}>
+              <button type="button" onClick={() => answer('needs_help')} className={cn(outlineButton, 'border-alarm/40 text-alarm')}>
                 Butuh bantuan
               </button>
             </div>
@@ -459,40 +481,85 @@ export function AlarmOverlay({
         )}
 
         {step === 'help' && (
-          <>
-            <h1 id="alarm-action" className="text-4xl leading-tight font-black">
-              {respond.isPending ? 'Mengirim permintaan bantuan…' : respond.isError ? 'Belum terkirim' : 'Bantuan sedang diteruskan'}
-            </h1>
-            <p className="text-lg font-semibold">
-              {respond.isError
-                ? 'Sinyal bermasalah. Telepon 112 sekarang jika bisa.'
-                : 'Petugas BPBD menerima permintaan Anda, beserta lokasi jika Anda mengizinkannya. Tetap di tempat paling tinggi dan aman yang bisa Anda capai.'}
-            </p>
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white/15 px-4 py-3 text-sm font-bold">
-              <span className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 shrink-0" />
-                {!shareLocation
-                  ? 'Lokasi tidak lagi dibagikan.'
-                  : locationDenied
-                    ? 'Lokasi belum bisa dibaca. Izinkan akses lokasi di pengaturan browser.'
-                    : locationSharedAt
-                      ? `Lokasi Anda dibagikan langsung ke petugas · diperbarui ${locationSharedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
-                      : 'Mencari lokasi Anda…'}
+          <div className="grid gap-3">
+            <div className="grid gap-1.5">
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1.5 justify-self-start rounded-full px-2.5 py-1 text-xs font-bold',
+                  respond.isError ? 'bg-alarm text-white' : 'bg-[#e3f4ea] text-[#1f8a4c]',
+                )}
+              >
+                {respond.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : respond.isError ? (
+                  <TriangleAlert className="h-3.5 w-3.5" />
+                ) : (
+                  <CircleCheck className="h-3.5 w-3.5" />
+                )}
+                {respond.isPending ? 'Mengirim…' : respond.isError ? 'Belum terkirim' : 'Diterima petugas BPBD'}
               </span>
-              <button type="button" onClick={() => setShareLocation((on) => !on)} className="underline underline-offset-2">
-                {shareLocation ? 'Berhenti bagikan' : 'Bagikan lagi'}
+              <h1 id="alarm-action" className="text-2xl leading-tight font-black text-[#102a56] sm:text-3xl">
+                {respond.isError ? 'Permintaan belum terkirim' : 'Bantuan sedang diteruskan'}
+              </h1>
+              <p className="text-sm text-[#1b2640]/70">
+                {respond.isError
+                  ? 'Sinyal bermasalah. Telepon 112 sekarang jika bisa.'
+                  : 'Tetap di tempat paling tinggi dan aman yang bisa Anda capai. Petugas akan menghubungi atau mendatangi Anda.'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl bg-white px-3.5 py-3 text-[#1b2640] ring-1 ring-[#1b2640]/10">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                {shareLocation && locationSharedAt && !locationDenied && (
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lv-normal opacity-60" />
+                )}
+                <span
+                  className={cn(
+                    'relative inline-flex h-2.5 w-2.5 rounded-full',
+                    shareLocation && locationSharedAt && !locationDenied ? 'bg-lv-normal' : 'bg-[#1b2640]/30',
+                  )}
+                />
+              </span>
+              <span className="min-w-0 flex-1 text-sm">
+                <span className="block font-bold">
+                  {!shareLocation
+                    ? 'Lokasi tidak dibagikan'
+                    : locationDenied
+                      ? 'Lokasi belum bisa dibaca'
+                      : locationSharedAt
+                        ? 'Lokasi dibagikan langsung'
+                        : 'Mencari lokasi…'}
+                </span>
+                <span className="block text-xs text-[#1b2640]/60">
+                  {locationDenied && shareLocation
+                    ? 'Izinkan akses lokasi di pengaturan browser.'
+                    : locationSharedAt
+                      ? `Terakhir diperbarui ${locationSharedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
+                      : 'Petugas melihat posisi Anda di peta.'}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setShareLocation((on) => !on)}
+                className="shrink-0 text-xs font-bold text-[#1976d2] underline underline-offset-2"
+              >
+                {shareLocation ? 'Berhenti' : 'Bagikan'}
               </button>
             </div>
-            <form onSubmit={sendDetails} className="grid gap-2 rounded-2xl bg-white/15 p-4 text-sm">
-              <p className="font-black">Tambah info untuk petugas (opsional)</p>
+
+            <form onSubmit={sendDetails} className="grid gap-2 rounded-2xl bg-white p-3.5 text-[#1b2640] ring-1 ring-[#1b2640]/10">
+              <p className="text-sm font-bold">
+                Info untuk petugas <span className="font-normal text-[#1b2640]/55">(opsional)</span>
+              </p>
               <textarea
+                rows={2}
                 value={details.note}
                 maxLength={300}
                 onChange={(event) => setDetails((current) => ({ ...current, note: event.target.value }))}
-                placeholder="Alasan / kondisi, mis. ada lansia, terjebak di lantai 2, kaki terluka"
-                className="min-h-20 rounded-xl bg-white px-3 py-2 font-semibold text-[#1b2640] placeholder:text-[#1b2640]/50"
+                placeholder="Kondisi, mis. ada lansia, terjebak di lantai 2"
+                className="resize-none rounded-xl border border-[#1b2640]/15 bg-[#f5f8fc] px-3 py-2 text-sm placeholder:text-[#1b2640]/45 focus:border-[#1976d2] focus:outline-none"
               />
-              <div className="grid grid-cols-[6.5rem_1fr] gap-2">
+              <div className="grid grid-cols-[5.5rem_1fr] gap-2">
                 <input
                   type="number"
                   inputMode="numeric"
@@ -500,9 +567,9 @@ export function AlarmOverlay({
                   max={999}
                   value={details.peopleCount}
                   onChange={(event) => setDetails((current) => ({ ...current, peopleCount: event.target.value }))}
-                  placeholder="Jumlah orang"
+                  placeholder="Jml orang"
                   aria-label="Jumlah orang"
-                  className="rounded-xl bg-white px-3 py-2 font-semibold text-[#1b2640] placeholder:text-[#1b2640]/50"
+                  className="rounded-xl border border-[#1b2640]/15 bg-[#f5f8fc] px-3 py-2 text-sm placeholder:text-[#1b2640]/45 focus:border-[#1976d2] focus:outline-none"
                 />
                 <input
                   type="tel"
@@ -510,40 +577,62 @@ export function AlarmOverlay({
                   maxLength={30}
                   value={details.contactPhone}
                   onChange={(event) => setDetails((current) => ({ ...current, contactPhone: event.target.value }))}
-                  placeholder="No. HP yang bisa dihubungi"
+                  placeholder="No. HP (bisa dihubungi)"
                   aria-label="Nomor HP"
-                  className="rounded-xl bg-white px-3 py-2 font-semibold text-[#1b2640] placeholder:text-[#1b2640]/50"
+                  className="rounded-xl border border-[#1b2640]/15 bg-[#f5f8fc] px-3 py-2 text-sm placeholder:text-[#1b2640]/45 focus:border-[#1976d2] focus:outline-none"
                 />
               </div>
-              <button type="submit" disabled={detailsUpdate.isPending} className={cn(ghostButton, 'py-2.5')}>
+              <button
+                type="submit"
+                disabled={detailsUpdate.isPending}
+                className="rounded-xl bg-[#1976d2] px-3 py-2.5 text-sm font-bold text-white transition-opacity hover:bg-[#1565c0] disabled:opacity-60"
+              >
                 {detailsUpdate.isPending
                   ? 'Mengirim…'
                   : detailsUpdate.isSuccess
-                    ? 'Info terkirim · kirim ulang jika berubah'
+                    ? 'Terkirim ✓ · kirim lagi jika berubah'
                     : detailsUpdate.isError
-                      ? 'Gagal terkirim, coba lagi'
-                      : 'Kirim info ke petugas'}
+                      ? 'Gagal, coba lagi'
+                      : 'Kirim ke petugas'}
               </button>
+              {detailsUpdate.isError && (
+                <p className="text-xs text-alarm">
+                  {sendErrorText(detailsUpdate.error)} Permintaan bantuan dan lokasi Anda tetap sudah diterima.
+                </p>
+              )}
             </form>
-            <ul className="grid gap-2 text-base font-bold">
-              <li>• Telepon 112 jika sinyal ada. Layanan ini gratis.</li>
-              <li>• Nyalakan senter HP atau lambaikan kain terang supaya mudah terlihat.</li>
-              <li>• Hemat baterai: tutup aplikasi lain dan redupkan layar.</li>
+
+            <ul className="grid list-disc gap-1 rounded-2xl bg-[#1976d2]/[0.07] py-3 pr-3.5 pl-8 text-sm text-[#1b2640]/80">
+              <li>Nyalakan senter HP atau lambaikan kain terang agar mudah terlihat.</li>
+              <li>Hemat baterai: tutup aplikasi lain dan redupkan layar.</li>
             </ul>
-            <div className="grid gap-2.5">
-              <a href="tel:112" className={cn(whiteButton, 'text-[#1d3a6e]')}>
+
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href="tel:112"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-alarm px-3 py-3 text-sm font-black text-white"
+              >
                 Telepon 112
               </a>
-              {respond.isError && (
-                <button type="button" onClick={() => answer('needs_help')} className={ghostButton}>
-                  Kirim ulang permintaan bantuan
-                </button>
-              )}
-              <button ref={primaryRef} type="button" onClick={() => answer('safe')} className={ghostButton}>
-                Saya sudah aman sekarang
+              <button
+                ref={primaryRef}
+                type="button"
+                onClick={() => answer('safe')}
+                className="rounded-xl border border-[#1b2640]/20 bg-white px-3 py-3 text-sm font-bold text-[#102a56] hover:bg-[#1b2640]/5"
+              >
+                Saya sudah aman
               </button>
             </div>
-          </>
+            {respond.isError && (
+              <button
+                type="button"
+                onClick={() => answer('needs_help')}
+                className="rounded-xl border border-[#1b2640]/20 bg-white px-3 py-2.5 text-sm font-bold text-[#102a56] hover:bg-[#1b2640]/5"
+              >
+                Kirim ulang permintaan bantuan
+              </button>
+            )}
+          </div>
         )}
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-2 text-xs font-bold opacity-90 sm:text-sm">
@@ -552,7 +641,7 @@ export function AlarmOverlay({
             <button
               type="button"
               onClick={close}
-              className="inline-flex items-center gap-1 rounded-full border border-white/60 px-3 py-1.5 hover:bg-white/15"
+              className="inline-flex items-center gap-1 rounded-full border border-current/30 px-3 py-1.5 hover:bg-black/5"
             >
               <X className="h-3.5 w-3.5" /> Tutup
             </button>

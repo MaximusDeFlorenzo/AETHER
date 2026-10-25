@@ -9,6 +9,7 @@ import {
   User,
 } from '../database/entities';
 import {
+  HelpRequestHandling,
   PublicAlertLevel,
   PublicAlertResponseStatus,
   PublicAlertStatus,
@@ -69,7 +70,12 @@ export interface AutomaticAlertInput {
 
 export interface ResponseCounts {
   safe: number;
+  /** "Butuh bantuan" requests no officer has acted on yet. */
   needsHelp: number;
+  /** Help requests with a team on the way. */
+  helpDispatched: number;
+  /** Help requests closed as safe / evacuated. */
+  helpResolved: number;
 }
 
 @Injectable()
@@ -254,7 +260,12 @@ export class PublicAlertsService {
         createdByName: alert.createdBy?.fullName ?? null,
         pushSentCount: alert.pushSentCount,
         pushFailedCount: alert.pushFailedCount,
-        responses: counts.get(alert.id) ?? { safe: 0, needsHelp: 0 },
+        responses: counts.get(alert.id) ?? {
+          safe: 0,
+          needsHelp: 0,
+          helpDispatched: 0,
+          helpResolved: 0,
+        },
       })),
       meta: { page, limit, total },
     };
@@ -291,6 +302,12 @@ export class PublicAlertsService {
       row.latitude = dto.latitude;
       row.longitude = dto.longitude;
     }
+    // Asking for help again reopens a request an officer had handled.
+    if (newHelpRequest) {
+      row.handling = null;
+      row.handledAt = null;
+      row.handledBy = null;
+    }
     if (dto.peopleCount !== undefined) row.peopleCount = dto.peopleCount;
     if (dto.note !== undefined) row.note = dto.note.trim() || null;
     if (dto.contactPhone !== undefined)
@@ -313,11 +330,14 @@ export class PublicAlertsService {
     const alert = await this.findOneOrThrow(alertId);
     const rows = await this.responseRepository.find({
       where: { alert: { id: alert.id } },
-      order: { updatedAt: 'DESC' },
+      relations: { handledBy: true },
+      order: { createdAt: 'ASC' },
     });
     const counts = (await this.countResponses([alert.id])).get(alert.id) ?? {
       safe: 0,
       needsHelp: 0,
+      helpDispatched: 0,
+      helpResolved: 0,
     };
     return {
       counts,
@@ -330,10 +350,33 @@ export class PublicAlertsService {
           peopleCount: row.peopleCount,
           note: row.note,
           contactPhone: row.contactPhone,
+          handling: row.handling,
+          handledAt: row.handledAt,
+          handledByName: row.handledBy?.fullName ?? null,
           createdAt: row.createdAt,
           updatedAt: row.updatedAt,
         })),
     };
+  }
+
+  /** Officer progress on a help request: team dispatched, or person safe. */
+  async setHelpHandling(
+    alertId: string,
+    responseId: string,
+    handling: HelpRequestHandling,
+    actorId: string,
+  ) {
+    const row = await this.responseRepository.findOne({
+      where: { id: responseId, alert: { id: alertId } },
+    });
+    if (!row || row.status !== PublicAlertResponseStatus.NEEDS_HELP) {
+      throw new NotFoundException(`Help request ${responseId} not found`);
+    }
+    row.handling = handling;
+    row.handledAt = new Date();
+    row.handledBy = { id: actorId } as User;
+    await this.responseRepository.save(row);
+    return { id: row.id, handling: row.handling, handledAt: row.handledAt };
   }
 
   private async countResponses(
@@ -345,20 +388,32 @@ export class PublicAlertsService {
       .createQueryBuilder('response')
       .select('response.alert_id', 'alertId')
       .addSelect('response.status', 'status')
+      .addSelect('response.handling', 'handling')
       .addSelect('COUNT(*)::int', 'count')
       .where('response.alert_id IN (:...alertIds)', { alertIds })
       .groupBy('response.alert_id')
       .addGroupBy('response.status')
+      .addGroupBy('response.handling')
       .getRawMany<{
         alertId: string;
         status: PublicAlertResponseStatus;
+        handling: HelpRequestHandling | null;
         count: number;
       }>();
     for (const row of rows) {
-      const entry = counts.get(row.alertId) ?? { safe: 0, needsHelp: 0 };
-      if (row.status === PublicAlertResponseStatus.SAFE)
-        entry.safe = Number(row.count);
-      else entry.needsHelp = Number(row.count);
+      const entry = counts.get(row.alertId) ?? {
+        safe: 0,
+        needsHelp: 0,
+        helpDispatched: 0,
+        helpResolved: 0,
+      };
+      const count = Number(row.count);
+      if (row.status === PublicAlertResponseStatus.SAFE) entry.safe += count;
+      else if (row.handling === HelpRequestHandling.RESOLVED)
+        entry.helpResolved += count;
+      else if (row.handling === HelpRequestHandling.DISPATCHED)
+        entry.helpDispatched += count;
+      else entry.needsHelp += count;
       counts.set(row.alertId, entry);
     }
     return counts;

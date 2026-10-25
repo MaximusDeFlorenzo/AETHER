@@ -28,14 +28,15 @@ const TERRAIN_INTERVAL_NAME = 'rainfall-terrain-sampling';
 // How often the terrain sampler wakes up; how much it samples is capped by
 // TERRAIN_SAMPLING_DISTRICTS_PER_DAY, so this only sets the granularity.
 const TERRAIN_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
-const SPATIAL_MODEL_INTERVAL_NAME = 'rainfall-spatial-model-training';
-// Daily: one more day of history barely moves the fit, and a replay of the
-// 28-day window is ~670 engine calls.
-const SPATIAL_MODEL_INTERVAL_MS = 24 * 60 * 60 * 1000;
-// Milestone 7: once a day, refresh DIBI labels (last two years), add
-// newly published archive days, then re-run the hazard backtest.
-const BACKTEST_INTERVAL_NAME = 'rainfall-hazard-backtest';
-const BACKTEST_INTERVAL_MS = 24 * 60 * 60 * 1000;
+// Daily jobs: the Stage-2 spatial model is retrained (one more day of
+// history barely moves the fit, and a replay of the 28-day window is ~670
+// engine calls), and — Milestone 7 — DIBI labels (last two years) are
+// refreshed, newly published archive days added and the hazard backtest
+// re-run. "Due" is decided from the newest stored run of each task, checked
+// hourly, so API restarts (deploys, `--watch`) no longer reset the 24 h clock.
+const DAILY_JOBS_INTERVAL_NAME = 'rainfall-daily-jobs';
+const DAILY_JOBS_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+const DAILY_JOB_PERIOD_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Runs Open-Meteo ingestion every RAINFALL_INGESTION_INTERVAL_MS and GSMaP
@@ -56,19 +57,23 @@ const BACKTEST_INTERVAL_MS = 24 * 60 * 60 * 1000;
  * and every 6 h, but spends Open-Meteo quota, so it is capped per rolling
  * 24 h from the table itself (restarts cannot exceed the cap).
  *
- * The Stage-2 spatial nowcast model is retrained and re-evaluated daily
- * (not on startup); live nowcasts use it only for horizons that passed its
- * promotion gate.
+ * The Stage-2 spatial nowcast model is retrained and re-evaluated daily;
+ * live nowcasts use it only for horizons that passed its promotion gate.
  *
- * Daily (not on startup): DIBI flood/landslide labels are refreshed, newly
- * published GSMaP_Gauge archive days are added (GSMAP_ARCHIVE_DAYS_PER_RUN)
- * and the hazard backtest is re-run.
+ * Daily: DIBI flood/landslide labels are refreshed, newly published
+ * GSMaP_Gauge archive days are added (GSMAP_ARCHIVE_DAYS_PER_RUN) and the
+ * hazard backtest is re-run.
+ *
+ * Both daily jobs are checked hourly (first check one hour after startup)
+ * and run when their newest stored run is 24 h old or missing, so restarts
+ * neither skip nor repeat them.
  */
 @Injectable()
 export class RainfallIngestionScheduler
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly logger = new Logger(RainfallIngestionScheduler.name);
+  private backtestRefreshing = false;
 
   constructor(
     private readonly openMeteo: RainfallIngestionService,
@@ -94,21 +99,13 @@ export class RainfallIngestionScheduler
       TERRAIN_CHECK_INTERVAL_MS,
     );
     this.schedulerRegistry.addInterval(TERRAIN_INTERVAL_NAME, terrainInterval);
-    const spatialInterval = setInterval(
-      () => this.spatialModel.startInBackground('scheduled'),
-      SPATIAL_MODEL_INTERVAL_MS,
+    const dailyJobsInterval = setInterval(
+      () => void this.runDailyJobsIfDue(),
+      DAILY_JOBS_CHECK_INTERVAL_MS,
     );
     this.schedulerRegistry.addInterval(
-      SPATIAL_MODEL_INTERVAL_NAME,
-      spatialInterval,
-    );
-    const backtestInterval = setInterval(
-      () => void this.refreshBacktest(),
-      BACKTEST_INTERVAL_MS,
-    );
-    this.schedulerRegistry.addInterval(
-      BACKTEST_INTERVAL_NAME,
-      backtestInterval,
+      DAILY_JOBS_INTERVAL_NAME,
+      dailyJobsInterval,
     );
     const gsmapConfigured = this.gsmap.isConfigured();
     this.schedule(
@@ -163,7 +160,25 @@ export class RainfallIngestionScheduler
     }
   }
 
+  private async runDailyJobsIfDue() {
+    try {
+      if (isDue(await this.spatialModel.lastIssuedAt())) {
+        this.spatialModel.startInBackground('scheduled');
+      }
+      if (isDue(await this.hazardBacktest.lastIssuedAt())) {
+        await this.refreshBacktest();
+      }
+    } catch (error) {
+      this.logger.error(
+        `Scheduled daily rainfall jobs failed: ${(error as Error).message}`,
+      );
+    }
+  }
+
   private async refreshBacktest() {
+    // A refresh (labels + archive + backtest) can outlast the hourly check.
+    if (this.backtestRefreshing) return;
+    this.backtestRefreshing = true;
     try {
       const year = new Date().getUTCFullYear();
       await this.labels.import(
@@ -179,6 +194,8 @@ export class RainfallIngestionScheduler
       this.logger.error(
         `Scheduled hazard backtest refresh failed: ${(error as Error).message}`,
       );
+    } finally {
+      this.backtestRefreshing = false;
     }
   }
 
@@ -187,8 +204,7 @@ export class RainfallIngestionScheduler
       OPEN_METEO_INTERVAL_NAME,
       GSMAP_INTERVAL_NAME,
       TERRAIN_INTERVAL_NAME,
-      SPATIAL_MODEL_INTERVAL_NAME,
-      BACKTEST_INTERVAL_NAME,
+      DAILY_JOBS_INTERVAL_NAME,
     ]) {
       if (this.schedulerRegistry.doesExist('interval', name)) {
         this.schedulerRegistry.deleteInterval(name);
@@ -224,4 +240,12 @@ export class RainfallIngestionScheduler
       );
     }
   }
+}
+
+/** True when a daily job has never run or last ran at least 24 h ago. */
+function isDue(lastIssuedAt: Date | null, now: Date = new Date()): boolean {
+  return (
+    !lastIssuedAt ||
+    now.getTime() - lastIssuedAt.getTime() >= DAILY_JOB_PERIOD_MS
+  );
 }

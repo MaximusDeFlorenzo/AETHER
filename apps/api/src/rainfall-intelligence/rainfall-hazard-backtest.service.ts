@@ -336,4 +336,14 @@ export class RainfallHazardBacktestService {
     if (!run) throw new NotFoundException('No hazard backtest run yet');
     return { ...run, running: this.running };
   }
+
+  /** When the newest backtest run (any status) was issued, or null. */
+  async lastIssuedAt(): Promise<Date | null> {
+    const run = await this.runRepository.findOne({
+      select: { id: true, issuedAt: true },
+      where: { task: HAZARD_BACKTEST_TASK },
+      order: { issuedAt: 'DESC' },
+    });
+    return run?.issuedAt ?? null;
+  }
 }

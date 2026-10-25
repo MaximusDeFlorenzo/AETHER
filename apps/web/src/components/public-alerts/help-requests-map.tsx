@@ -14,6 +14,8 @@ type HelpRequest = PublicAlertResponses['needsHelp'][number];
 
 const HELP_COLOR = '#c1121f';
 const DESTINATION_COLOR = '#1f8a4c';
+// Team already on the way ("petugas dikerahkan").
+const DISPATCHED_COLOR = '#c2570c';
 
 function FitToPoints({ points }: { points: Array<[number, number]> }) {
   const map = useMap();
@@ -66,19 +68,30 @@ export function HelpRequestsMap({
           <Tooltip direction="top">Tujuan evakuasi: {destination.name}</Tooltip>
         </CircleMarker>
       )}
-      {located.map((request, index) => (
+      {located.map((request) => {
+        // Same number as in the list (which also has requests without a location).
+        const number = requests.indexOf(request) + 1;
+        return (
         <CircleMarker
           key={request.id}
           center={[request.latitude, request.longitude]}
           radius={10}
-          pathOptions={{ color: '#ffffff', weight: 3, fillColor: HELP_COLOR, fillOpacity: 1 }}
+          pathOptions={{
+            color: '#ffffff',
+            weight: 3,
+            fillColor: request.handling === 'dispatched' ? DISPATCHED_COLOR : HELP_COLOR,
+            fillOpacity: 1,
+          }}
         >
           <Tooltip permanent direction="right" offset={[10, 0]}>
-            {index + 1}
+            {number}
           </Tooltip>
           <Popup>
             <div className="grid gap-1 text-sm">
-              <strong>Permintaan #{index + 1}</strong>
+              <strong>
+                Permintaan #{number}
+                {request.handling === 'dispatched' ? ' · petugas dikerahkan' : ''}
+              </strong>
               {request.peopleCount !== null && <span>{request.peopleCount} orang</span>}
               {request.note && <span>{request.note}</span>}
               {request.contactPhone && (
@@ -94,7 +107,8 @@ export function HelpRequestsMap({
             </div>
           </Popup>
         </CircleMarker>
-      ))}
+        );
+      })}
     </MapContainer>
   );
 }

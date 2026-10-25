@@ -7,6 +7,7 @@ import { EvacuationAlertDialog } from '@/components/shared/evacuation-alert-dial
 import { ShellSidebar, type ShellBrand } from './app-sidebar';
 import { CITIZEN_PORTAL_LINK, SHELL_NAV_SECTIONS } from './nav-items';
 import { TopNav } from './top-nav';
+import { HelpRequestPopup } from './help-request-popup';
 
 const BRAND: ShellBrand = { href: '/risk-map', title: 'AETHER', subtitle: 'Risk Intelligence' };
 
@@ -30,6 +31,7 @@ export function WorkspaceShell({ children, defaultOpen = true }: { children: Rea
         <div className="flex-1 bg-background">{children}</div>
       </SidebarInset>
       <EvacuationAlertDialog />
+      <HelpRequestPopup />
     </SidebarProvider>
   );
 }

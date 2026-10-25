@@ -47,11 +47,16 @@ export interface OperatorPublicAlert extends PublicAlert {
   createdByName: string | null;
   pushSentCount: number;
   pushFailedCount: number;
-  responses: { safe: number; needsHelp: number };
+  /** needsHelp = nobody has acted yet; helpDispatched = team on the way;
+   * helpResolved = safe / evacuated. */
+  responses: { safe: number; needsHelp: number; helpDispatched?: number; helpResolved?: number };
 }
 
+/** Officer progress on a help request (null = still waiting). */
+export type HelpRequestHandling = 'dispatched' | 'resolved';
+
 export interface PublicAlertResponses {
-  counts: { safe: number; needsHelp: number };
+  counts: { safe: number; needsHelp: number; helpDispatched?: number; helpResolved?: number };
   needsHelp: Array<{
     id: string;
     latitude: number | null;
@@ -59,6 +64,9 @@ export interface PublicAlertResponses {
     peopleCount: number | null;
     note: string | null;
     contactPhone: string | null;
+    handling?: HelpRequestHandling | null;
+    handledAt?: string | null;
+    handledByName?: string | null;
     createdAt: string;
     updatedAt: string;
   }>;

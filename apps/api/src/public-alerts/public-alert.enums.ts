@@ -25,6 +25,12 @@ export enum PublicAlertStatus {
   ENDED = 'ended',
 }
 
+// Where an officer is with a "Butuh bantuan" request (none = still waiting).
+export enum HelpRequestHandling {
+  DISPATCHED = 'dispatched', // petugas sedang dikerahkan
+  RESOLVED = 'resolved', // warga sudah aman / dievakuasi
+}
+
 export enum PublicAlertResponseStatus {
   SAFE = 'safe',
   NEEDS_HELP = 'needs_help',
